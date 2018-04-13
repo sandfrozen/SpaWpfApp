@@ -7,21 +7,93 @@ namespace SpaWpfApp
 {
     class Pkb : PkbAPI
     {
-        private String[] VarTable; // variables
-        private int[,] ModifiesTable; // variables / statemtents.numbers
-        private int[,] NextTable; // statements.numbers / statements.numbers
+        //TODO: CallsTable, UsesTable
+        private String[] ProcTable;   // [proc]
+        private String[] VarTable;    // [var ]
+        private int[,] CallsTable;    // [proc, stmtLine]
+        private int[,] ModifiesTable; // [var , stmtLine]
+        private int[,] UsesTable;     // [var , stmtLine]
 
-        public Pkb(int numberOfVars, int numberOfStmts)
+        public Pkb(int vars, int stmts, int procs)
         {
-            VarTable = new String[numberOfVars];
-            ModifiesTable = new int[numberOfVars,numberOfStmts];
-            NextTable = new int[numberOfStmts, numberOfStmts];
+            VarTable = new String[vars];
+            ProcTable = new String[vars];
+
+            CallsTable = new int[procs, stmts];
+            ModifiesTable = new int[vars, stmts];
+            UsesTable = new int[vars, stmts];
         }
 
-        // VarTable
+        //NOTE: ProcTable operations
+        public int insertProc(String proc)
+        {
+            if (ProcTable.Contains(proc))
+            {
+                for (int i = 0; i < ProcTable.Length; i++)
+                {
+                    if (ProcTable[i] == proc)
+                    {
+                        return i;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < ProcTable.Length; i++)
+                {
+                    if (ProcTable[i] == "")
+                    {
+                        ProcTable[i] = proc;
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        public int getProcIndex(String proc)
+        {
+            if (ProcTable.Contains(proc))
+            {
+                for (int i = 0; i < ProcTable.Length; i++)
+                {
+                    if (ProcTable[i] == proc)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        public String getProcName(int index)
+        {
+            if (index < ProcTable.Length && ProcTable[index] != "")
+            {
+                return ProcTable[index];
+            }
+            return null;
+        }
+
+        public int getProcTableSize()
+        {
+            return ProcTable.Length;
+        }
+
+        //NOTE: VarTable operations
         public int insertVar(String var)
         {
-            if ( !VarTable.Contains(var) )
+            if (VarTable.Contains(var))
+            {
+                for (int i = 0; i < VarTable.Length; i++)
+                {
+                    if (VarTable[i] == var)
+                    {
+                        return i;
+                    }
+                }
+            }
+            else
             {
                 for (int i = 0; i < VarTable.Length; i++)
                 {
@@ -34,6 +106,7 @@ namespace SpaWpfApp
             }
             return -1;
         }
+
         public int getVarIndex(String var)
         {
             if ( VarTable.Contains(var) )
@@ -48,6 +121,7 @@ namespace SpaWpfApp
             }
             return -1;
         }
+
         public String getVarName(int index)
         {
             if ( index < VarTable.Length && VarTable[index] != "" )
@@ -57,7 +131,12 @@ namespace SpaWpfApp
             return null;
         }
 
-        // ModifiesTable
+        public int getVarTableSize()
+        {
+            return VarTable.Length;
+        }
+
+        //NOTE: ModifiesTable operations
         public void setModifies(int stmt, String var)
         {
             int varIndex = getVarIndex(var);
@@ -66,6 +145,7 @@ namespace SpaWpfApp
                 ModifiesTable[varIndex, stmt] = 1;
             }
         }
+
         public List<int> getModifies(String var)
         {
             List<int> modifies = new List<int>();
@@ -82,9 +162,10 @@ namespace SpaWpfApp
             }
             return modifies;
         }
+
         public List<String> getModified(int stmt)
         {
-            List<String> modified = new List<string>();
+            List<String> modified = new List<String>();
             if( stmt < ModifiesTable.GetLength(1) )
             {
                 for (int i = 0; i < ModifiesTable.GetLength(0); i++)
@@ -101,6 +182,7 @@ namespace SpaWpfApp
             }
             return modified;
         }
+
         public Boolean isModified(int stmt, String var)
         {
             int varIndex = getVarIndex(var);
@@ -113,59 +195,5 @@ namespace SpaWpfApp
             }
             return false;
         }
-
-        // NextTable
-        public void setNext(int actualStmt, int nextStmt)
-        {
-            if(actualStmt < NextTable.GetLength(0) && nextStmt < NextTable.GetLength(1) )
-            {
-                NextTable[actualStmt, nextStmt] = 1;
-            }
-        }
-        public int getNext(int stmt)
-        {
-            if( stmt < NextTable.GetLength(0) )
-            {
-                for(int i = 0; i<NextTable.GetLength(1); i++)
-                {
-                    if( NextTable[stmt, i] == 1)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
-        }
-        public int getBefore(int stmt)
-        {
-            if (stmt < NextTable.GetLength(1))
-            {
-                for (int i = 0; i < NextTable.GetLength(0); i++)
-                {
-                    if (NextTable[i, stmt] == 1)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
-        }
-        public Boolean isNext(int actualStmt, int nextStmt)
-        {
-            if (actualStmt < NextTable.GetLength(0) && nextStmt < NextTable.GetLength(1))
-            {
-                return NextTable[actualStmt, nextStmt] == 1;
-            }
-            return false;
-        }
-        public Boolean isBefore(int beforeStmt, int actualStmt)
-        {
-            if (beforeStmt < NextTable.GetLength(0) && actualStmt < NextTable.GetLength(1))
-            {
-                return NextTable[beforeStmt, actualStmt] == 1;
-            }
-            return false;
-        }
-
     }
 }
