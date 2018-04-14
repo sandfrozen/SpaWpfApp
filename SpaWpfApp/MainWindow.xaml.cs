@@ -20,6 +20,11 @@ namespace SpaWpfApp
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private int numberOfLines;
+        private int numberOfProcs;
+        private int numerOfVars;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -28,23 +33,22 @@ namespace SpaWpfApp
         private void parseButton_Click(object sender, RoutedEventArgs e)
         {
             Trace.WriteLine("Parse clicked");
-            //string procedure = StringFromRichTextBox(procedureRichTextBox);
-            //foreach(char c in procedure)
-            //{
-            //    Trace.WriteLine(c + " : " + (int)c);
-            //}
-
-            Boolean[,] table = new Boolean[4, 10];
-            for(int i=0; i<table.GetLength(0); i++)
-            {
-                for (int j = 0; j < table.GetLength(1); j++)
-                {
-                    Trace.Write(table[i,j] + " ");
-                }
-                Trace.WriteLine("");
-            }
-            Trace.WriteLine(table.GetLength(0));
-            Trace.WriteLine(table.GetLength(1));
+            // Tutaj będzie wywołanie Klasy Parsującej Adama
+            // ex. Parser parser = new Parser(sourceCode);
+            // parser.parse();
+            // po tym: jeśli sourceCode zostanie sparsowany poprawanie to
+            // obiekt parser będzie posiadał trzy kluczowe informacje o sourceCode:
+            // - numberOfLines
+            // - numberOfProcs
+            // - numerOfVars
+            // ^ te trzy wartości są potrzebne aby klasa PKB mogła się zaincjować, czyli żeby API działało:
+            // Pkb pkb = new Pkb(numberOfLines, numberOfProcs, numberOfVars); // <- to te trzy kluczowe wartości w argumentach
+            // Jak już to będzie to wtedy trzeba będzie napisać analize kodu, która wykorzystując API ^ wczyta te wszystkie dane do tablic,
+            // Po tym, Kod Tomka Suchwałko będzie mógł zbudować drzewko AST,
+            // a po tym "Query processing subsystem (Query Preprocessor, Query Evaluator and query result projector)" Zakrysia i Lucato będzie mógł działać i dawać odpowiedzi na zapytania.
+            //
+            //
+            // To pseudo kod i pseudo rozkmina, ale może komuś to pomoże w naświetleniu tego co będzie się tu działo (i co może zaimplementować wcześniej)
         }
 
         private string StringFromRichTextBox(RichTextBox rtb)
