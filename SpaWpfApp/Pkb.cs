@@ -7,29 +7,43 @@ namespace SpaWpfApp
 {
     class Pkb : PkbAPI
     {
+        private int numberOfLines;
+        private int numberOfProcs;
+        private int numberofVars;
+
         //TODO: CallsTable, UsesTable
         private String[] ProcTable;   // [proc]
         private String[] VarTable;    // [var ]
-        private int[,] CallsTable;    // [proc, stmtLine]
-        private int[,] ModifiesTable; // [var , stmtLine]
-        private int[,] UsesTable;     // [var , stmtLine]
 
-        public Pkb(int vars, int stmts, int procs)
+        private Boolean[,] CallsTable;    // [proc, proc]
+        private Boolean[,] ModifiesTable; // [var , line]
+        private Boolean[,] UsesTable;     // [var , line]
+
+        public Pkb(int numberOfLines, int numberOfProcs, int numberOfVars)
         {
-            VarTable = new String[vars];
-            ProcTable = new String[vars];
+            this.numberOfLines = numberOfLines;
+            this.numberOfProcs = numberOfProcs;
+            this.numberofVars = numberOfVars;
 
-            CallsTable = new int[procs, stmts];
-            ModifiesTable = new int[vars, stmts];
-            UsesTable = new int[vars, stmts];
+            this.VarTable = new String[numberOfVars];
+            this.ProcTable = new String[numberOfVars];
+
+            this.CallsTable = new Boolean[numberOfProcs, numberOfProcs];
+            this.ModifiesTable = new Boolean[numberOfVars, numberOfLines];
+            this.UsesTable = new Boolean[numberOfVars, numberOfLines];
+        }
+
+        public int GetNumberOfLines()
+        {
+            return numberOfLines;
         }
 
         //NOTE: ProcTable operations
-        public int insertProc(String proc)
+        public int InsertProc(String proc)
         {
             if (ProcTable.Contains(proc))
             {
-                for (int i = 0; i < ProcTable.Length; i++)
+                for (int i = 0; i < numberOfProcs; i++)
                 {
                     if (ProcTable[i] == proc)
                     {
@@ -51,11 +65,11 @@ namespace SpaWpfApp
             return -1;
         }
 
-        public int getProcIndex(String proc)
+        public int GetProcIndex(String proc)
         {
             if (ProcTable.Contains(proc))
             {
-                for (int i = 0; i < ProcTable.Length; i++)
+                for (int i = 0; i < numberOfProcs; i++)
                 {
                     if (ProcTable[i] == proc)
                     {
@@ -66,26 +80,26 @@ namespace SpaWpfApp
             return -1;
         }
 
-        public String getProcName(int index)
+        public String GetProcName(int index)
         {
-            if (index < ProcTable.Length && ProcTable[index] != "")
+            if (index < numberOfProcs && ProcTable[index] != "")
             {
                 return ProcTable[index];
             }
             return null;
         }
 
-        public int getProcTableSize()
+        public int GetNumberOfProcs()
         {
-            return ProcTable.Length;
+            return numberOfProcs;
         }
 
         //NOTE: VarTable operations
-        public int insertVar(String var)
+        public int InsertVar(String var)
         {
             if (VarTable.Contains(var))
             {
-                for (int i = 0; i < VarTable.Length; i++)
+                for (int i = 0; i < numberofVars; i++)
                 {
                     if (VarTable[i] == var)
                     {
@@ -107,11 +121,11 @@ namespace SpaWpfApp
             return -1;
         }
 
-        public int getVarIndex(String var)
+        public int GetVarIndex(String var)
         {
-            if ( VarTable.Contains(var) )
+            if (VarTable.Contains(var))
             {
-                for (int i = 0; i < VarTable.Length; i++)
+                for (int i = 0; i < numberofVars; i++)
                 {
                     if (VarTable[i] == var)
                     {
@@ -122,76 +136,243 @@ namespace SpaWpfApp
             return -1;
         }
 
-        public String getVarName(int index)
+        public String GetVarName(int index)
         {
-            if ( index < VarTable.Length && VarTable[index] != "" )
+            if (index < numberofVars && VarTable[index] != "")
             {
                 return VarTable[index];
             }
             return null;
         }
 
-        public int getVarTableSize()
+        public int GetNumberOfVars()
         {
-            return VarTable.Length;
+            return numberofVars;
         }
 
-        //NOTE: ModifiesTable operations
-        public void setModifies(int stmt, String var)
+        //NOTE: CallsTable operations
+        /// <summary>
+        /// sets that proc1 calls proc2
+        /// </summary>
+        /// <param name="proc1">procedure name which calls proc2</param>
+        /// <param name="proc2">procedure name which is called by proc1</param>
+        public void SetCalls(String proc1, String proc2)
         {
-            int varIndex = getVarIndex(var);
-            if( varIndex != -1)
+            int proc1Index = GetProcIndex(proc1);
+            int proc2Index = GetProcIndex(proc2);
+            if (proc1Index != -1 && proc2Index != -1)
             {
-                ModifiesTable[varIndex, stmt] = 1;
+                CallsTable[proc1Index, proc2Index] = true;
             }
         }
 
-        public List<int> getModifies(String var)
+        /// <summary>
+        /// returns list of procedures that are calling 'proc'
+        /// </summary>
+        /// <param name="proc">procedure name</param>
+        /// <returns>list of procedures that are calling 'proc'</returns>
+        public List<String> GetCalls(String proc)
         {
-            List<int> modifies = new List<int>();
-            int varIndex = getVarIndex(var);
-            if (varIndex != -1)
-            { 
-                for (int i = 0; i < ModifiesTable.GetLength(1); i++)
+            List<String> calls = new List<String>();
+            int procIndex = GetProcIndex(proc);
+            if (procIndex != -1)
+            {
+                for (int i = 0; i < numberOfProcs; i++)
                 {
-                    if(ModifiesTable[varIndex,i] == 1)
+                    if (CallsTable[i, procIndex])
                     {
-                        modifies.Add(i);
+                        calls.Add(GetProcName(i));
                     }
                 }
             }
-            return modifies;
+            return calls;
         }
 
-        public List<String> getModified(int stmt)
+        /// <summary>
+        /// returns list of procedures that are called by 'proc'
+        /// </summary>
+        /// <param name="proc">procedure name</param>
+        /// <returns>list of procedures that are called by 'proc'</returns>
+        public List<String> GetCalled(String proc)
         {
-            List<String> modified = new List<String>();
-            if( stmt < ModifiesTable.GetLength(1) )
+            List<String> called = new List<String>();
+            int procIndex = GetProcIndex(proc);
+            if (procIndex != -1)
             {
-                for (int i = 0; i < ModifiesTable.GetLength(0); i++)
+                for (int i = 0; i < numberOfProcs; i++)
                 {
-                    if (ModifiesTable[i, stmt] == 1)
+                    if (CallsTable[procIndex, i])
                     {
-                        String var = getVarName(i);
-                        if ( var != null )
+                        called.Add(GetProcName(i));
+                    }
+                }
+            }
+            return called;
+        }
+
+        /// <summary>
+        /// returns true if proc1 calls proc2
+        /// </summary>
+        /// <param name="proc1">procedure name which calls proc2</param>
+        /// <param name="proc2">procedure name which is called by proc1</param>
+        /// <returns>true if proc1 calls proc2</returns>
+        public bool IsCalls(string proc1, string proc2)
+        {
+            int proc1Index = GetProcIndex(proc1);
+            int proc2Index = GetProcIndex(proc2);
+            if (proc1Index != -1 && proc2Index != -1)
+            {
+                return CallsTable[proc1Index, proc2Index];
+            }
+            return false;
+        }
+
+        //NOTE: ModifiesTable operations
+        ///<summary>
+        ///sets that variable 'var' is modified in 'line' number
+        ///</summary>
+        public void SetModifies(String var, int line)
+        {
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1)
+            {
+                ModifiesTable[varIndex, line] = true;
+            }
+        }
+
+        ///<summary>
+        ///returns list of lines that are modifying variable 'var'
+        ///</summary>
+        public List<int> GetModifies(String var)
+        {
+            List<int> lines = new List<int>();
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1)
+            {
+                for (int i = 0; i < numberOfLines; i++)
+                {
+                    if (ModifiesTable[varIndex, i])
+                    {
+                        lines.Add(i);
+                    }
+                }
+            }
+            return lines;
+        }
+
+        ///<summary>
+        ///returns list of vars that are modified in 'line'
+        ///</summary>
+        public List<String> GetModified(int line)
+        {
+            List<String> vars = new List<String>();
+            if (line > -1 && line < numberOfLines)
+            {
+                for (int i = 0; i < numberofVars; i++)
+                {
+                    if (ModifiesTable[i, line])
+                    {
+                        String var = GetVarName(i);
+                        if (var != null)
                         {
-                            modified.Add(var);
+                            vars.Add(var);
                         }
                     }
                 }
             }
-            return modified;
+            return vars;
         }
 
-        public Boolean isModified(int stmt, String var)
+        /// <summary>
+        /// returns true if 'var' is modified in 'line'
+        /// </summary>
+        /// <param name="var">variable name</param>
+        /// <param name="line">line number</param>
+        /// <returns>true if 'var' is modified in 'line'</returns>
+        public Boolean IsModified(String var, int line)
         {
-            int varIndex = getVarIndex(var);
-            if (varIndex != -1 && stmt < ModifiesTable.GetLength(1) )
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
-                if (ModifiesTable[varIndex, stmt] == 1)
+                return ModifiesTable[varIndex, line];
+            }
+            return false;
+        }
+
+        //NOTE: UsesTable operations
+        /// <summary>
+        /// sets that 'var' is used in 'line'
+        /// </summary>
+        /// <param name="var">variable name</param>
+        /// <param name="line">line number</param>
+        public void SetUses(string var, int line)
+        {
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1)
+            {
+                UsesTable[varIndex, line] = true;
+            }
+        }
+
+        /// <summary>
+        /// returns list of lines that are using 'var'
+        /// </summary>
+        /// <param name="var">variable name</param>
+        /// <returns>list of lines that are using 'var'</returns>
+        public List<int> GetUses(string var)
+        {
+            List<int> lines = new List<int>();
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1)
+            {
+                for (int i = 0; i < numberOfLines; i++)
                 {
-                    return true;
+                    if (UsesTable[varIndex, i])
+                    {
+                        lines.Add(i);
+                    }
                 }
+            }
+            return lines;
+        }
+
+        /// <summary>
+        /// returns list of vars that are used in 'line'
+        /// </summary>
+        /// <param name="line">line number</param>
+        /// <returns></returns>
+        public List<string> GetUsed(int line)
+        {
+            List<String> vars = new List<String>();
+            if (line > -1 && line < numberOfLines)
+            {
+                for (int i = 0; i < numberofVars; i++)
+                {
+                    if (UsesTable[i, line])
+                    {
+                        String var = GetVarName(i);
+                        if (var != null)
+                        {
+                            vars.Add(var);
+                        }
+                    }
+                }
+            }
+            return vars;
+        }
+
+        /// <summary>
+        /// returns true if 'var' is used in 'line'
+        /// </summary>
+        /// <param name="var">variable name</param>
+        /// <param name="line">line number</param>
+        /// <returns>true if 'var' is used in 'line'</returns>
+        public bool IsUsed(string var, int line)
+        {
+            int varIndex = GetVarIndex(var);
+            if (varIndex != -1 && line > -1 && line < numberOfLines)
+            {
+                return UsesTable[varIndex, line];
             }
             return false;
         }
