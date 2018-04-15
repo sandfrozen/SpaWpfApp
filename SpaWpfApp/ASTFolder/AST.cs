@@ -37,7 +37,7 @@ namespace SpaWpfApp.ASTFolder
         {
             string[] sourceCodeLines = sourceCode.Split('\n');
             string[] lineWords;
-            int programLineNumber = 0;            
+            int programLineNumber = 0;
             TNode currentUpNode = null;
             TNode actualNode;
 
@@ -223,16 +223,16 @@ namespace SpaWpfApp.ASTFolder
                             SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
 
                             //what if end of statement???
-                            HandleGoingBackOnTheTree(ref currentUpNode, lineWords);                          
+                            HandleGoingBackOnTheTree(ref currentUpNode, lineWords);
                         }
                         break;
                 }
             }
-        }     
+        }
 
-        
 
-       
+
+
 
         private TNode CreateTNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName)
         {
@@ -362,6 +362,200 @@ namespace SpaWpfApp.ASTFolder
             }
 
             return true;
+        }
+
+
+        /// <summary>
+        /// returns Parent of stmt or null if stmt does't have Parent
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private TNode GetParent(int p_programLineNumber)
+        {
+            TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode parent = tmp.up.up;
+
+            if (parent.type == TNodeTypeEnum.If || parent.type == TNodeTypeEnum.While)
+            {
+                return parent;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// returns direct Parent and all indirect Parent of stmt or null if stmt doesn't have any ParentS
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private List<TNode> GetParentS(int p_programLineNumber)
+        {
+            TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode parent;
+            List<TNode> parents = new List<TNode>();
+
+            do
+            {
+                parent = tmp.up.up;
+                if (parent.type == TNodeTypeEnum.While || parent.type == TNodeTypeEnum.If)
+                {
+                    parents.Add(parent);
+                }
+            }
+            while (parent.type != TNodeTypeEnum.Procedure);
+
+            return parents.Count() > 0 ? parents : null;
+        }
+
+        /// <summary>
+        /// returns all children of stmt or null if stmt doesn't have children
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private List<TNode> GetChildren(int p_programLineNumber)
+        {
+            List<TNode> children = new List<TNode>();
+            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode child;
+
+
+            if (parent.type == TNodeTypeEnum.While)
+            {
+                child = parent.firstChild.rightSibling.firstChild; // first stmf of stmtLst
+                do
+                {
+                    children.Add(child);
+                    child = child.rightSibling;
+                }
+                while (child != null);
+
+                return children;
+            }
+            else if (parent.type == TNodeTypeEnum.If)
+            {
+                child = parent.firstChild.rightSibling.firstChild; // first stmf of stmtLstThen
+                do
+                {
+                    children.Add(child);
+                    child = child.rightSibling;
+                }
+                while (child != null);
+
+                child = parent.firstChild.rightSibling.rightSibling.firstChild; // fisrt stmt of stmtLstElse
+                do
+                {
+                    children.Add(child);
+                    child = child.rightSibling;
+                }
+                while (child != null);
+
+                return children;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// returns all direct and indirect children of stmt or null if stmt doesn't have any childrenS
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private List<TNode> GetChildrenS(int p_programLineNumber)
+        {
+            List<TNode> children = new List<TNode>();
+            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode child;
+
+            if (parent.type != TNodeTypeEnum.While && parent.type != TNodeTypeEnum.If)
+            {
+                return null;
+            }
+            else
+            {
+                FindAllChildrenS(ref children, parent); // recurrere
+            }
+
+            children.Remove(children.Where(p => p.programLine == p_programLineNumber).FirstOrDefault());
+            return children.Count() > 0 ? children : null;
+        }
+
+        private void FindAllChildrenS(ref List<TNode> children, TNode parent)
+        {
+            TNode tmp;
+            List<TNode> tmpChildren;
+            if (parent.firstChild is null)
+            {
+                return;
+            }
+
+
+            if (parent.type == TNodeTypeEnum.While || parent.type == TNodeTypeEnum.If || parent.type == TNodeTypeEnum.Assign || parent.type == TNodeTypeEnum.Call)
+            {
+                children.Add(parent);
+            }
+
+            tmpChildren = new List<TNode>();
+            tmp = parent.firstChild;
+            tmpChildren.Add(tmp);
+            while (tmp.rightSibling != null)
+            {
+                tmp = tmp.rightSibling;
+                tmpChildren.Add(tmp);
+            }
+            foreach (var c in tmpChildren)
+            {
+                FindAllChildrenS(ref children, c);
+            }
+        }
+
+
+
+        /// <summary>
+        /// returns direct right sibling of stmt or null if stmt doesn't have right sibling
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private TNode GetRightSibling(int p_programLineNumber)
+        {
+            TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+
+            if(tmp.rightSibling is null)
+            {
+                return null;
+            }
+            else
+            {
+                return tmp.rightSibling;
+            }
+        }
+
+        /// <summary>
+        /// returns direct left sibling of stmt or null if stmt is the only child
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        private TNode GetLeftSibling(int p_programLineNumber)
+        {
+            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode tmp = parent.firstChild;
+
+            if(tmp.programLine == p_programLineNumber)
+            {
+                return null;
+            }
+            else
+            {
+                while(tmp.rightSibling.programLine != p_programLineNumber)
+                {
+                    tmp = tmp.rightSibling;
+                }
+
+                return tmp;
+            }
         }
 
     }
