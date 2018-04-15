@@ -24,7 +24,7 @@ namespace SpaWpfApp
 
         public Query(string query)
         {
-            this.Lines = SeparateLines(query);
+            this.Lines = SeparateLines(query.ToLower());
         }
 
         public List<String> SeparateLines(string query)

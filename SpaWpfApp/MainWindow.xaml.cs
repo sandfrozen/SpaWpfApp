@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SpaWpfApp.PqlConsts;
+using SpaWpfApp.PqlModels;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -69,12 +71,13 @@ namespace SpaWpfApp
         {
             string query = StringFromRichTextBox(rtbPql);
             var qP = new QueryPreprocessor(query);
+            PqlQueryTree pqt = new PqlQueryTree(qP);
         }
 
         /*
-        stmt s1, s2; assign a; while w;
-        Select s1 such that Follows (s1,s2)
-        Select a such that Follows* (20,a)
+        stmt s1, s2;
+        Select s1 
+        such that Follows (s1,s2)
         */
     }
 }
