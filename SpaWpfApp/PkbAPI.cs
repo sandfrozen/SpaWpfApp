@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SpaWpfApp
 {
-    interface PkbAPI
+    public interface PkbAPI
     {
         int GetNumberOfLines();
 

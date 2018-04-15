@@ -5,11 +5,10 @@ using System.Text;
 
 namespace SpaWpfApp.Enums
 {
-    public enum SignEnum
+    public enum TLinkTypeEnum
     {
-        Plus,
-        Minus,
-        Times,
-        Semicolon
+        Up,
+        FirstChild,
+        RightSibling
     }
 }
