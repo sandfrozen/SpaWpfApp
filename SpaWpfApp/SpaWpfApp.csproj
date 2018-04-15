@@ -54,6 +54,7 @@
     </ApplicationDefinition>
     <Compile Include="Pkb.cs" />
     <Compile Include="PkbAPI.cs" />
+    <Compile Include="QueryPreprocessor.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -65,5 +65,16 @@ namespace SpaWpfApp
             return textRange.Text;
         }
 
+        private void parsePqlBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string query = StringFromRichTextBox(rtbPql);
+            var qP = new QueryPreprocessor(query);
+        }
+
+        /*
+        stmt s1, s2; assign a; while w;
+        Select s1 such that Follows (s1,s2)
+        Select a such that Follows* (20,a)
+        */
     }
 }
