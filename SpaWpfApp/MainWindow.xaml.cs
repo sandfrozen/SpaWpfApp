@@ -1,5 +1,10 @@
+
 ﻿using SpaWpfApp.ASTFolder;
 using SpaWpfApp.Parser;
+
+﻿using SpaWpfApp.PqlConsts;
+using SpaWpfApp.PqlModels;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -139,5 +144,18 @@ namespace SpaWpfApp
             return textRange.Text;
         }
 
+        private void parsePqlBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string query = StringFromRichTextBox(rtbPql);
+            var qP = new QueryPreprocessor(query);
+            PqlQueryTree pqt = new PqlQueryTree(qP);
+
+        }
+
+        /*
+        stmt s1, s2;
+        Select s1 
+        such that Follows (s1,s2)
+        */
     }
 }
