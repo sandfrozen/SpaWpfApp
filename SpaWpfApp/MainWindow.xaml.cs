@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+using SpaWpfApp.Parser;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,10 +31,65 @@ namespace SpaWpfApp
         {
             InitializeComponent();
         }
-
+        private void formatButton_Click(object sender, RoutedEventArgs e)
+        {
+           
+            try
+            {
+                string parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
+                Trace.WriteLine("===================LAST PARSER======================");
+                Trace.WriteLine(parsed);
+                procedureRichTextBox.Document.Blocks.Clear();
+                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsed)));
+                MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                Trace.WriteLine("Lines " + ParserMain.Instance.numberOfLines);
+                Trace.WriteLine("procedures " + ParserMain.Instance.numberOfProcedures);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
         private void parseButton_Click(object sender, RoutedEventArgs e)
         {
             Trace.WriteLine("Parse clicked");
+            //string code =
+            //    "procedure First {" + Environment.NewLine +
+            //    "x = 2 ;" + Environment.NewLine +
+            //    "z = 3 ;" + Environment.NewLine +
+            //    "call Second ; }" + Environment.NewLine +
+            //    "procedure Second {" + Environment.NewLine +
+            //    "x = 0 ;" + Environment.NewLine +
+            //    "i = 5 ;" + Environment.NewLine +
+            //    "while i {" + Environment.NewLine +
+            //    "x = x + 2 * y ;" + Environment.NewLine +
+            //    "call Third ;" + Environment.NewLine +
+            //    "i = i - 1 ; }" + Environment.NewLine +
+            //    "if x then {" + Environment.NewLine +
+            //    "x = x + 1 ; }" + Environment.NewLine +
+            //    "else {" + Environment.NewLine +
+            //    "z = 1 ; }" + Environment.NewLine +
+            //    "z = z + x + i ;" + Environment.NewLine +
+            //    "y = z + 2 ;" + Environment.NewLine +
+            //    "x = x * y + z ; }" + Environment.NewLine +
+            //    "procedure Third {" + Environment.NewLine +
+            //    "z = 5 ;" + Environment.NewLine +
+            //    "v = z ; }";
+
+            //Trace.Write(code);
+            try
+            {
+                string parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
+                Trace.WriteLine("===================LAST PARSER======================");
+                Trace.WriteLine(parsed);
+
+                MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
             // Tutaj będzie wywołanie Klasy Parsującej Adama
             // ex. Parser parser = new Parser(sourceCode);
             // parser.parse();

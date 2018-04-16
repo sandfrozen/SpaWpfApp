@@ -52,6 +52,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Exceptions\WrongCodeException.cs" />
+    <Compile Include="Parser\ParserInside.cs" />
+    <Compile Include="Parser\ParserHelpers.cs" />
+    <Compile Include="Parser\ParserMain.cs" />
     <Compile Include="Pkb.cs" />
     <Compile Include="PkbAPI.cs" />
     <Page Include="MainWindow.xaml">
@@ -91,5 +95,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

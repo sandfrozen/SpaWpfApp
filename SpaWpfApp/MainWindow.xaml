@@ -16,26 +16,75 @@
             </RichTextBox.Resources>
             <FlowDocument>
                 <Paragraph>
-                    <Run Text="procedure Main {"/>
+                    <Run Text="procedure First {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="  x = x+y+z;"/>
+                    <Run Text="x = 2 ;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="  while i {"/>
+                    <Run Text="z = 3 ;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="    y = x+i*2;"/>
+                    <Run Text="call Second ; }"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="  }"/>
+                    <Run Text="procedure Second {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="}"/>
+                    <Run Text="x = 0 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="i = 5 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="while i {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x + 2 * y ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="call Third ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="i = i - 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="if x then {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x + 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="else {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = z + x + i ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="y = z + 2 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x * y + z ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="procedure Third {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = 5 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="v = z ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
         <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="163,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click"/>
+        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="243,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click"/>
 
     </Grid>
 </Window>

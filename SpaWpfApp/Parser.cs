@@ -5,12 +5,12 @@ using System.Text;
 
 namespace SpaWpfApp
 {
-    class Parser
+    class ParserOLD
     {
         string source;
 
 
-        public Parser(string procedure)
+        public ParserOLD(string procedure)
         {
             source = procedure;
         }
