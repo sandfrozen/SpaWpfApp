@@ -7,35 +7,122 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="228">
-            <RichTextBox.Resources>
-                <Style TargetType="{x:Type Paragraph}">
-                    <Setter Property="Margin" Value="0"/>
-                </Style>
-            </RichTextBox.Resources>
-            <FlowDocument>
-                <Paragraph>
-                    <Run Text="procedure Main {"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="  x = x+y+z;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="  while i {"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    y = x+i*2;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="  }"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="}"/>
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
-        <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="163,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click"/>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="125*"/>
+            <ColumnDefinition Width="271*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
+            <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="228">
+                <RichTextBox.Resources>
+                    <Style TargetType="{x:Type Paragraph}">
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </RichTextBox.Resources>
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text="procedure First {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="x = 2 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="z = 3 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="call Second ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="procedure Second {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="x = 0 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="i = 5 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="while i {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="x = x + 2 * y ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="call Third ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="i = i - 1 ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="if x then {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="x = x + 1 ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="else {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="z = 1 ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="z = z + x + i ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="y = z + 2 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="x = x * y + z ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="procedure Third {"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="z = 5 ;"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="v = z ; }"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+            <Button x:Name="parseButton" Content="Parse" Margin="93,10,88,0" VerticalAlignment="Top" Click="parseButton_Click"/>
+            <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="68" Click="formatButton_Click"/>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="550*"></RowDefinition>
+                <RowDefinition Height="250*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="185*"></RowDefinition>
+                        <RowDefinition Height="65*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <RichTextBox Grid.Row="0" x:Name="rtbPql" Margin="5">
+                        <FlowDocument>
+                            <Paragraph FontSize="12.6666666666667" FontFamily="Consolas" Margin="0">
+                                <Run Text="stmt s1, s2;"/>
+                            </Paragraph>
+                            <Paragraph FontSize="12.6666666666667" FontFamily="Consolas" Margin="0">
+                                <Run Text="Select s1"/>
+                                <Run Text=" "/>
+                                <Run Text="such that Follows(s1, s2)"/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="450*"></ColumnDefinition>
+                            <ColumnDefinition Width="100*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Button Margin="5" Content="Parse" Grid.Column="1" Click="parsePqlBtn_Click"></Button>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
