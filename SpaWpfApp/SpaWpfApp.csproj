@@ -53,6 +53,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ASTFolder\AST.cs" />
+    <Compile Include="ASTFolder\ASTAPI.cs" />
     <Compile Include="ASTFolder\TNode.cs" />
     <Compile Include="Enums\TLinkTypeEnum.cs" />
     <Compile Include="Enums\SignEnum.cs" />

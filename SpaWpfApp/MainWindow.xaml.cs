@@ -1,4 +1,5 @@
 ﻿using SpaWpfApp.ASTFolder;
+using SpaWpfApp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -108,20 +109,20 @@ namespace SpaWpfApp
 
             //TS: for test
 
-            string sourceCode = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst.txt");
+            //string sourceCode = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst.txt");
 
-            Pkb pkb= new Pkb(15, 3, 5);
-            pkb.InsertProc("First");
-            pkb.InsertProc("Second");
-            pkb.InsertProc("Third");
+            //Pkb pkb= new Pkb(15, 3, 5);
+            //pkb.InsertProc("First");
+            //pkb.InsertProc("Second");
+            //pkb.InsertProc("Third");
 
-            pkb.InsertVar("x");
-            pkb.InsertVar("z");
-            pkb.InsertVar("i");
-            pkb.InsertVar("y");
-            pkb.InsertVar("v");
+            //pkb.InsertVar("x");
+            //pkb.InsertVar("z");
+            //pkb.InsertVar("i");
+            //pkb.InsertVar("y");
+            //pkb.InsertVar("v");
 
-            AST ast = new AST(sourceCode, pkb);
+            //AST ast = new AST(sourceCode, pkb);
         }
 
         private string StringFromRichTextBox(RichTextBox rtb)
