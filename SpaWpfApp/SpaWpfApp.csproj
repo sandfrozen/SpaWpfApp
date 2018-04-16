@@ -52,6 +52,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ASTFolder\AST.cs" />
+    <Compile Include="ASTFolder\TNode.cs" />
+    <Compile Include="Enums\TLinkTypeEnum.cs" />
+    <Compile Include="Enums\SignEnum.cs" />
+    <Compile Include="Enums\TNodeTypeEnum.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />
     <Compile Include="Parser\ParserInside.cs" />
     <Compile Include="Parser\ParserHelpers.cs" />

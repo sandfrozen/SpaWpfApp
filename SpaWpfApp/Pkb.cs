@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SpaWpfApp
 {
-    class Pkb : PkbAPI
+    public class Pkb : PkbAPI
     {
         private int numberOfLines;
         private int numberOfProcs;
@@ -26,7 +26,7 @@ namespace SpaWpfApp
             this.numberofVars = numberOfVars;
 
             this.VarTable = new String[numberOfVars];
-            this.ProcTable = new String[numberOfVars];
+            this.ProcTable = new String[numberOfProcs];
 
             this.CallsTable = new Boolean[numberOfProcs, numberOfProcs];
             this.ModifiesTable = new Boolean[numberOfVars, numberOfLines];
@@ -55,7 +55,7 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < ProcTable.Length; i++)
                 {
-                    if (ProcTable[i] == "")
+                    if (String.IsNullOrEmpty(ProcTable[i]))
                     {
                         ProcTable[i] = proc;
                         return i;
@@ -111,7 +111,7 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < VarTable.Length; i++)
                 {
-                    if (VarTable[i] == "")
+                    if (String.IsNullOrEmpty(VarTable[i]))
                     {
                         VarTable[i] = var;
                         return i;

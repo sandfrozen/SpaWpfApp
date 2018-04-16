@@ -12,6 +12,7 @@ C:\Users\tomek.buslowski\source\repos\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.cs
 C:\Users\tomek.buslowski\source\repos\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.csproj.CoreCompileInputs.cache
 C:\Users\tomek.buslowski\source\repos\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.exe
 C:\Users\tomek.buslowski\source\repos\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.pdb
+<<<<<<< HEAD
 D:\VisualPoject\Parser\SpaWpfApp\bin\Debug\SpaWpfApp.exe
 D:\VisualPoject\Parser\SpaWpfApp\bin\Debug\SpaWpfApp.pdb
 D:\VisualPoject\Parser\SpaWpfApp\obj\Debug\SpaWpfApp.csprojResolveAssemblyReference.cache
@@ -26,3 +27,18 @@ D:\VisualPoject\Parser\SpaWpfApp\obj\Debug\SpaWpfApp.csproj.GenerateResource.Cac
 D:\VisualPoject\Parser\SpaWpfApp\obj\Debug\SpaWpfApp.csproj.CoreCompileInputs.cache
 D:\VisualPoject\Parser\SpaWpfApp\obj\Debug\SpaWpfApp.exe
 D:\VisualPoject\Parser\SpaWpfApp\obj\Debug\SpaWpfApp.pdb
+=======
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\bin\Debug\SpaWpfApp.exe
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\bin\Debug\SpaWpfApp.pdb
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.csprojResolveAssemblyReference.cache
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\MainWindow.g.cs
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\App.g.cs
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp_MarkupCompile.cache
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp_MarkupCompile.lref
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\MainWindow.baml
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.g.resources
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.Properties.Resources.resources
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.csproj.GenerateResource.Cache
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.exe
+C:\Users\Slightom\Documents\Visual Studio 2017\Projects\SpaWpfApp\SpaWpfApp\obj\Debug\SpaWpfApp.pdb
+>>>>>>> ast
