@@ -18,7 +18,7 @@ namespace SpaWpfApp.ASTFolder
         }
     }
 
-    public class AST
+    public class AST : ASTAPI
     {
         private List<TNode> NodeList { get; set; }
         private PkbAPI Pkb;
@@ -370,7 +370,7 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private TNode GetParent(int p_programLineNumber)
+        public TNode GetParent(int p_programLineNumber)
         {
             TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
             TNode parent = tmp.up.up;
@@ -390,7 +390,7 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private List<TNode> GetParentS(int p_programLineNumber)
+        public List<TNode> GetParentS(int p_programLineNumber)
         {
             TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
             TNode parent;
@@ -414,7 +414,7 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private List<TNode> GetChildren(int p_programLineNumber)
+        public List<TNode> GetChildren(int p_programLineNumber)
         {
             List<TNode> children = new List<TNode>();
             TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
@@ -464,7 +464,7 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private List<TNode> GetChildrenS(int p_programLineNumber)
+        public List<TNode> GetChildrenS(int p_programLineNumber)
         {
             List<TNode> children = new List<TNode>();
             TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
@@ -483,7 +483,7 @@ namespace SpaWpfApp.ASTFolder
             return children.Count() > 0 ? children : null;
         }
 
-        private void FindAllChildrenS(ref List<TNode> children, TNode parent)
+        public void FindAllChildrenS(ref List<TNode> children, TNode parent)
         {
             TNode tmp;
             List<TNode> tmpChildren;
@@ -519,7 +519,7 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private TNode GetRightSibling(int p_programLineNumber)
+        public TNode GetRightSibling(int p_programLineNumber)
         {
             TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
 
@@ -538,12 +538,12 @@ namespace SpaWpfApp.ASTFolder
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        private TNode GetLeftSibling(int p_programLineNumber)
+        public TNode GetLeftSibling(int p_programLineNumber)
         {
-            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault().up;
             TNode tmp = parent.firstChild;
 
-            if(tmp.programLine == p_programLineNumber)
+            if(tmp.programLine == p_programLineNumber) // if stmt is the only child
             {
                 return null;
             }
@@ -558,5 +558,59 @@ namespace SpaWpfApp.ASTFolder
             }
         }
 
+        /// <summary>
+        /// retrurns list of stmt that Follows stmt or null if stmt doesn't have rightSiblingS
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        public List<TNode> GetRightSiblingS(int p_programLineNumber)
+        {
+            TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
+            List<TNode> rightSiblingS = new List<TNode>();
+
+            if (tmp.rightSibling is null)
+            {
+                return null;
+            }
+            else
+            {
+                do
+                {
+                    rightSiblingS.Add(tmp.rightSibling);
+                    tmp = tmp.rightSibling;
+                }
+                while (tmp.rightSibling != null);
+
+                return rightSiblingS;
+            }
+        }
+
+        /// <summary>
+        /// returns list of leftSiblingS or null if stmt is the only child
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        public List<TNode> GetLeftSiblingS(int p_programLineNumber)
+        {
+            TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault().up;
+            TNode tmp = parent.firstChild;
+            List<TNode> leftSiblingS = new List<TNode>();
+
+            if (tmp.programLine == p_programLineNumber) // if stmt is the only child
+            {
+                return null;
+            }
+            else
+            {
+                do
+                {
+                    leftSiblingS.Add(tmp);
+                    tmp = tmp.rightSibling;
+                }
+                while (tmp.programLine != p_programLineNumber);
+
+                return leftSiblingS;
+            }
+        }
     }
 }
