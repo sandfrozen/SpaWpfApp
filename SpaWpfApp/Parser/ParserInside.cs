@@ -78,6 +78,7 @@ namespace SpaWpfApp.Parser
         private void ParseCall()
         {
             ParserMain.Instance.numberOfLines++;
+            ParserMain.Instance.Calls.Add((ParserMain.Instance.CurrentProcedure, words[curentIndex+1]));
             parsedCode += words[GetIndex()] + ParserHelpers.space + EndOfLine(words[GetIndex(true)]) + Environment.NewLine;
         }
         private void ParseWhile()
@@ -125,6 +126,7 @@ namespace SpaWpfApp.Parser
                         if (!specialCharacterFound)
                         {
                             specialCharacterFound = true;
+                            ParserMain.Instance.Modifies.Add((instriction, ParserMain.Instance.numberOfLines));
                             instriction += ParserHelpers.space + words[GetIndex()][i] + (i == (words[GetIndex()].Length - 1) ? "" : ParserHelpers.space);
                         }
                         else
@@ -137,6 +139,7 @@ namespace SpaWpfApp.Parser
             else
             {
                 instriction += words[GetIndex()];
+                ParserMain.Instance.Modifies.Add((instriction, ParserMain.Instance.numberOfLines));
                 if (words[GetIndex(true)] != "=")
                 {
                     throw new WrongCodeException();
@@ -179,6 +182,7 @@ namespace SpaWpfApp.Parser
                     else
                     {
                         shouldBeSign = true;
+                        ParserMain.Instance.VariableNames.Add((word, ParserMain.Instance.numberOfLines));
                         instriction += ParserHelpers.space + word;
                     }
                 }

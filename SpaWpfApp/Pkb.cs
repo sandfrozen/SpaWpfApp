@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SpaWpfApp
 {
-    class Pkb : PkbAPI
+    public class Pkb : PkbAPI
     {
         private int numberOfLines;
         private int numberOfProcs;
