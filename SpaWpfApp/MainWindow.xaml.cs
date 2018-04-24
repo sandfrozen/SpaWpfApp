@@ -1,4 +1,5 @@
 ﻿
+using SpaWpfApp.ASTFolder;
 using SpaWpfApp.Parser;
 using System;
 using System.Collections.Generic;
@@ -89,6 +90,11 @@ namespace SpaWpfApp
                 pkb.PrintCallsTable();
                 pkb.PrintModifiesTable();
                 pkb.PrintUsesTable();
+                Trace.WriteLine(pkb.GetNumberOfLines());
+
+                //ASTAPI ast = new AST(parsed, pkb);
+
+                //Trace.WriteLine(ast.GetParent(4).programLine);
 
                 MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
