@@ -83,6 +83,13 @@ namespace SpaWpfApp
                 Trace.WriteLine("===================LAST PARSER======================");
                 Trace.WriteLine(parsed);
 
+                Pkb pkb = ParserMain.Instance.pkb;
+                pkb.PrintProcTable();
+                pkb.PrintVarTable();
+                pkb.PrintCallsTable();
+                pkb.PrintModifiesTable();
+                pkb.PrintUsesTable();
+
                 MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception)
