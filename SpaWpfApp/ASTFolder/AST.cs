@@ -43,6 +43,7 @@ namespace SpaWpfApp.ASTFolder
 
             foreach (var sourceCodeLine in sourceCodeLines)
             {
+                if(sourceCodeLine == "") { break; }
                 lineWords = sourceCodeLine.Split(' ');
                 switch (lineWords[0])
                 {

@@ -28,6 +28,8 @@ namespace SpaWpfApp
         private int numberOfLines;
         private int numberOfProcs;
         private int numerOfVars;
+        private string parsed;
+        private PkbAPI pkb;
 
         public MainWindow()
         {
@@ -38,7 +40,7 @@ namespace SpaWpfApp
            
             try
             {
-                string parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
+                parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
                 Trace.WriteLine("===================LAST PARSER======================");
                 Trace.WriteLine(parsed);
                 procedureRichTextBox.Document.Blocks.Clear();
@@ -81,21 +83,18 @@ namespace SpaWpfApp
             //Trace.Write(code);
             try
             {
-                string parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
+                parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
                 Trace.WriteLine("===================LAST PARSER======================");
                 Trace.WriteLine(parsed);
 
-                Pkb pkb = ParserMain.Instance.pkb;
+                pkb = ParserMain.Instance.pkb;
                 pkb.PrintProcTable();
                 pkb.PrintVarTable();
                 pkb.PrintCallsTable();
                 pkb.PrintModifiesTable();
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
-
-                //ASTAPI ast = new AST(parsed, pkb);
-
-                //Trace.WriteLine(ast.GetParent(4).programLine);
+              
 
                 MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -103,6 +102,10 @@ namespace SpaWpfApp
             {
                 MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+
+            ASTAPI ast = new AST(parsed, pkb);
+
+            Trace.WriteLine(ast.GetParent(8).programLine);
 
             // Tutaj będzie wywołanie Klasy Parsującej Adama
             // ex. Parser parser = new Parser(sourceCode);
