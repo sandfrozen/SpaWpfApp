@@ -95,13 +95,11 @@ namespace SpaWpfApp.Parser
         }
         private void ParseElse()
         {
-            ParserMain.Instance.numberOfLines++;
             parsedCode += words[GetIndex()] + ParserHelpers.space + StartBracket(words[GetIndex(true)]) + Environment.NewLine;
             CallInnerParser();
         }
         private void ParseElseWithBracket()
         {
-            ParserMain.Instance.numberOfLines++;
             var firstWords = words[GetIndex()];
             parsedCode += firstWords[firstWords.Length - 1] + ParserHelpers.space + "{" + Environment.NewLine;
             CallInnerParser();

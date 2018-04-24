@@ -81,7 +81,6 @@ namespace SpaWpfApp.Parser
             CorrectVariables();
             var varList = GetAllVarNames();
 
-
             pkb = new Pkb(numberOfLines, ProcedureNames.Count, varList.Count);
             foreach (var item in ProcedureNames)
             {
@@ -97,11 +96,11 @@ namespace SpaWpfApp.Parser
             }
             foreach (var item in Modifies)
             {
-                pkb.SetModifies(item.Item1, item.Item2);
+                pkb.SetModifies(item.Item1, item.Item2-1);
             }
             foreach (var item in VariableNames)
             {
-                pkb.SetUses(item.Item1, item.Item2);
+                pkb.SetUses(item.Item1, item.Item2-1);
             }
 
         }

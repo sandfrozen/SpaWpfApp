@@ -1,5 +1,6 @@
 ﻿
 using SpaWpfApp.ASTFolder;
+using SpaWpfApp.Exceptions;
 using SpaWpfApp.Parser;
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace SpaWpfApp
                 Trace.WriteLine("Lines " + ParserMain.Instance.numberOfLines);
                 Trace.WriteLine("procedures " + ParserMain.Instance.numberOfProcedures);
             }
-            catch (Exception)
+            catch (WrongCodeException)
             {
                 MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -98,7 +99,7 @@ namespace SpaWpfApp
 
                 MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (Exception)
+            catch (WrongCodeException)
             {
                 MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
