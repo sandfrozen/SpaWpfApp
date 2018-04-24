@@ -83,10 +83,6 @@ namespace SpaWpfApp.Parser
 
 
             pkb = new Pkb(numberOfLines, ProcedureNames.Count, varList.Count);
-            foreach (var item in Calls)
-            {
-                pkb.SetCalls(item.Item1, item.Item2);
-            }
             foreach (var item in ProcedureNames)
             {
                 pkb.InsertProc(item);
@@ -95,12 +91,14 @@ namespace SpaWpfApp.Parser
             {
                 pkb.InsertVar(item);
             }
-
+            foreach (var item in Calls)
+            {
+                pkb.SetCalls(item.Item1, item.Item2);
+            }
             foreach (var item in Modifies)
             {
                 pkb.SetModifies(item.Item1, item.Item2);
             }
-
             foreach (var item in VariableNames)
             {
                 pkb.SetUses(item.Item1, item.Item2);
