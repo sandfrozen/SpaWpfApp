@@ -5,11 +5,21 @@ using System.Text;
 
 namespace SpaWpfApp.Enums
 {
-    public enum SignEnum
+    public enum TNodeTypeEnum
     {
+        Program,
+        Procedure,
+        Assign,
+        Call,
+        While,
+        If,
+        StmtLst,
+        StmtLstThen,
+        StmtLstElse,
         Plus,
-        Minus,
         Times,
-        Semicolon
+        Minus,
+        Constant,
+        Variable
     }
 }
