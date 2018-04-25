@@ -59,8 +59,8 @@
     <Compile Include="ASTFolder\ASTAPI.cs" />
     <Compile Include="ASTFolder\TNode.cs" />
     <Compile Include="Enums\TLinkTypeEnum.cs" />
-    <Compile Include="Enums\SignEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />
+    <Compile Include="Enums\SignEnum.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />
     <Compile Include="Parser\ParserInside.cs" />
     <Compile Include="Parser\ParserHelpers.cs" />
@@ -87,7 +87,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
