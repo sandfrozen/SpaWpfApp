@@ -140,5 +140,9 @@ namespace SpaWpfApp
             astCreatedLabel.Content = value;
         }
 
+        private void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

@@ -89,6 +89,23 @@
         <Label x:Name="parsedLabel" Content="no" HorizontalAlignment="Left" Margin="327,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
         <Label x:Name="pkbCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
         <Label x:Name="astCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Button x:Name="evaluateQueryButton" Content="Evaluate query" HorizontalAlignment="Left" Margin="250,163,0,0" VerticalAlignment="Top"/>
+        <RichTextBox x:Name="richTextBox" HorizontalAlignment="Left" Height="40" Margin="250,118,0,0" VerticalAlignment="Top" Width="532" TextChanged="richTextBox_TextChanged">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </RichTextBox.Resources>
+
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="assignment a;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="Select a such that Parent(a, 4);"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
 
     </Grid>
 </Window>
