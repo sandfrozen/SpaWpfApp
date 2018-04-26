@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpaWpfApp.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,15 +8,20 @@ namespace SpaWpfApp.CfgFolder
 {
     public class GNode
     {
-        public GNode nextGNode { get; set; }
-        public GNode next2GNode { get; set; } // for else node
-        public GNode previousGNode { get; set; }
+        public List<GNode> nextGNodeList { get; set; }
+        public List<GNode> previousGNodeList { get; set; }
 
-        List<int> programLineList { get; set; }
+        public List<int> programLineList { get; set; }
 
-        public GNode()
+        public GNodeTypeEnum type;
+
+        public GNode(GNodeTypeEnum p_type)
         {
             this.programLineList = new List<int>();
+            this.nextGNodeList = new List<GNode>();
+            this.previousGNodeList = new List<GNode>();
+
+            this.type = p_type;
         }
     }
 }
