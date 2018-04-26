@@ -58,6 +58,9 @@
     <Compile Include="ASTFolder\AST.cs" />
     <Compile Include="ASTFolder\ASTAPI.cs" />
     <Compile Include="ASTFolder\TNode.cs" />
+    <Compile Include="CfgFolder\Cfg.cs" />
+    <Compile Include="CfgFolder\CfgManager.cs" />
+    <Compile Include="CfgFolder\GNode.cs" />
     <Compile Include="Enums\TLinkTypeEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />
     <Compile Include="Enums\SignEnum.cs" />
@@ -67,12 +70,6 @@
     <Compile Include="Parser\ParserMain.cs" />
     <Compile Include="Pkb.cs" />
     <Compile Include="PkbAPI.cs" />
-    <Compile Include="PqlConsts\ArgType.cs" />
-    <Compile Include="PqlConsts\CallType.cs" />
-    <Compile Include="PqlModels\Call.cs" />
-    <Compile Include="PqlModels\PqlQueryTree.cs" />
-    <Compile Include="PqlModels\Result.cs" />
-    <Compile Include="QueryPreprocessor.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -105,6 +105,9 @@ namespace SpaWpfApp
 
             ASTAPI ast = new AST(parsed, pkb);
 
+
+            // tu bedzie stworzenie cfg
+
             Trace.WriteLine(ast.GetParent(8).programLine);
 
             // Tutaj będzie wywołanie Klasy Parsującej Adama
