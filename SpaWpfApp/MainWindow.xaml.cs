@@ -2,6 +2,7 @@
 using SpaWpfApp.ASTFolder;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.Parser;
+using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -140,8 +141,14 @@ namespace SpaWpfApp
             astCreatedLabel.Content = value;
         }
 
-        private void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
+
+
+        private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
+            QueryPreProcessor prepoc = new QueryPreProcessor();
+            String parsedPql = prepoc.Parse(StringFromRichTextBox(queryRichTextBox));
+            queryRichTextBox.Document.Blocks.Clear();   
+            queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedPql)));
 
         }
     }

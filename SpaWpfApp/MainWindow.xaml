@@ -93,8 +93,8 @@
         <Label x:Name="parsedLabel" Content="no" Margin="327,35,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
         <Label x:Name="pkbCreatedLabel" Content="no" Margin="327,61,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
         <Label x:Name="astCreatedLabel" Content="no" Margin="327,87,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
-        <Button x:Name="evaluateQueryButton" Content="Evaluate query" Margin="250,24,0,0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" Height="20" VerticalAlignment="Top" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
-        <RichTextBox x:Name="richTextBox" Height="40" Margin="250,118,10,0" VerticalAlignment="Top" TextChanged="richTextBox_TextChanged" Grid.RowSpan="2">
+        <Button x:Name="evaluateQueryButton" Content="Evaluate query" Margin="250,51,0,0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" Height="20" VerticalAlignment="Top" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click"/>
+        <RichTextBox x:Name="queryRichTextBox" Height="67" Margin="250,118,10,0" VerticalAlignment="Top" Grid.RowSpan="2">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
