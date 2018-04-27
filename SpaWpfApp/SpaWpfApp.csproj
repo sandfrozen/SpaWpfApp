@@ -62,6 +62,7 @@
     <Compile Include="CfgFolder\CfgManager.cs" />
     <Compile Include="CfgFolder\GNode.cs" />
     <Compile Include="Enums\TLinkTypeEnum.cs" />
+    <Compile Include="Enums\GNodeTypeEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />
     <Compile Include="Enums\SignEnum.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />

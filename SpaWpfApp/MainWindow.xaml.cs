@@ -1,5 +1,6 @@
 ﻿
 using SpaWpfApp.ASTFolder;
+using SpaWpfApp.CfgFolder;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.Parser;
 using System;
@@ -107,6 +108,7 @@ namespace SpaWpfApp
 
 
             // tu bedzie stworzenie cfg
+            CfgManager cfgManager = new CfgManager(parsed); 
 
             Trace.WriteLine(ast.GetParent(8).programLine);
 

@@ -48,7 +48,7 @@
                 <Paragraph>
                     <Run Text="i = i - 1 ; }"/>
                 </Paragraph>
-                <!--<Paragraph>
+                <Paragraph>
                     <Run Text="if x then {"/>
                 </Paragraph>
                 <Paragraph>
@@ -59,7 +59,7 @@
                 </Paragraph>
                 <Paragraph>
                     <Run Text="z = 1 ; }"/>
-                </Paragraph>-->
+                </Paragraph>
                 <Paragraph>
                     <Run Text="z = z + x + i ;"/>
                 </Paragraph>

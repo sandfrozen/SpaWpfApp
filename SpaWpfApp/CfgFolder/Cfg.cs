@@ -7,5 +7,11 @@ namespace SpaWpfApp.CfgFolder
 {
     public class Cfg
     {
+        public List<GNode> GNodeList { get; set; }
+
+        public Cfg()
+        {
+            this.GNodeList = new List<GNode>();
+        }
     }
 }
