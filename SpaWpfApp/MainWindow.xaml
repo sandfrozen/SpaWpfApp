@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpaWpfApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" MinHeight="450" MinWidth="450">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="139*"/>
+            <RowDefinition Height="280*"/>
+        </Grid.RowDefinitions>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="235">
+        <RichTextBox x:Name="procedureRichTextBox" Margin="10,35,0,10" Grid.RowSpan="2" HorizontalAlignment="Left" Width="235">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -86,11 +90,11 @@
         <Label x:Name="label1" Content="Parsed?" HorizontalAlignment="Left" Margin="272,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
         <Label x:Name="label1_Copy" Content="PKB crated?" HorizontalAlignment="Left" Margin="250,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
         <Label x:Name="label1_Copy1" Content="AST crated?" HorizontalAlignment="Left" Margin="250,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
-        <Label x:Name="parsedLabel" Content="no" HorizontalAlignment="Left" Margin="327,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
-        <Label x:Name="pkbCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
-        <Label x:Name="astCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
-        <Button x:Name="evaluateQueryButton" Content="Evaluate query" HorizontalAlignment="Left" Margin="250,163,0,0" VerticalAlignment="Top"/>
-        <RichTextBox x:Name="richTextBox" HorizontalAlignment="Left" Height="40" Margin="250,118,0,0" VerticalAlignment="Top" Width="532" TextChanged="richTextBox_TextChanged">
+        <Label x:Name="parsedLabel" Content="no" Margin="327,35,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
+        <Label x:Name="pkbCreatedLabel" Content="no" Margin="327,61,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
+        <Label x:Name="astCreatedLabel" Content="no" Margin="327,87,10,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451"/>
+        <Button x:Name="evaluateQueryButton" Content="Evaluate query" Margin="250,24,0,0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" Height="20" VerticalAlignment="Top" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+        <RichTextBox x:Name="richTextBox" Height="40" Margin="250,118,10,0" VerticalAlignment="Top" TextChanged="richTextBox_TextChanged" Grid.RowSpan="2">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
