@@ -61,6 +61,7 @@
     <Compile Include="Enums\TLinkTypeEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />
     <Compile Include="Enums\SignEnum.cs" />
+    <Compile Include="Exceptions\QueryException.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />
     <Compile Include="Parser\ParserInside.cs" />
     <Compile Include="Parser\ParserHelpers.cs" />

@@ -103,7 +103,7 @@
 
             <FlowDocument>
                 <Paragraph>
-                    <Run Text="assignment a;"/>
+                    <Run Text="assignment a1, a2;"/>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="Select a such that Parent(a, 4);"/>
