@@ -68,6 +68,7 @@
     <Compile Include="Parser\ParserMain.cs" />
     <Compile Include="Pkb.cs" />
     <Compile Include="PkbAPI.cs" />
+    <Compile Include="QueryProcessingSusbsytem\QueryFormatter.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
