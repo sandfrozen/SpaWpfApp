@@ -145,15 +145,23 @@ namespace SpaWpfApp
 
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
+            String formatedQuery = QueryFormatter.GetInstance().Format(StringFromRichTextBox(queryRichTextBox));
+            queryRichTextBox.Document.Blocks.Clear();
+            queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatedQuery)));
             try
             {
-                String parsedPql = QueryPreProcessor.GetInstance.Parse(StringFromRichTextBox(queryRichTextBox));
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedPql)));
+                
+                //String parsedPql = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
+                //queryRichTextBox.Document.Blocks.Clear();
+                //queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedPql)));
+            }
+            catch (QueryException ex)
+            {
+                MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch(Exception ex)
             {
-                MessageBox.Show("Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Unknown Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
            

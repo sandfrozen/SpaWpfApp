@@ -20,16 +20,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> declarationActions;
 
         private static QueryPreProcessor instance;
-        public static QueryPreProcessor GetInstance
+        public static QueryPreProcessor GetInstance()
         {
-            get
+            if (instance == null)
             {
-                if (instance == null)
-                {
-                    instance = new QueryPreProcessor();
-                }
-                return instance;
+                instance = new QueryPreProcessor();
             }
+            return instance;
         }
 
 
@@ -81,7 +78,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private void parseIdent(string name)
+        private void parseIdentificator(string name)
         {
             if (Char.IsLetter(name[0]))
             {
@@ -107,7 +104,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 currentIndex++;
                 string a = wordsInQuery[currentIndex];
                 a = a.Substring(0, a.Length - 1);
-                parseIdent(a);
+                parseIdentificator(a);
                 Trace.WriteLine("Assignment: " + a);
                 declarations.Add(a, "assignment");
             } while (wordsInQuery[currentIndex].Last() != ';');
