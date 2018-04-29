@@ -145,9 +145,6 @@ namespace SpaWpfApp
 
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
-            //MessageBox.Show(Char.IsLetter('#').ToString(), "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            
             try
             {
                 String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
@@ -158,27 +155,13 @@ namespace SpaWpfApp
             {
                 MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Unknown Praser Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void formatQueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                String formatedQuery = QueryFormatter.GetInstance().Format0(StringFromRichTextBox(queryRichTextBox));
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatedQuery)));
-            }
             catch (WrongQueryFromatException ex)
             {
                 MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unknown Formatter Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Unknown Praser Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
