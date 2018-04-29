@@ -1,15 +1,20 @@
-﻿using SpaWpfApp.Parser;
+﻿using SpaWpfApp.Exceptions;
+using SpaWpfApp.Parser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
     class QueryFormatter
     {
-        private string query;
+        private string formattedQuery;
+        private string[] wordsInQuery;
+        private int currentIndex = 0;
+
         private static QueryFormatter instance;
         public static QueryFormatter GetInstance()
         {
@@ -19,41 +24,81 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             return instance;
         }
-
-        public string Format(string query)
+        public QueryFormatter()
         {
-            this.query = query;
-            string[] wordsInQuery = GetWordsInQuery();
-            string formattedQuery = "";
+        }
 
-            for (int currentIndex = 0; currentIndex < wordsInQuery.Length; currentIndex++)
+        public string Format0(string query)
+        {
+            wordsInQuery = GetWordsInQuery(query);
+            if( !wordsInQuery.Contains("Select") )
             {
-                formattedQuery += wordsInQuery[currentIndex];
-                if (wordsInQuery[currentIndex].Last() == ';')
-                {
-                    if (currentIndex < wordsInQuery.Length - 1)
-                    {
-                        if (wordsInQuery[currentIndex + 1] == "Select")
-                        {
-                            formattedQuery += Environment.NewLine;
-                        }
-                        else
-                        {
-                            formattedQuery += ParserHelpers.space;
-                        }
-                    }
-                }
-                else if (currentIndex < wordsInQuery.Length - 1 && wordsInQuery[currentIndex+1] != "," && wordsInQuery[currentIndex + 1] != ";" && wordsInQuery[currentIndex + 1] != "(" && wordsInQuery[currentIndex + 1] != ")")
-                {
-                    //new[] { ",", ";", "(", ")" }.Any(c => wordsInQuery[currentIndex + 1].Contains(c))
-                    formattedQuery += ParserHelpers.space;
-                }
+                throw new WrongQueryFromatException("Select not found");
             }
+
+            formattedQuery = "";
+            currentIndex = 0;
+
+            DeclarationsFormatter();
+            SelectFormatter();
 
             return formattedQuery;
         }
 
-        private string[] GetWordsInQuery()
+        public void DeclarationsFormatter()
+        {
+            while (wordsInQuery[currentIndex] != "Select")
+            {
+                DeclarationFormatter();
+                currentIndex++;
+            } 
+        }
+
+        public void DeclarationFormatter()
+        {
+            string declaration = wordsInQuery[currentIndex];
+            do
+            {
+                declaration += " " + wordsInQuery[++currentIndex];
+
+                if (wordsInQuery[currentIndex].Last() != ',' && wordsInQuery[currentIndex].Last() != ';')
+                {
+                    if (wordsInQuery[currentIndex+1] == "," || wordsInQuery[currentIndex+1] == ";")
+                    {
+                        declaration += wordsInQuery[++currentIndex];
+                    }
+
+                }
+
+            } while (wordsInQuery[currentIndex].Last() != ';');
+
+            //Regex
+            if (!Regex.IsMatch(declaration, @"^([a-z]+)\s{1}([a-zA-Z0-9]+[,]{1}\s{1})*([a-zA-Z0-9]+[;]{1}){1}$"))
+            {
+                throw new WrongQueryFromatException("Declaration is incorrect: \" " + declaration + " \"");
+            }
+
+            if (wordsInQuery[currentIndex + 1] == "Select")
+            {
+                declaration += Environment.NewLine;
+            }
+            else
+            {
+                declaration += " ";
+            }
+            formattedQuery += declaration;
+        }
+
+        public void SelectFormatter()
+        {
+            do
+            {
+                formattedQuery += wordsInQuery[currentIndex++] + " ";
+            } while (currentIndex < wordsInQuery.Length && (wordsInQuery[currentIndex] != ";" || wordsInQuery[currentIndex].Last() == ';'));
+            formattedQuery = formattedQuery.Remove(formattedQuery.Length-1);
+        }
+
+        private string[] GetWordsInQuery(string query)
         {
             string[] separators = new string[] { " ", Environment.NewLine };
             return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);

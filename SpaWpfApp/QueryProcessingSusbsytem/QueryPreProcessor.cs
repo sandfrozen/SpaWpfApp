@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
@@ -34,85 +35,123 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarations = new Dictionary<string, string>();
             declarationActions = new Dictionary<string, Action>{
-              {"assignment", ParseAssignmentDeclaration},
-              {"while", ParseAssignmentDeclaration},
-              {"procedure", ParseAssignmentDeclaration},
-              {"statement", ParseAssignmentDeclaration},
+              {"procedure", ParseDeclaration},
+              {"stmtLst", ParseDeclaration},
+              {"stmt", ParseDeclaration},
+              {"assign", ParseDeclaration},
+              {"call", ParseDeclaration},
+              {"while", ParseDeclaration},
+              {"if", ParseDeclaration},
+              {"variable", ParseDeclaration},
+              {"constant", ParseDeclaration},
+              {"prog_line", ParseDeclaration},
             };
         }
 
         public string Parse(string query)
         {
-            this.query = query;
-            wordsInQuery = GetWordsInCode();
+            parsedQuery = "";
+            wordsInQuery = GetWordsInCode(query);
 
             for (currentIndex = 0; currentIndex < wordsInQuery.Length; currentIndex++)
             {
-                Trace.WriteLine(wordsInQuery[currentIndex]);
                 if (declarationActions.Keys.Any(k => k == wordsInQuery[currentIndex]))
                 {
                     declarationActions[wordsInQuery[currentIndex]]();
 
                 }
-                if (wordsInQuery[currentIndex] == "Select")
+                else
                 {
-
+                    ParserSelect();
                 }
-
-
-                //char afterWord = ' ';
-                //if (wordsInQuery[i].Last() == ';')
-                //{
-                //    afterWord = '\n';
-                //}
-                //parsedSourceCode += wordsInQuery[i] + afterWord;
-
             }
 
             return parsedQuery;
         }
 
-        private string[] GetWordsInCode()
+        private string[] GetWordsInCode(string query)
         {
+            for(int i=0; i< query.Length; i++)
+            {
+                if(i < query.Length-1 && IsSeparatorChar(query[i]))
+                {
+                    query = query.Insert(i, " ");
+                    query = query.Insert(i+2, " ");
+                    i = i+ 2;
+                }
+            }
             string[] separators = new string[] { " ", Environment.NewLine };
             return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private void parseIdentificator(string name)
+        private bool IsSeparatorChar(char toCheck)
         {
-            if (Char.IsLetter(name[0]))
+            char[] chars = { '(', ')', ',', ';' };
+            foreach(char c in chars)
             {
-                for (int i = 1; i < name.Length; i++)
-                {
-                    if (!Char.IsLetterOrDigit(name[i]))
-                    {
-                        throw new QueryException("Wrong identificator name: " + name);
-                    }
-                }
+                if (c == toCheck) return true;
             }
-            else
-            {
-                throw new Exception();
-            }
+            return false;
         }
 
-        private void ParseAssignmentDeclaration()
+        private bool IsTuple(string tuple)
         {
-            Trace.WriteLine("ParseAssignmentDeclaration: " + wordsInQuery[currentIndex] + " " + wordsInQuery[currentIndex + 1]);
+            if (!Regex.IsMatch(tuple, @"^$"))
+            {
+                throw new WrongQueryFromatException("Invalid tuple: " + tuple);
+            }
+            return true;
+        }
+
+        private bool IsElement(string element)
+        {
+            if (!Regex.IsMatch(element, @"^$"))
+            {
+                throw new WrongQueryFromatException("Invalid element: " + element);
+            }
+            return true;
+        }
+
+        private bool IsSynonym(string synonym)
+        {
+            if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
+            {
+                throw new WrongQueryFromatException("Invalid synonym: " + synonym);
+            }
+            return true;
+        }
+
+        private bool IsDesignEntity(string entity)
+        {
+            if (!Regex.IsMatch(entity, @"^$"))
+            {
+                throw new WrongQueryFromatException("Invalid entity: " + entity);
+            }
+            return true;
+        }
+
+        private void ParseDeclaration()
+        {
+            string declaration = wordsInQuery[currentIndex];
             do
             {
-                currentIndex++;
-                string a = wordsInQuery[currentIndex];
-                a = a.Substring(0, a.Length - 1);
-                parseIdentificator(a);
-                Trace.WriteLine("Assignment: " + a);
-                declarations.Add(a, "assignment");
+                declaration += " " + wordsInQuery[++currentIndex];
             } while (wordsInQuery[currentIndex].Last() != ';');
+            Trace.WriteLine(declaration);
+            //Regex checking
+            parsedQuery += declaration;
+            if (wordsInQuery[currentIndex+1] == "Select")
+            {
+                parsedQuery += Environment.NewLine;
+            } else
+            {
+                parsedQuery += " ";
+            }
         }
 
-        private void ParseSelect()
+        private void ParserSelect()
         {
-            Trace.WriteLine("ParseAssignmentDeclaration: " + wordsInQuery[currentIndex]);
+            parsedQuery += wordsInQuery[currentIndex] + " ";
         }
     }
 }

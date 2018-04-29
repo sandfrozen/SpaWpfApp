@@ -145,27 +145,41 @@ namespace SpaWpfApp
 
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
-            String formatedQuery = QueryFormatter.GetInstance().Format(StringFromRichTextBox(queryRichTextBox));
-            queryRichTextBox.Document.Blocks.Clear();
-            queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatedQuery)));
+            //MessageBox.Show(Char.IsLetter('#').ToString(), "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            
             try
             {
-                
-                //String parsedPql = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
-                //queryRichTextBox.Document.Blocks.Clear();
-                //queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedPql)));
+                String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
+                queryRichTextBox.Document.Blocks.Clear();
+                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
             }
             catch (QueryException ex)
             {
                 MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show("Unknown Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Unknown Praser Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+        }
 
-           
-
+        private void formatQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                String formatedQuery = QueryFormatter.GetInstance().Format0(StringFromRichTextBox(queryRichTextBox));
+                queryRichTextBox.Document.Blocks.Clear();
+                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatedQuery)));
+            }
+            catch (WrongQueryFromatException ex)
+            {
+                MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unknown Formatter Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }
