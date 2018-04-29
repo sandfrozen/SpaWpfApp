@@ -347,7 +347,7 @@ namespace SpaWpfApp
             Trace.Write("\n");
             for (int i = 1; i <= GetNumberOfProcs(); i++)
             {
-                Trace.Write(string.Format("{0,3} ", i.ToString()));
+                Trace.Write(string.Format("{0,-3} ", i.ToString()));
                 for (int j = 1; j <= GetNumberOfProcs(); j++)
                 {
                     Trace.Write(string.Format("{0,-3}", (IsCalls(GetProcName(i), GetProcName(j)) ? "1" : "0")));
@@ -360,17 +360,11 @@ namespace SpaWpfApp
         {
             Trace.WriteLine("- - - - - - - - -");
             Trace.WriteLine("ModifiesTable");
-            Trace.Write("    ");
-            for (int i = 1; i <= GetNumberOfVars(); i++)
-            {
-                Trace.Write(string.Format("{0,-3}", i.ToString()));
-            }
-            Trace.Write("\n");
             for (int i = 1; i <= GetNumberOfVars(); i++)
             {
                 for (int j = 1; j <= GetNumberOfLines(); j++)
                 {
-                    Trace.Write(string.Format("{0,-3}", (IsModified(GetVarName(i), j) ? "1" : "0")));
+                    Trace.Write(IsModified(GetVarName(i), j) ? "1 " : "0 ");
                 }
                 Trace.Write("\n");
             }
