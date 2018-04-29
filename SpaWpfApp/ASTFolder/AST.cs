@@ -140,7 +140,7 @@ namespace SpaWpfApp.ASTFolder
                             // create subTree of entire expression
                             TNode tmpUpNode = null, tmpActualNode = null, tmpLeftNode = null;
                             List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
-                            for (int i = 2; i < lineWords.Length - 1; i += 2)
+                            for (int i = 2; i < lineWords.Length - 1 && lineWords[i][0] != 125; i += 2)
                             {
                                 if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                                 {
@@ -216,6 +216,8 @@ namespace SpaWpfApp.ASTFolder
                                         tmpLeftNode = tmpActualNode;
                                     }
                                 }
+
+                                ListExpr.Clear();
                             }
 
                             CreateLink(TLinkTypeEnum.Up, tmpLeftNode, currentUpNode);
@@ -299,9 +301,22 @@ namespace SpaWpfApp.ASTFolder
 
             for (int i = 0; i < howManyLevelUp; i++)
             {
-                SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
+                
                 switch (currentUpNode.type)
                 {
+                    case TNodeTypeEnum.StmtLstThen:
+                        {
+                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
+                        }
+                        break;
+
+                    case TNodeTypeEnum.StmtLstElse:
+                        {
+                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
+                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
+                        }
+                        break;
+
                     case TNodeTypeEnum.If:
                         lastChild = FindLastChild(currentUpNode);
                         if (lastChild.type == TNodeTypeEnum.StmtLstElse)

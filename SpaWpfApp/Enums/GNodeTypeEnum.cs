@@ -10,7 +10,6 @@ namespace SpaWpfApp.Enums
         While,
         If,
         StmtLst,
-        StmtLstThen,
-        StmtLstElse,
+        Ghost
     }
 }

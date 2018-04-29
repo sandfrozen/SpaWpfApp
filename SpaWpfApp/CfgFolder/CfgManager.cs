@@ -10,28 +10,45 @@ namespace SpaWpfApp.CfgFolder
     {
         List<Cfg> CfgList;
 
+        private GNode currentPreviousNode = null;
+        private GNode actualNode = null;
+        private Cfg actualCfgStructure = null;
+        private string[] sourceCodeLines;
+        private int programLineNumber = 0;
+        private int howManyStatementsEnd = 0;
+
+
         public CfgManager(string sourceCode)
         {
             this.CfgList = new List<Cfg>();
-            this.BuildCfgList(sourceCode);
+            sourceCodeLines = sourceCode.Split('\n');
+
+            this.BuildCfgList();
         }
 
-        private void BuildCfgList(string sourceCode)
-        {
-            string[] sourceCodeLines = sourceCode.Split('\n');
-            string[] lineWords;
-            int programLineNumber = 0;
-            GNode currentPreviousNode = null;
-            GNode actualNode = null;
-            GNode tmp;
-            Cfg actualCfgStructure = null;
 
-            for(int i = 0; i < sourceCodeLines.Length -1; i++)
+
+        private void BuildCfgList()
+        {
+            string[] lineWords;
+
+            for (int i = 0; i < sourceCodeLines.Length - 1; i++)
             {
-                //if (sourceCodeLines[i] == "") { break; }
                 lineWords = sourceCodeLines[i].Split(' ');
                 switch (lineWords[0])
                 {
+                    case "if":
+                        {
+                            BuildIf(ref i);
+                        }
+                        break;
+
+                    case "while":
+                        {
+                            BuildWhile(ref i);
+                        }
+                        break;
+
                     case "procedure":
                         {
                             if (actualCfgStructure != null)
@@ -44,104 +61,9 @@ namespace SpaWpfApp.CfgFolder
                         }
                         break;
 
-                    case "while":
-                        {
-                            if(actualNode != null)
-                            {
-                                currentPreviousNode = actualNode;
-                            }
-
-                            actualNode = new GNode(GNodeTypeEnum.While);
-                            actualNode.programLineList.Add(++programLineNumber);
-
-                            if(currentPreviousNode != null)
-                            {
-                                currentPreviousNode.nextGNodeList.Add(actualNode);
-                                actualNode.previousGNodeList.Add(currentPreviousNode);
-
-                                HandleIfHaveToLinkStmtThenNode(ref actualNode, ref currentPreviousNode);
-                            }
-
-                            //dodaj do struktury
-                            actualCfgStructure.GNodeList.Add(actualNode);
-
-                            currentPreviousNode = actualNode;
-
-                            actualNode = null;
-
-                            //to do
-                            //jesli po if else, to wroc tez do if stmt
-                        }
-                        break;
-
-                    case "if":
-                        {
-                            if (actualNode != null)
-                            {
-                                currentPreviousNode = actualNode;
-                            }
-
-                            actualNode = new GNode(GNodeTypeEnum.If);
-                            actualNode.programLineList.Add(++programLineNumber);
-
-                            if (currentPreviousNode != null)
-                            {
-                                currentPreviousNode.nextGNodeList.Add(actualNode);
-                                actualNode.previousGNodeList.Add(currentPreviousNode);
-
-                                HandleIfHaveToLinkStmtThenNode(ref actualNode, ref currentPreviousNode);
-                            }
-
-                            actualCfgStructure.GNodeList.Add(actualNode);
-
-                            currentPreviousNode = actualNode;
-
-                            // tworzymy node dla then stmt
-                            actualNode = new GNode(GNodeTypeEnum.StmtLstThen);
-
-                            currentPreviousNode.nextGNodeList.Add(actualNode);
-                            actualNode.previousGNodeList.Add(currentPreviousNode);
-                            actualCfgStructure.GNodeList.Add(actualNode);
-
-                            //to do
-                            //jesli po if else, to wroc tez do if stmt
-                        }
-                        break;
-
-                    case "else":
-                        {
-                            actualNode = new GNode(GNodeTypeEnum.StmtLstElse);
-
-                            currentPreviousNode.nextGNodeList.Add(actualNode);
-                            actualNode.previousGNodeList.Add(currentPreviousNode);
-
-                            actualCfgStructure.GNodeList.Add(actualNode);
-                        }
-                        break;
-
-                    // assign, call
                     default:
                         {
-                            if (actualNode == null)
-                            {
-                                actualNode = new GNode(GNodeTypeEnum.StmtLst);
-
-                                if(currentPreviousNode != null)
-                                {
-                                    currentPreviousNode.nextGNodeList.Add(actualNode);
-                                    actualNode.previousGNodeList.Add(currentPreviousNode);
-
-                                    HandleIfHaveToLinkStmtThenNode(ref actualNode, ref currentPreviousNode);       
-                                }
-
-                                actualCfgStructure.GNodeList.Add(actualNode);
-                            }
-
-                            actualNode.programLineList.Add(++programLineNumber);
-
-
-                            //what if end of statement???
-                            HandleEndOfStatement(ref actualNode, ref currentPreviousNode, lineWords, (i==sourceCodeLines.Length-2 || sourceCodeLines[i+1].Contains("procedure")) ? true : false);
+                            BuildAssignCall();
                         }
                         break;
                 }
@@ -150,94 +72,236 @@ namespace SpaWpfApp.CfgFolder
             this.CfgList.Add(actualCfgStructure);
         }
 
-        private void HandleIfHaveToLinkStmtThenNode(ref GNode actualNode, ref GNode currentPreviousNode)
+
+
+        private void BuildAssignCall()
         {
-            GNode tmp;
-            if (currentPreviousNode.type == GNodeTypeEnum.StmtLstElse)
+            if (actualNode == null) // jesli pierwsza instrukcja w procedurze
             {
-                tmp = currentPreviousNode.previousGNodeList[0];
-                tmp = tmp.nextGNodeList[0];
-                tmp.nextGNodeList.Add(actualNode);
-                actualNode.previousGNodeList.Add(tmp);
+                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber);
+                actualCfgStructure.GNodeList.Add(actualNode);
+            }
+            else if (actualNode.type != GNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w while/if
+            {
+                currentPreviousNode = actualNode;
+                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber);
+                actualCfgStructure.GNodeList.Add(actualNode);
+
+                currentPreviousNode.nextGNodeList.Add(actualNode);
+                actualNode.previousGNodeList.Add(currentPreviousNode);
+            }
+            else
+            {
+                actualNode.programLineList.Add(++programLineNumber);
             }
         }
 
-        private void HandleEndOfStatement(ref GNode actualNode, ref GNode currentPreviousNode, string[] lineWords, bool lastLineWord)
+        private void BuildIf(ref int i)
         {
-            int howManyStatementsEnd = determineHowManyStatementsEnd(lineWords);
-            if(!lastLineWord)
+            string[] lineWords;
+            GNode ifNodeMain, endNodeThenSection = null, ghostNode;
+
+            #region create node for if and remember this node and endNodeThenSection
+            currentPreviousNode = actualNode;
+
+            actualNode = new GNode(GNodeTypeEnum.If, ++programLineNumber);
+            actualCfgStructure.GNodeList.Add(actualNode);
+
+            // zapamietaj
+            ifNodeMain = actualNode;
+
+            if (currentPreviousNode != null)
             {
-                while (howManyStatementsEnd-- > 0)
+                currentPreviousNode.nextGNodeList.Add(actualNode);
+                actualNode.previousGNodeList.Add(currentPreviousNode);
+            }
+            #endregion
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
                 {
-                    if (actualNode.type == GNodeTypeEnum.StmtLst)
-                    {                      
-                        actualNode.nextGNodeList.Add(currentPreviousNode);
-                        currentPreviousNode.previousGNodeList.Add(actualNode);
-
-                        if (howManyStatementsEnd == 0)
+                    case "else":
                         {
-                            actualNode = null;
+                            BuildElse(ref i);
+
+                            ghostNode = new GNode(GNodeTypeEnum.Ghost);
+                            actualCfgStructure.GNodeList.Add(ghostNode);
+
+                            actualNode.nextGNodeList.Add(ghostNode);
+                            endNodeThenSection.nextGNodeList.Add(ghostNode);
+
+                            ghostNode.previousGNodeList.Add(actualNode);
+                            ghostNode.previousGNodeList.Add(endNodeThenSection);
+
+                            currentPreviousNode = null;
+                            actualNode = ghostNode;
+
+                            return;
                         }
-                        else
+                        break;
+
+                    case "while":
                         {
-                            actualNode = currentPreviousNode;
+                            BuildWhile(ref i);
                         }
-                    }
+                        break;
 
-                    else if (actualNode.type == GNodeTypeEnum.While && !lastLineWord)
-                    {
-                        GNode tmp = actualNode;
-                        do
+                    case "if":
                         {
-                            tmp = tmp.previousGNodeList[0];
+                            BuildIf(ref i);
                         }
-                        while (tmp.type != GNodeTypeEnum.If && tmp.type != GNodeTypeEnum.While);
+                        break;
 
-                        actualNode.nextGNodeList.Add(tmp);
-                        tmp.previousGNodeList.Add(actualNode);
-
-                        actualNode = tmp;
-                    }
-
-                    else if (actualNode.type == GNodeTypeEnum.If) // kiedy z ifa trzeba wrocic do while lub innego ifa
-                    {
-                        GNode tmp = actualNode;
-                        do
+                    default:
                         {
-                            tmp = tmp.previousGNodeList[0];
+                            BuildAssignCall();
+
+                            if (EndOfStatement(lineWords)) // end of then section
+                            {
+                                endNodeThenSection = actualNode;
+                                actualNode = ifNodeMain;
+                                --howManyStatementsEnd;
+                            }
                         }
-                        while (tmp.type != GNodeTypeEnum.If && tmp.type != GNodeTypeEnum.While);
-
-                        actualNode.nextGNodeList[0].nextGNodeList.Add(tmp);
-                        actualNode.nextGNodeList[1].nextGNodeList.Add(tmp);
-
-                        tmp.previousGNodeList.Add(actualNode.nextGNodeList[0]);
-                        tmp.previousGNodeList.Add(actualNode.nextGNodeList[1]);
-
-                        actualNode = tmp;
-                    }
-
-                    else if (actualNode.type == GNodeTypeEnum.StmtLstThen)
-                    {
-                    }
-
-                    else if (actualNode.type == GNodeTypeEnum.StmtLstElse && !lastLineWord)
-                    {
-                        if (howManyStatementsEnd == 0)
-                        {
-                            currentPreviousNode = actualNode;
-                            actualNode = null;
-                        }
-                        else
-                        {
-                            actualNode = currentPreviousNode;
-                        }
-                    }
+                        break;
                 }
             }
         }
 
-        private int determineHowManyStatementsEnd(string[] lineWords)
+        private void BuildElse(ref int i)
+        {
+            string[] lineWords;
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
+                {
+                    case "while":
+                        {
+                            BuildWhile(ref i);
+                            if (howManyStatementsEnd > 0)
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "if":
+                        {
+                            BuildIf(ref i);
+
+                            if (howManyStatementsEnd > 0)
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    default:
+                        {
+                            BuildAssignCall();
+
+                            if (EndOfStatement(lineWords))
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void BuildWhile(ref int i)
+        {
+            string[] lineWords;
+            GNode whileNodeMain;
+
+            #region create node for while and remember it
+            currentPreviousNode = actualNode;
+
+            actualNode = new GNode(GNodeTypeEnum.While, ++programLineNumber);
+            actualCfgStructure.GNodeList.Add(actualNode);
+           
+            //zapamietaj
+            whileNodeMain = actualNode;
+
+            if (currentPreviousNode != null)
+            {
+                currentPreviousNode.nextGNodeList.Add(actualNode);
+                actualNode.previousGNodeList.Add(currentPreviousNode);
+            }
+            currentPreviousNode = actualNode;
+            #endregion
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
+                {
+                    case "while":
+                        {
+                            BuildWhile(ref i);
+                            if(howManyStatementsEnd > 0)
+                            {
+                                CloseWhileLoop(ref whileNodeMain);
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "if":
+                        {
+                            BuildIf(ref i);
+                            if (howManyStatementsEnd > 0)
+                            {
+                                CloseWhileLoop(ref whileNodeMain);
+                                return;
+                            }
+                        }
+                        break;
+
+                    default:
+                        {
+                            BuildAssignCall();
+
+                            if (EndOfStatement(lineWords))
+                            {
+                                CloseWhileLoop(ref whileNodeMain);
+                                return;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void CloseWhileLoop(ref GNode whileNodeMain)
+        {
+            actualNode.nextGNodeList.Add(whileNodeMain);
+            whileNodeMain.previousGNodeList.Add(actualNode);
+
+            currentPreviousNode = null;
+            actualNode = whileNodeMain;
+            --howManyStatementsEnd;
+        }
+
+        private bool EndOfStatement(string[] lineWords)
+        {
+            howManyStatementsEnd = DetermineHowManyStatementsEnd(lineWords);
+
+            return howManyStatementsEnd > 0 ? true : false;
+        }
+
+        private int DetermineHowManyStatementsEnd(string[] lineWords)
         {
             int i = lineWords.Length - 1;
             int closeBracketCounter = 0;

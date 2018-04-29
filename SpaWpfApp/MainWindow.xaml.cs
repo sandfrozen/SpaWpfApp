@@ -95,7 +95,7 @@ namespace SpaWpfApp
                 pkb.PrintModifiesTable();
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
-              
+
 
                 MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -104,13 +104,26 @@ namespace SpaWpfApp
                 MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
+            //string parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+
+            //Pkb pkb = new Pkb(7, 1, 5);
+            //pkb.InsertProc("First");
+            ////pkb.InsertProc("Second");
+            ////pkb.InsertProc("Third");
+
+            //pkb.InsertVar("x");
+            //pkb.InsertVar("i");
+            //pkb.InsertVar("j");
+            //pkb.InsertVar("k");
+            //pkb.InsertVar("b");
+
+
             ASTAPI ast = new AST(parsed, pkb);
 
 
             // tu bedzie stworzenie cfg
-            CfgManager cfgManager = new CfgManager(parsed); 
-
-            Trace.WriteLine(ast.GetParent(8).programLine);
+            CfgManager cfgManager = new CfgManager(parsed);
+            //Trace.WriteLine(ast.GetParent(8).programLine);
 
             // Tutaj będzie wywołanie Klasy Parsującej Adama
             // ex. Parser parser = new Parser(sourceCode);
