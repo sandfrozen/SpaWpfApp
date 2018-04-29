@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="228">
+        <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="235">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -80,8 +80,15 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="163,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click"/>
-        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="243,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click"/>
+        <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click"/>
+        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click"/>
+        <Label x:Name="label" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587"/>
+        <Label x:Name="label1" Content="Parsed?" HorizontalAlignment="Left" Margin="272,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy" Content="PKB crated?" HorizontalAlignment="Left" Margin="250,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy1" Content="AST crated?" HorizontalAlignment="Left" Margin="250,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="parsedLabel" Content="no" HorizontalAlignment="Left" Margin="327,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="pkbCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="astCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
 
     </Grid>
 </Window>

@@ -38,7 +38,6 @@ namespace SpaWpfApp
         }
         private void formatButton_Click(object sender, RoutedEventArgs e)
         {
-           
             try
             {
                 parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
@@ -57,6 +56,7 @@ namespace SpaWpfApp
         }
         private void parseButton_Click(object sender, RoutedEventArgs e)
         {
+            SetLogLabels("no");
             Trace.WriteLine("Parse clicked");
             //string code =
             //    "procedure First {" + Environment.NewLine +
@@ -87,7 +87,18 @@ namespace SpaWpfApp
                 parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
                 Trace.WriteLine("===================LAST PARSER======================");
                 Trace.WriteLine(parsed);
+                parsedLabel.Content = "Yes";
+                //MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (WrongCodeException)
+            {
+                parsedLabel.Content = "Error: " + MessageBoxImage.Information;
+                //MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
+            try
+            {
                 pkb = ParserMain.Instance.pkb;
                 pkb.PrintProcTable();
                 pkb.PrintVarTable();
@@ -95,66 +106,39 @@ namespace SpaWpfApp
                 pkb.PrintModifiesTable();
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
-
-
-                MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (WrongCodeException)
+                pkbCreatedLabel.Content = "Yes";
+            } catch
             {
-                MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                pkbCreatedLabel.Content = "Error";
+                return;
             }
 
-            //string parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
-
-            //Pkb pkb = new Pkb(7, 1, 5);
-            //pkb.InsertProc("First");
-            ////pkb.InsertProc("Second");
-            ////pkb.InsertProc("Third");
-
-            //pkb.InsertVar("x");
-            //pkb.InsertVar("i");
-            //pkb.InsertVar("j");
-            //pkb.InsertVar("k");
-            //pkb.InsertVar("b");
-
-
-            ASTAPI ast = new AST(parsed, pkb);
-
-
-            // tu bedzie stworzenie cfg
-            CfgManager cfgManager = new CfgManager(parsed);
-            //Trace.WriteLine(ast.GetParent(8).programLine);
-
-            // Tutaj będzie wywołanie Klasy Parsującej Adama
-            // ex. Parser parser = new Parser(sourceCode);
-            // parser.parse();
-            // po tym: jeśli sourceCode zostanie sparsowany poprawanie to
-            // obiekt parser będzie posiadał trzy kluczowe informacje o sourceCode:
-            // - numberOfLines
-            // - numberOfProcs
-            // - numerOfVars
-            // ^ te trzy wartości są potrzebne aby klasa PKB mogła się zaincjować, czyli żeby API działało:
-            // Pkb pkb = new Pkb(numberOfLines, numberOfProcs, numberOfVars); // <- to te trzy kluczowe wartości w argumentach
-            // Jak już to będzie to wtedy trzeba będzie napisać analize kodu, która wykorzystując API ^ wczyta te wszystkie dane do tablic,
-            // Po tym, Kod Tomka Suchwałko będzie mógł zbudować drzewko AST,
-            // a po tym "Query processing subsystem (Query Preprocessor, Query Evaluator and query result projector)" Zakrysia i Lucato będzie mógł działać i dawać odpowiedzi na zapytania.
-            //
-            //
-            // To pseudo kod i pseudo rozkmina, ale może komuś to pomoże w naświetleniu tego co będzie się tu działo (i co może zaimplementować wcześniej)
+            try
+            {
+                ASTAPI ast = new AST(parsed, pkb);
+                astCreatedLabel.Content = "Yes";
+                //Trace.WriteLine(ast.GetParent(8).programLine);
+            } catch
+            {
+                astCreatedLabel.Content = "Error";
+                return;
+            }
         }
 
         private string StringFromRichTextBox(RichTextBox rtb)
         {
             TextRange textRange = new TextRange(
-                // TextPointer to the start of content in the RichTextBox.
                 rtb.Document.ContentStart,
-                // TextPointer to the end of content in the RichTextBox.
                 rtb.Document.ContentEnd
             );
-
-            // The Text property on a TextRange object returns a string
-            // representing the plain text content of the TextRange.
             return textRange.Text;
+        }
+
+        private void SetLogLabels(String value)
+        {
+            parsedLabel.Content = value;
+            pkbCreatedLabel.Content = value;
+            astCreatedLabel.Content = value;
         }
 
     }
