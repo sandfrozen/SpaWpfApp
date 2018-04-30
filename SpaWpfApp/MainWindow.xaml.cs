@@ -161,7 +161,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unknown Praser Error in query", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

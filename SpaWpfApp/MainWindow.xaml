@@ -106,7 +106,7 @@
                     <Run Text="assign a1, a2; while w;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="Select a such that Parent(a, 4);"/>
+                    <Run Text="Select a1.stmt# such that Parent(a, 4)"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
