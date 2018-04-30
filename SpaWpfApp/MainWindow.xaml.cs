@@ -150,18 +150,22 @@ namespace SpaWpfApp
                 String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
                 queryRichTextBox.Document.Blocks.Clear();
                 queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
+                queryInfoLabel.Content = "Query is ok";
             }
             catch (QueryException ex)
             {
-                MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                queryInfoLabel.Content = ex.Message;
+                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (WrongQueryFromatException ex)
             {
-                MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                queryInfoLabel.Content = ex.Message;
+                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                queryInfoLabel.Content = ex.Message;
+                //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

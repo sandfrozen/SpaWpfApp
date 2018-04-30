@@ -110,6 +110,8 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
+        <Label x:Name="queryInfoLabel" Content="press evaluate query" Margin="415,48,10,0" Grid.Row="1" VerticalAlignment="Top" Padding="1,5,5,5"/>
+        <Label x:Name="label3" Content="Query info:" HorizontalAlignment="Left" Margin="346,48,0,0" Grid.Row="1" VerticalAlignment="Top" Padding="5,5,1,5"/>
 
     </Grid>
 </Window>
