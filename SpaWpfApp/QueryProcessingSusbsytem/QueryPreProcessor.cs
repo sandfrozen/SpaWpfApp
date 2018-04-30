@@ -10,14 +10,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 {
     class QueryPreProcessor
     {
-
-        private string query;
         private string parsedQuery;
 
         private string[] wordsInQuery;
         private int currentIndex;
 
-        private Dictionary<string, string> declarations;
+        private Dictionary<string, string> declarationsList;
         private Dictionary<string, Action> declarationActions;
 
         private static QueryPreProcessor instance;
@@ -32,7 +30,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public QueryPreProcessor()
         {
-            declarations = new Dictionary<string, string>();
+            declarationsList = new Dictionary<string, string>();
             declarationActions = new Dictionary<string, Action>{
               {"procedure", ParseDeclaration},
               {"stmtLst", ParseDeclaration},
@@ -49,6 +47,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public string Parse(string query)
         {
+            declarationsList = new Dictionary<string, string>();
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
@@ -80,16 +79,43 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             parsedQuery += wordsInQuery[currentIndex++];
             ParseTouple();
-            if (wordsInQuery[currentIndex] != "such")
+            while (currentIndex < wordsInQuery.Length)
             {
-                throw new WrongQueryFromatException("such not found: " + wordsInQuery[currentIndex]);
+                if (wordsInQuery[currentIndex] == "such")
+                {
+                    parsedQuery += " " + wordsInQuery[currentIndex++];
+                    if (wordsInQuery[currentIndex] == "that")
+                    {
+                        parsedQuery += " " + wordsInQuery[currentIndex++];
+                    }
+                    else
+                    {
+                        throw new WrongQueryFromatException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
+                    }
+                }
+
+                else if (wordsInQuery[currentIndex] == "with")
+                {
+                    parsedQuery += " " + wordsInQuery[currentIndex];
+                }
+                else if (wordsInQuery[currentIndex] == "pattern")
+                {
+                    parsedQuery += " " + wordsInQuery[currentIndex];
+                }
+                else
+                {
+                    throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
+                }
+
+                break;
             }
-            parsedQuery += " " + wordsInQuery[currentIndex++];
-            if (wordsInQuery[currentIndex] != "that")
+            
+
+            Trace.WriteLine("Declarations:");
+            foreach (var v in declarationsList)
             {
-                throw new WrongQueryFromatException("that not found: " + wordsInQuery[currentIndex]);
+                Trace.WriteLine(v.Value + " " + v.Key);
             }
-            parsedQuery += " " + wordsInQuery[currentIndex++];
 
             return parsedQuery;
         }
@@ -119,41 +145,84 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             return false;
         }
 
-        private bool IsTuple(string tuple)
+        private void CkeckIsDeclared(string synonym)
         {
-            try
+            if (!declarationsList.Keys.Contains(synonym))
             {
-                IsSynonym(tuple);
+                throw new QueryException("Synonym used in Select is not declared: " + synonym);
             }
-            catch
-            {
-                if (tuple[0] != '<' || tuple.Last() != '>')
-                {
-                    throw new WrongQueryFromatException("Invalid tuple: " + tuple);
-                }
-                for (int elemIndex = 1; elemIndex < tuple.Length; elemIndex++)
-                {
-                    string elem = "";
-                    do
-                    {
-                        elem += tuple[elemIndex++];
-                    } while (elemIndex < tuple.Length && tuple[elemIndex] != ',' && tuple[elemIndex] != '>');
-                    IsSynonym(elem);
-                }
-            }
-            return true;
         }
 
-        private bool IsSynonym(string synonym)
+        private void CheckSingleTuple(string tuple)
+        {
+            if (tuple.First() == '<' && tuple.Last() == '>')
+            {
+                CheckMultipleTuple(tuple);
+            }
+            else
+            {
+                if (tuple.Contains("."))
+                {
+                    string synonym = tuple.Substring(0, tuple.IndexOf('.'));
+                    CkeckIsDeclared(synonym);
+                    string attrName = tuple.Substring(tuple.IndexOf('.') + 1);
+                    string designEntity = declarationsList[synonym];
+                    
+                    switch (attrName)
+                    {
+                        case "stmt#":
+                            if (designEntity != "assign")
+                            {
+                                throw new QueryException("Synonym: " + synonym + " can't be used with: " + attrName);
+                            }
+                            break;
+                        case "procName":
+                            if (designEntity != "procedure")
+                            {
+                                throw new QueryException("Synonym: " + synonym + " can't be used with: " + attrName);
+                            }
+                            break;
+                        case "varName":
+                        case "value":
+                            if (designEntity != "variable")
+                            {
+                                throw new QueryException("Synonym: " + synonym + " can't be used with: " + attrName);
+                            }
+                            break;
+                        default:
+                            throw new QueryException("Attrybute name: " + attrName + " is unknown");
+                            break;
+                    }
+                }
+                else
+                {
+                    CkeckIsDeclared(tuple);
+                }
+            }
+        }
+
+        private void CheckMultipleTuple(string tuple)
+        {
+            for (int elemIndex = 1; elemIndex < tuple.Length; elemIndex++)
+            {
+                string elem = "";
+                do
+                {
+                    elem += tuple[elemIndex++];
+                } while (elemIndex < tuple.Length && tuple[elemIndex] != ',' && tuple[elemIndex] != '>');
+                CheckSingleTuple(elem);
+            }
+        }
+
+        private void IsSynonym(string synonym)
         {
             if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
                 throw new WrongQueryFromatException("Invalid synonym: " + synonym);
             }
-            return true;
         }
 
-        private void CheckDeclaration(string declaration)
+        private void CheckSynonyms(string declaration)
         {
             try
             {
@@ -168,6 +237,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         synonym += declaration[declarationIndex++];
                     } while (declarationIndex < declaration.Length && declaration[declarationIndex] != ',' && declaration[declarationIndex] != ';');
+
                     IsSynonym(synonym);
                 }
             }
@@ -175,17 +245,36 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void ParseDeclaration()
         {
+            List<String> synonymsList = new List<string>();
             string declaration = wordsInQuery[currentIndex] + " ";
             while (wordsInQuery[currentIndex] != ";")
             {
                 declaration += wordsInQuery[++currentIndex];
-                if (wordsInQuery[currentIndex] != "," && wordsInQuery[currentIndex] != ";" && wordsInQuery[currentIndex+1] != "," && wordsInQuery[currentIndex+1] != ";")
+                if (wordsInQuery[currentIndex] != "," && wordsInQuery[currentIndex] != ";")
+                {
+                    synonymsList.Add(wordsInQuery[currentIndex]);
+                }
+                if (wordsInQuery[currentIndex] != "," && wordsInQuery[currentIndex] != ";" && wordsInQuery[currentIndex + 1] != "," && wordsInQuery[currentIndex + 1] != ";")
                 {
                     declaration += " ";
                 }
             }
-            string declarationArgs = declaration.Substring(declaration.IndexOf(' ')+1);
-            CheckDeclaration(declarationArgs);
+            string designEntity = declaration.Substring(0, declaration.IndexOf(' '));
+            string synonyms = declaration.Substring(declaration.IndexOf(' ') + 1);
+            CheckSynonyms(synonyms);
+
+            try
+            {
+                foreach (string synonym in synonymsList)
+                {
+                    declarationsList.Add(synonym, designEntity);
+                }
+            }
+            catch
+            {
+                throw new QueryException("Synonyms can't have same names.\nCheck declaration:  " + declaration);
+            }
+
 
             parsedQuery += declaration;
             if (wordsInQuery[currentIndex + 1] == "Select")
@@ -204,13 +293,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             do
             {
                 tuple += wordsInQuery[currentIndex++];
-            } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] != "such");
-            if (currentIndex >= wordsInQuery.Length)
-            {
-                throw new WrongQueryFromatException("Invalid word after tuple: " + tuple);
-            }
-            Trace.WriteLine(tuple);
-            IsTuple(tuple);
+            } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] != "such" && wordsInQuery[currentIndex] != "with" && wordsInQuery[currentIndex] != "pattern");
+
+            CheckSingleTuple(tuple);
             parsedQuery += " " + tuple;
         }
     }
