@@ -15,8 +15,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private string[] wordsInQuery;
         private int currentIndex;
 
+        private List<string> selectClauses;
+        private Dictionary<string, Action> relationshipReferences;
         private Dictionary<string, string> declarationsList;
         private Dictionary<string, string> returnList;
+
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
 
@@ -34,6 +37,27 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
+            relationshipReferences = new Dictionary<string, Action> {
+                { "ModifiesP", CheckModifies},
+                { "ModifiesS", CheckModifies},
+                { "UsesP", CheckModifies},
+                { "UsesS", CheckModifies},
+                { "Calls", CheckModifies},
+                { "CallsT", CheckModifies},
+                { "Parent", CheckModifies},
+                { "ParentT", CheckModifies},
+                { "Follows", CheckModifies},
+                { "FollowsT", CheckModifies},
+                { "Next", CheckModifies},
+                { "NextT", CheckModifies},
+                { "Affects", CheckModifies},
+                { "AffectsT",CheckModifies },
+            };
+            selectClauses = new List<string>
+            {
+                "such", "pattern", "with", "and"
+            };
+
             entityAttributeValue = new Dictionary<string, string[]>
             {
                 {"procedure", new string[] { "procName", "string" } },
@@ -56,6 +80,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
               {"constant", ParseDeclaration},
               {"prog_line", ParseDeclaration},
             };
+        }
+
+        private void CheckModifies()
+        {
+
         }
 
         public string Parse(string query)
@@ -101,30 +130,57 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     parsedQuery += " " + wordsInQuery[currentIndex++];
                     if (wordsInQuery[currentIndex] == "that")
                     {
-                        parsedQuery += " " + wordsInQuery[currentIndex++];
+                        parsedQuery += " " + wordsInQuery[currentIndex];
                     }
                     else
                     {
                         throw new WrongQueryFromatException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
                     }
+                    do
+                    {
+                        ++currentIndex;
+                        ParseSuchThat();
+                        if (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and")
+                        {
+                            parsedQuery += " and";
+                        }
+                    } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and");
                 }
 
                 else if (wordsInQuery[currentIndex] == "with")
                 {
                     parsedQuery += " " + wordsInQuery[currentIndex];
+                    do
+                    {
+                        ++currentIndex;
+                        ParseWith();
+                        if (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and")
+                        {
+                            parsedQuery += " and";
+                        }
+                    } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and");
                 }
+
                 else if (wordsInQuery[currentIndex] == "pattern")
                 {
                     parsedQuery += " " + wordsInQuery[currentIndex];
+                    do
+                    {
+                        ++currentIndex;
+                        ParsePattern();
+                        if (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and")
+                        {
+                            parsedQuery += " and";
+                        }
+                    } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] == "and");
                 }
+
                 else
                 {
                     throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
                 }
-
-                break;
             }
-            
+
 
             Trace.WriteLine("Declarations:");
             foreach (var v in declarationsList)
@@ -173,11 +229,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-        private void CheckSingleTuple(string tuple)
+        private void CheckTuple(string tuple)
         {
             if (tuple.First() == '<' && tuple.Last() == '>')
             {
-                CheckMultipleTuple(tuple);
+                ExtractMultipleTuple(tuple);
             }
             else
             {
@@ -187,7 +243,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     CkeckIsDeclared(synonym);
                     string attrName = tuple.Substring(tuple.IndexOf('.') + 1);
                     string designEntity = declarationsList[synonym];
-                    
+
                     switch (attrName)
                     {
                         case "stmt#":
@@ -219,16 +275,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-        private void CheckMultipleTuple(string tuple)
+        private void ExtractMultipleTuple(string tuple)
         {
-            for (int elemIndex = 1; elemIndex < tuple.Length-1; elemIndex++)
+            for (int elemIndex = 1; elemIndex < tuple.Length - 1; elemIndex++)
             {
                 string elem = "";
                 do
                 {
                     elem += tuple[elemIndex++];
                 } while (elemIndex < tuple.Length && tuple[elemIndex] != ',' && tuple[elemIndex] != '>');
-                CheckSingleTuple(elem);
+                CheckTuple(elem);
             }
         }
 
@@ -312,14 +368,182 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 tuple += wordsInQuery[currentIndex++];
             } while (currentIndex < wordsInQuery.Length && wordsInQuery[currentIndex] != "such" && wordsInQuery[currentIndex] != "with" && wordsInQuery[currentIndex] != "pattern");
-            if(tuple != "BOOLEAN")
-            {
-                CheckSingleTuple(tuple);
-            } else
+            if (tuple == "BOOLEAN")
             {
                 returnList.Add("BOOLEAN", "BOOLEAN");
             }
+            else
+            {
+                CheckTuple(tuple);
+            }
             parsedQuery += " " + tuple;
+        }
+
+        private void ParseSuchThat()
+        {
+            string relationship = "";
+            relationship += wordsInQuery[currentIndex++];
+            if (!relationshipReferences.Keys.Contains(relationship))
+            {
+                throw new QueryException("Unknown Relationship Reference: " + relationship);
+            }
+            while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]))
+            {
+                relationship += wordsInQuery[currentIndex++];
+            }
+
+            CheckRelationship(relationship);
+
+            Trace.WriteLine("Relationship: " + relationship);
+            parsedQuery += " " + relationship;
+        }
+
+        private void CheckRelationship(string relationship)
+        {
+            if (Regex.IsMatch(relationship, @"^[^(,) ]+[(][^(,) ]+[,][^(,) ]+[)]$"))
+            {
+                string relRef = relationship.Substring(0, relationship.IndexOf('('));
+                relationship = relationship.Substring(relationship.IndexOf('(') + 1);
+                string firstArg = relationship.Substring(0, relationship.IndexOf(','));
+                relationship = relationship.Substring(relationship.IndexOf(',') + 1);
+                string secArg = relationship.Substring(0, relationship.IndexOf(')'));
+
+                switch (relRef)
+                {
+                    case "ModifiesP":
+                    case "ModifiesS":
+                        break;
+                    case "UsesP":
+                    case "UsesS":
+                        break;
+                    case "Calls":
+                    case "CallsT":
+                        break;
+                    case "Parent":
+                    case "ParentT":
+                        break;
+                    case "Follows":
+                    case "FollowsT":
+                        break;
+                    case "Next":
+                    case "NextT":
+                        break;
+                    case "Affects":
+                    case "AffectsT":
+                        break;
+                }
+            }
+            else
+            {
+                throw new QueryException("Relationship wrong format: " + relationship);
+            }
+        }
+
+        private void ParseWith()
+        {
+            string with = "";
+            do
+            {
+                with += wordsInQuery[currentIndex++];
+            } while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]));
+            Trace.WriteLine("With: " + with);
+            CheckWith(with);
+
+            parsedQuery += " " + with;
+        }
+
+        private void CheckWith(string with)
+        {
+            if (Regex.IsMatch(with, @"^[^= ]+[=][^= ]+$"))
+            {
+                string leftRef = with.Substring(0, with.IndexOf('='));
+                CheckTuple(leftRef);
+
+                with = with.Substring(with.IndexOf('=') + 1);
+                string rightRef = with.Substring(0);
+            }
+            else
+            {
+                throw new QueryException("With wrong format: " + with);
+            }
+        }
+
+        private void ParsePattern()
+        {
+            string pattern = "";
+            do
+            {
+                pattern += wordsInQuery[currentIndex++];
+            } while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]));
+            Trace.WriteLine("Pattern: " + pattern);
+
+            CheckPattern(pattern);
+            parsedQuery += " " + pattern;
+        }
+
+        private void CheckPattern(string pattern)
+        {
+            if (Regex.IsMatch(pattern, @"^[^(,) ]+[(][^(,) ]+(,[^, ]+){0,2}[)]$"))
+            {
+                string synonym = pattern.Substring(0, pattern.IndexOf('('));
+                if (!declarationsList.Keys.Contains(synonym))
+                {
+                    throw new QueryException("Synonym used in pattern is not declared: " + synonym + "\nCheck pattern: " + pattern);
+                }
+                string assignWhileIf = declarationsList[synonym];
+                string args = pattern.Substring(pattern.IndexOf('(') + 1);
+                switch (assignWhileIf)
+                {
+                    case "assign":
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][^(,) ]+[)]$"))
+                            CheckAssignPattern(args);
+                        else
+                            throw new QueryException("Wrong pattern for assign: " + pattern);
+                        break;
+                    case "while":
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_][)]$"))
+                            CheckWhilePattern(args);
+                        else
+                            throw new QueryException("Wrong pattern for while: " + pattern);
+                        break;
+                    case "if":
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_][,][_][)]$"))
+                            CheckIfPattern(args);
+                        else
+                            throw new QueryException("Wrong pattern for if: " + pattern);
+                        break;
+                }
+
+            }
+            else
+            {
+                throw new QueryException("With wrong format: " + pattern);
+            }
+        }
+
+        private void CheckAssignPattern(string pattern)
+        {
+            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
+            pattern = pattern.Substring(pattern.IndexOf(',')+1);
+            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            //check arguments
+
+        }
+        private void CheckWhilePattern(string pattern)
+        {
+            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
+            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
+            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            //check arguments
+
+        }
+        private void CheckIfPattern(string pattern)
+        {
+            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
+            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
+            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            //check arguments
+
         }
     }
 }
