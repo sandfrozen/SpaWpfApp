@@ -55,12 +55,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ASTFolder\AST.cs" />
-    <Compile Include="ASTFolder\ASTAPI.cs" />
-    <Compile Include="ASTFolder\TNode.cs" />
-    <Compile Include="CfgFolder\Cfg.cs" />
-    <Compile Include="CfgFolder\CfgManager.cs" />
-    <Compile Include="CfgFolder\GNode.cs" />
+    <Compile Include="Ast\AstManager.cs" />
+    <Compile Include="Ast\AstAPI.cs" />
+    <Compile Include="Ast\TNode.cs" />
+    <Compile Include="Cfg\ProcedureCfg.cs" />
+    <Compile Include="Cfg\CfgAPI.cs" />
+    <Compile Include="Cfg\CfgManager.cs" />
+    <Compile Include="Cfg\GNode.cs" />
     <Compile Include="Enums\TLinkTypeEnum.cs" />
     <Compile Include="Enums\GNodeTypeEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SpaWpfApp.CfgFolder
+namespace SpaWpfApp.Cfg
 {
-    public class Cfg
+    public class ProcedureCfg
     {
         public List<GNode> GNodeList { get; set; }
 
-        public Cfg()
+        public int lastProgramLineNumber { get; set; }
+
+        public ProcedureCfg()
         {
             this.GNodeList = new List<GNode>();
         }

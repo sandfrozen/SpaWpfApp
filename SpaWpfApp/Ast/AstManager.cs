@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SpaWpfApp.ASTFolder
+namespace SpaWpfApp.Ast
 {
     public struct ExprExtraNode
     {
@@ -18,13 +18,13 @@ namespace SpaWpfApp.ASTFolder
         }
     }
 
-    public class AST : ASTAPI
+    public class AstManager : AstAPI
     {
         private List<TNode> NodeList { get; set; }
         private PkbAPI Pkb;
         TNode rootNode = null;
 
-        public AST(string sourceCode, PkbAPI Pkb)
+        public AstManager(string sourceCode, PkbAPI Pkb)
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();

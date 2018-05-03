@@ -1,6 +1,6 @@
 ﻿
-using SpaWpfApp.ASTFolder;
-using SpaWpfApp.CfgFolder;
+using SpaWpfApp.Ast;
+using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.Parser;
 using System;
@@ -115,24 +115,12 @@ namespace SpaWpfApp
 
             try
             {
-                //string parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
-
-                //Pkb pkb = new Pkb(7, 1, 5);
-                //pkb.InsertProc("First");
-                ////pkb.InsertProc("Second");
-                ////pkb.InsertProc("Third");
-
-                //pkb.InsertVar("x");
-                //pkb.InsertVar("i");
-                //pkb.InsertVar("j");
-                //pkb.InsertVar("k");
-                //pkb.InsertVar("b");
-
-                ASTAPI ast = new AST(parsed, pkb);
+                AstAPI ast = new AstManager(parsed, pkb);
                 astCreatedLabel.Content = "Yes";
 
                 // tu bedzie stworzenie cfg
                 CfgManager cfgManager = new CfgManager(parsed);
+
             } catch
             {
                 astCreatedLabel.Content = "Error";
