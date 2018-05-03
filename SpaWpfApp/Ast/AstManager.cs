@@ -263,7 +263,7 @@ namespace SpaWpfApp.Ast
                             CreateLink(TLinkTypeEnum.RightSibling, variableIfNode.rightSibling, actualNode);
                             currentUpNode = actualNode.up;
 
-                            BuildElse(sourceCodeLines, ref i, ref currentUpNode, ref ifNodeMain, ref programLineNumber, ref howManyStatementsEnd);
+                            BuildElse(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
 
                             actualNode = ifNodeMain;
                             currentUpNode = actualNode.up;

@@ -107,7 +107,8 @@ namespace SpaWpfApp
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
                 pkbCreatedLabel.Content = "Yes";
-            } catch
+            }
+            catch
             {
                 pkbCreatedLabel.Content = "Error";
                 return;
@@ -115,15 +116,23 @@ namespace SpaWpfApp
 
             try
             {
-                AstAPI ast = new AstManager(parsed, pkb);
+                AstAPI astManager = new AstManager(parsed, pkb);
                 astCreatedLabel.Content = "Yes";
-
-                // tu bedzie stworzenie cfg
-                CfgManager cfgManager = new CfgManager(parsed);
-
-            } catch
+            }
+            catch
             {
                 astCreatedLabel.Content = "Error";
+                return;
+            }
+
+            try
+            {
+                CfgAPI cfgManager = new CfgManager(parsed);
+                cfgCreatedLabel.Content = "Yes";
+            }
+            catch
+            {
+                cfgCreatedLabel.Content = "Error";
                 return;
             }
         }

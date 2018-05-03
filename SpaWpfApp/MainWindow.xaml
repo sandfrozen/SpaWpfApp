@@ -84,11 +84,13 @@
         <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click"/>
         <Label x:Name="label" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587"/>
         <Label x:Name="label1" Content="Parsed?" HorizontalAlignment="Left" Margin="272,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
-        <Label x:Name="label1_Copy" Content="PKB crated?" HorizontalAlignment="Left" Margin="250,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
-        <Label x:Name="label1_Copy1" Content="AST crated?" HorizontalAlignment="Left" Margin="250,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy" Content="PKB created?" HorizontalAlignment="Left" Margin="250,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy1" Content="AST created?" HorizontalAlignment="Left" Margin="250,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy2" Content="CFG created?" HorizontalAlignment="Left" Margin="250,113,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
         <Label x:Name="parsedLabel" Content="no" HorizontalAlignment="Left" Margin="327,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
         <Label x:Name="pkbCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
         <Label x:Name="astCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="cfgCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,113,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
 
     </Grid>
 </Window>
