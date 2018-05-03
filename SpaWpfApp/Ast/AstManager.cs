@@ -32,21 +32,40 @@ namespace SpaWpfApp.Ast
             BuildTree(sourceCode);
         }
 
-
+        #region methods to build ast
         private void BuildTree(string sourceCode)
         {
             string[] sourceCodeLines = sourceCode.Split('\n');
             string[] lineWords;
             int programLineNumber = 0;
             TNode currentUpNode = null;
-            TNode actualNode;
+            TNode actualNode = null;
+            int howManyStatementsEnd = 0;
 
-            foreach (var sourceCodeLine in sourceCodeLines)
+            for (int i = 0; i < sourceCodeLines.Length - 1; i++)
             {
-                if(sourceCodeLine == "") { break; }
-                lineWords = sourceCodeLine.Split(' ');
+                if (sourceCodeLines[i] == "") { break; }
+                lineWords = sourceCodeLines[i].Split(' ');
                 switch (lineWords[0])
                 {
+                    case "if":
+                        {
+                            BuildIf(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                        }
+                        break;
+
+                    case "while":
+                        {
+                            BuildWhile(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                        }
+                        break;
+
+                    case "call":
+                        {
+                            BuildCall(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+                        }
+                        break;
+
                     case "procedure":
                         {
                             actualNode = CreateTNode(TNodeTypeEnum.Procedure, null, Pkb.GetProcIndex(lineWords[1]));
@@ -56,177 +75,18 @@ namespace SpaWpfApp.Ast
                             }
                             CreateLink(TLinkTypeEnum.Up, actualNode, rootNode);
                             CreateFirstChildOrRightSiblingLink(rootNode, actualNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
+                            currentUpNode = actualNode;
 
-                            //create stmtLstNode under currentUpNode
+                            //create stmtLstNode under procedure node
                             actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
                             CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
                             CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
                         }
                         break;
 
-                    case "call":
-                        {
-                            actualNode = CreateTNode(TNodeTypeEnum.Call, ++programLineNumber, Pkb.GetProcIndex(lineWords[1]));
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-
-                            //what if end of statement???
-                            HandleGoingBackOnTheTree(ref currentUpNode, lineWords);
-                        }
-                        break;
-
-                    case "while":
-                        {
-                            actualNode = CreateTNode(TNodeTypeEnum.While, ++programLineNumber, null);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-
-                            actualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, actualNode);
-
-                            //create stmtLstNode under currentUpNode
-                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-                        }
-                        break;
-
-                    case "if":
-                        {
-                            actualNode = CreateTNode(TNodeTypeEnum.If, ++programLineNumber, null);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-
-                            actualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, actualNode);
-
-                            //create stmtLstNode under currentUpNode
-                            actualNode = CreateTNode(TNodeTypeEnum.StmtLstThen, null, null);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-                        }
-                        break;
-
-                    case "else":
-                        {
-                            //create stmtLstNode under currentUpNode
-                            actualNode = CreateTNode(TNodeTypeEnum.StmtLstElse, null, null);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-                        }
-                        break;
-
-                    // assign
                     default:
                         {
-                            actualNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            SetCurrentUpNode(ref currentUpNode, actualNode);
-
-                            actualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[0]));
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
-                            CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
-
-                            // create subTree of entire expression
-                            TNode tmpUpNode = null, tmpActualNode = null, tmpLeftNode = null;
-                            List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
-                            for (int i = 2; i < lineWords.Length - 1 && lineWords[i][0] != 125; i += 2)
-                            {
-                                if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
-                                {
-                                    tmpLeftNode = null;
-                                    while (i < lineWords.Length - 1 && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
-                                    {
-                                        tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null);
-                                        //create L
-                                        if (tmpLeftNode is null)
-                                        {
-                                            if (wordIsConstant(lineWords[i]))
-                                            {
-                                                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                                                tmpActualNode.value = Int32.Parse(lineWords[i]);
-                                            }
-                                            else
-                                            {
-                                                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
-                                            }
-                                            tmpLeftNode = tmpActualNode;
-                                        }
-                                        CreateLink(TLinkTypeEnum.Up, tmpLeftNode, tmpUpNode);
-                                        CreateLink(TLinkTypeEnum.FirstChild, tmpUpNode, tmpLeftNode);
-
-                                        //create P
-                                        if (wordIsConstant(lineWords[i + 2]))
-                                        {
-                                            tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                                            tmpActualNode.value = Int32.Parse(lineWords[i + 2]);
-                                        }
-                                        else
-                                        {
-                                            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]));
-                                        }
-                                        CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
-                                        CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
-
-                                        tmpLeftNode = tmpUpNode;
-                                        i += 2;
-                                    }
-                                    ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
-                                    i += 2;
-                                }
-
-                                if (i < lineWords.Length - 1)
-                                {
-                                    if (wordIsConstant(lineWords[i]))
-                                    {
-                                        tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                                        tmpActualNode.value = Int32.Parse(lineWords[i]);
-                                    }
-                                    else
-                                    {
-                                        tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
-                                    }
-                                    ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
-                                }
-                            }
-
-                            tmpLeftNode = ListExpr[0].TNode;
-                            if (ListExpr.Count() > 1)
-                            {
-                                for (int i = 0; i < ListExpr.Count(); i++)
-                                {
-                                    if (ListExpr[i].sign != SignEnum.Semicolon)
-                                    {
-                                        tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null);
-                                        CreateLink(TLinkTypeEnum.Up, tmpLeftNode, tmpActualNode);
-                                        CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
-                                        CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpLeftNode);
-                                        CreateLink(TLinkTypeEnum.RightSibling, tmpLeftNode, ListExpr[i + 1].TNode);
-
-                                        tmpLeftNode = tmpActualNode;
-                                    }
-                                }
-
-                                ListExpr.Clear();
-                            }
-
-                            CreateLink(TLinkTypeEnum.Up, tmpLeftNode, currentUpNode);
-                            CreateFirstChildOrRightSiblingLink(currentUpNode, tmpLeftNode);
-
-                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-
-                            //what if end of statement???
-                            HandleGoingBackOnTheTree(ref currentUpNode, lineWords);
+                            BuildAssign(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
                         }
                         break;
                 }
@@ -234,8 +94,376 @@ namespace SpaWpfApp.Ast
         }
 
 
+        private void BuildAssign(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
+        {
+            TNode newNode = null, leftSideOfAssignNode = null;
+            newNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null);
+            if (actualNode.type == TNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w stmtLst
+            {
+                currentUpNode = actualNode;
+                CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, newNode);
+            }
+            else
+            {
+                CreateLink(TLinkTypeEnum.RightSibling, actualNode, newNode);
+            }
+            CreateLink(TLinkTypeEnum.Up, newNode, currentUpNode);
+            actualNode = newNode;
+
+            //node forVariable
+            leftSideOfAssignNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[0]));
+            CreateLink(TLinkTypeEnum.FirstChild, actualNode, leftSideOfAssignNode);
+            CreateLink(TLinkTypeEnum.Up, leftSideOfAssignNode, actualNode);
 
 
+            // create subTree of entire expression
+            TNode tmpUpNode = null, tmpActualNode = null, tmpRightNode = null;
+            List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
+            for (int i = 2; i < lineWords.Length - 1 && lineWords[i][0] != 125; i += 2)
+            {
+                if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
+                {
+                    tmpRightNode = null;
+                    while (i < lineWords.Length - 1 && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
+                    {
+                        tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null);
+                        //create L
+                        if (tmpRightNode is null)
+                        {
+                            if (WordIsConstant(lineWords[i]))
+                            {
+                                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
+                                tmpActualNode.value = Int32.Parse(lineWords[i]);
+                            }
+                            else
+                            {
+                                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
+                            }
+                            tmpRightNode = tmpActualNode;
+                        }
+                        CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpUpNode);
+                        CreateLink(TLinkTypeEnum.FirstChild, tmpUpNode, tmpRightNode);
+
+                        //create P
+                        if (WordIsConstant(lineWords[i + 2]))
+                        {
+                            tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
+                            tmpActualNode.value = Int32.Parse(lineWords[i + 2]);
+                        }
+                        else
+                        {
+                            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]));
+                        }
+                        CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
+                        CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
+
+                        tmpRightNode = tmpUpNode;
+                        i += 2;
+                    }
+                    ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
+                    i += 2;
+                }
+
+                if (i < lineWords.Length - 1)
+                {
+                    if (WordIsConstant(lineWords[i]))
+                    {
+                        tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
+                        tmpActualNode.value = Int32.Parse(lineWords[i]);
+                    }
+                    else
+                    {
+                        tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
+                    }
+                    ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
+                }
+            }
+
+            tmpRightNode = ListExpr[0].TNode;
+            if (ListExpr.Count() > 1)
+            {
+                for (int i = 0; i < ListExpr.Count(); i++)
+                {
+                    if (ListExpr[i].sign != SignEnum.Semicolon)
+                    {
+                        tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null);
+                        CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
+                        CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
+                        CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
+                        CreateLink(TLinkTypeEnum.RightSibling, tmpRightNode, ListExpr[i + 1].TNode);
+
+                        tmpRightNode = tmpActualNode;
+                    }
+                }
+
+                ListExpr.Clear();
+            }
+
+            CreateLink(TLinkTypeEnum.Up, tmpRightNode, actualNode);
+            CreateLink(TLinkTypeEnum.RightSibling, leftSideOfAssignNode, tmpRightNode);
+        }
+        private void BuildCall(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
+        {
+            TNode newNode = CreateTNode(TNodeTypeEnum.Call, ++programLineNumber, Pkb.GetProcIndex(lineWords[1]));
+
+            if(actualNode.type == TNodeTypeEnum.StmtLst)
+            {
+                currentUpNode = actualNode;
+                CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, newNode);
+            }
+            else
+            {
+                CreateLink(TLinkTypeEnum.RightSibling, actualNode, newNode);
+            }
+            CreateLink(TLinkTypeEnum.Up, newNode, currentUpNode);
+
+            actualNode = newNode;
+        }
+        private void BuildIf(string[] sourceCodeLines, ref int i, ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, ref int howManyStatementsEnd)
+        {
+            string[] lineWords = sourceCodeLines[i].Split(' ');
+            TNode ifNodeMain, variableIfNode;
+
+            #region create node for if, variableIf, stmtLst and remember node if
+            //zapamietaj
+            ifNodeMain = CreateTNode(TNodeTypeEnum.If, ++programLineNumber, null);
+
+            if (actualNode.type == TNodeTypeEnum.StmtLst)
+            {
+                currentUpNode = actualNode;
+                CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, ifNodeMain);
+            }
+            else
+            {
+                CreateLink(TLinkTypeEnum.RightSibling, actualNode, ifNodeMain);
+            }
+            CreateLink(TLinkTypeEnum.Up, ifNodeMain, currentUpNode);
+
+            variableIfNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
+            CreateLink(TLinkTypeEnum.Up, variableIfNode, ifNodeMain);
+            CreateLink(TLinkTypeEnum.FirstChild, ifNodeMain, variableIfNode);
+
+            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+            CreateLink(TLinkTypeEnum.Up, actualNode, ifNodeMain);
+            CreateLink(TLinkTypeEnum.RightSibling, variableIfNode, actualNode);
+
+            currentUpNode = ifNodeMain;
+            #endregion
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
+                {
+                    case "else":
+                        {
+                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+                            CreateLink(TLinkTypeEnum.Up, actualNode, ifNodeMain);
+                            CreateLink(TLinkTypeEnum.RightSibling, variableIfNode.rightSibling, actualNode);
+                            currentUpNode = actualNode.up;
+
+                            BuildElse(sourceCodeLines, ref i, ref currentUpNode, ref ifNodeMain, ref programLineNumber, ref howManyStatementsEnd);
+
+                            actualNode = ifNodeMain;
+                            currentUpNode = actualNode.up;
+
+                            return;
+                        }
+                        break;
+
+                    case "while":
+                        {
+                            BuildWhile(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                        }
+                        break;
+
+                    case "if":
+                        {
+                            BuildIf(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                        }
+                        break;
+
+                    case "call":
+                        {
+                            BuildCall(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd)) // end of then section
+                            {
+                                actualNode = ifNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                            }
+                        }
+                        break;
+
+                    default:
+                        {
+                            BuildAssign(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd)) // end of then section
+                            {
+                                actualNode = ifNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        private void BuildElse(string[] sourceCodeLines, ref int i, ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, ref int howManyStatementsEnd)
+        {
+            string[] lineWords;
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
+                {
+                    case "while":
+                        {
+                            BuildWhile(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                            if (howManyStatementsEnd > 0)
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "if":
+                        {
+                            BuildIf(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+
+                            if (howManyStatementsEnd > 0)
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "call":
+                        {
+                            BuildCall(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd))
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+                    default:
+                        {
+                            BuildAssign(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd))
+                            {
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        private void BuildWhile(string[] sourceCodeLines, ref int i, ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, ref int howManyStatementsEnd)
+        {
+            string[] lineWords = sourceCodeLines[i].Split(' ');
+            TNode whileNodeMain, variableWhileNode;
+
+            #region create node for while and remember it
+            //zapamietaj
+            whileNodeMain = CreateTNode(TNodeTypeEnum.While, ++programLineNumber, null);
+
+            if (actualNode.type == TNodeTypeEnum.StmtLst)
+            {
+                currentUpNode = actualNode;
+                CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, whileNodeMain);
+            }
+            else
+            {
+                CreateLink(TLinkTypeEnum.RightSibling, actualNode, whileNodeMain);
+            }
+            CreateLink(TLinkTypeEnum.Up, whileNodeMain, currentUpNode);
+
+            variableWhileNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
+            CreateLink(TLinkTypeEnum.FirstChild, whileNodeMain, variableWhileNode);
+            CreateLink(TLinkTypeEnum.Up, variableWhileNode, whileNodeMain);
+
+            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+            CreateLink(TLinkTypeEnum.RightSibling, variableWhileNode, actualNode);
+            CreateLink(TLinkTypeEnum.Up, actualNode, whileNodeMain);
+
+            currentUpNode = whileNodeMain;
+            #endregion
+
+            for (++i; i < sourceCodeLines.Length - 1; i++)
+            {
+                lineWords = sourceCodeLines[i].Split(' ');
+
+                switch (lineWords[0])
+                {
+                    case "while":
+                        {
+                            BuildWhile(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                            if (howManyStatementsEnd > 0)
+                            {
+                                actualNode = whileNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "if":
+                        {
+                            BuildIf(sourceCodeLines, ref i, ref currentUpNode, ref actualNode, ref programLineNumber, ref howManyStatementsEnd);
+                            if (howManyStatementsEnd > 0)
+                            {
+                                actualNode = whileNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    case "call":
+                        {
+                            BuildCall(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd))
+                            {
+                                actualNode = whileNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+
+                    default:
+                        {
+                            BuildAssign(ref currentUpNode, ref actualNode, ref programLineNumber, lineWords);
+
+                            if (EndOfStatement(lineWords, ref howManyStatementsEnd))
+                            {
+                                actualNode = whileNodeMain;
+                                currentUpNode = actualNode.up;
+                                --howManyStatementsEnd;
+                                return;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        
+        
 
         private TNode CreateTNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName)
         {
@@ -271,11 +499,11 @@ namespace SpaWpfApp.Ast
                 CreateLink(TLinkTypeEnum.FirstChild, currentUpNode, actualNode);
             }
         }
-
-
-        private void SetCurrentUpNode(ref TNode currentUpNode, TNode newCurrentUpNode)
+        private bool EndOfStatement(string[] lineWords, ref int howManyStatementsEnd)
         {
-            currentUpNode = newCurrentUpNode;
+            howManyStatementsEnd = DetermineHowManyStatementsEnd(lineWords);
+
+            return howManyStatementsEnd > 0 ? true : false;
         }
         private TNode FindLastChild(TNode root)
         {
@@ -284,63 +512,8 @@ namespace SpaWpfApp.Ast
             { tmp = tmp.rightSibling; }
 
             return tmp;
-        }
-
-
-        private void HandleGoingBackOnTheTree(ref TNode currentUpNode, string[] lineWords)
-        {
-            int howManyLevelUp = determineHowManyLevelUp(lineWords);
-            if (howManyLevelUp > 0)
-            {
-                FindAndSetCurrentUpNode(howManyLevelUp, ref currentUpNode);
-            }
-        }
-        private void FindAndSetCurrentUpNode(int howManyLevelUp, ref TNode currentUpNode)
-        {
-            TNode lastChild;
-
-            for (int i = 0; i < howManyLevelUp; i++)
-            {
-                
-                switch (currentUpNode.type)
-                {
-                    case TNodeTypeEnum.StmtLstThen:
-                        {
-                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        }
-                        break;
-
-                    case TNodeTypeEnum.StmtLstElse:
-                        {
-                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        }
-                        break;
-
-                    case TNodeTypeEnum.If:
-                        lastChild = FindLastChild(currentUpNode);
-                        if (lastChild.type == TNodeTypeEnum.StmtLstElse)
-                        {
-                            SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        }
-                        break;
-
-                    case TNodeTypeEnum.While:
-                        SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        break;
-
-                    case TNodeTypeEnum.Procedure:
-                        SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        break;
-
-                    default:
-                        SetCurrentUpNode(ref currentUpNode, currentUpNode.up);
-                        break;
-                }
-
-            }
-        }
-        private int determineHowManyLevelUp(string[] lineWords)
+        }               
+        private int DetermineHowManyStatementsEnd(string[] lineWords)
         {
             int i = lineWords.Length - 1;
             int closeBracketCounter = 0;
@@ -370,7 +543,7 @@ namespace SpaWpfApp.Ast
                 default: return ";";
             }
         }
-        private bool wordIsConstant(string v)
+        private bool WordIsConstant(string v)
         {
             for (int i = 0; i < v.Length; i++)
             {
@@ -379,8 +552,10 @@ namespace SpaWpfApp.Ast
 
             return true;
         }
+        #endregion
 
 
+        #region API methods
         /// <summary>
         /// returns Parent of stmt or null if stmt does't have Parent
         /// </summary>
@@ -498,35 +673,7 @@ namespace SpaWpfApp.Ast
             children.Remove(children.Where(p => p.programLine == p_programLineNumber).FirstOrDefault());
             return children.Count() > 0 ? children : null;
         }
-
-        public void FindAllChildrenS(ref List<TNode> children, TNode parent)
-        {
-            TNode tmp;
-            List<TNode> tmpChildren;
-            if (parent.firstChild is null)
-            {
-                return;
-            }
-
-
-            if (parent.type == TNodeTypeEnum.While || parent.type == TNodeTypeEnum.If || parent.type == TNodeTypeEnum.Assign || parent.type == TNodeTypeEnum.Call)
-            {
-                children.Add(parent);
-            }
-
-            tmpChildren = new List<TNode>();
-            tmp = parent.firstChild;
-            tmpChildren.Add(tmp);
-            while (tmp.rightSibling != null)
-            {
-                tmp = tmp.rightSibling;
-                tmpChildren.Add(tmp);
-            }
-            foreach (var c in tmpChildren)
-            {
-                FindAllChildrenS(ref children, c);
-            }
-        }
+        
 
 
 
@@ -539,7 +686,7 @@ namespace SpaWpfApp.Ast
         {
             TNode tmp = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault();
 
-            if(tmp.rightSibling is null)
+            if (tmp.rightSibling is null)
             {
                 return null;
             }
@@ -559,13 +706,13 @@ namespace SpaWpfApp.Ast
             TNode parent = NodeList.Where(p => p.programLine == p_programLineNumber).FirstOrDefault().up;
             TNode tmp = parent.firstChild;
 
-            if(tmp.programLine == p_programLineNumber) // if stmt is the only child
+            if (tmp.programLine == p_programLineNumber) // if stmt is the only child
             {
                 return null;
             }
             else
             {
-                while(tmp.rightSibling.programLine != p_programLineNumber)
+                while (tmp.rightSibling.programLine != p_programLineNumber)
                 {
                     tmp = tmp.rightSibling;
                 }
@@ -628,5 +775,38 @@ namespace SpaWpfApp.Ast
                 return leftSiblingS;
             }
         }
+        #endregion
+
+
+        #region helpful methods for API
+        public void FindAllChildrenS(ref List<TNode> children, TNode parent)
+        {
+            TNode tmp;
+            List<TNode> tmpChildren;
+            if (parent.firstChild is null)
+            {
+                return;
+            }
+
+
+            if (parent.type == TNodeTypeEnum.While || parent.type == TNodeTypeEnum.If || parent.type == TNodeTypeEnum.Assign || parent.type == TNodeTypeEnum.Call)
+            {
+                children.Add(parent);
+            }
+
+            tmpChildren = new List<TNode>();
+            tmp = parent.firstChild;
+            tmpChildren.Add(tmp);
+            while (tmp.rightSibling != null)
+            {
+                tmp = tmp.rightSibling;
+                tmpChildren.Add(tmp);
+            }
+            foreach (var c in tmpChildren)
+            {
+                FindAllChildrenS(ref children, c);
+            }
+        }
+        #endregion
     }
 }

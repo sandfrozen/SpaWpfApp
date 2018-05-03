@@ -20,7 +20,6 @@ namespace SpaWpfApp.Cfg
 
 
         #region methods to build Cfg
-
         private void BuildCfgList(string p_sourceCode)
         {
             GNode currentPreviousNode = null;
@@ -75,8 +74,6 @@ namespace SpaWpfApp.Cfg
             this.CfgList.Add(actualCfgStructure);
         }
 
-
-
         private void BuildAssignCall(ref GNode currentPreviousNode, ref GNode actualNode, ref ProcedureCfg actualCfgStructure, ref int programLineNumber)
         {
             if (actualNode == null) // jesli pierwsza instrukcja w procedurze
@@ -98,7 +95,6 @@ namespace SpaWpfApp.Cfg
                 actualNode.programLineList.Add(++programLineNumber);
             }
         }
-
         private void BuildIf(string[] sourceCodeLines, ref int i, ref GNode currentPreviousNode, ref GNode actualNode, ref ProcedureCfg actualCfgStructure, ref int programLineNumber, ref int howManyStatementsEnd)
         {
             string[] lineWords;
@@ -173,7 +169,6 @@ namespace SpaWpfApp.Cfg
                 }
             }
         }
-
         private void BuildElse(string[] sourceCodeLines, ref int i, ref GNode currentPreviousNode, ref GNode actualNode, ref ProcedureCfg actualCfgStructure, ref int programLineNumber, ref int howManyStatementsEnd)
         {
             string[] lineWords;
@@ -221,7 +216,6 @@ namespace SpaWpfApp.Cfg
                 }
             }
         }
-
         private void BuildWhile(string[] sourceCodeLines, ref int i, ref GNode currentPreviousNode, ref GNode actualNode, ref ProcedureCfg actualCfgStructure, ref int programLineNumber, ref int howManyStatementsEnd)
         {
             string[] lineWords;
@@ -296,14 +290,12 @@ namespace SpaWpfApp.Cfg
             actualNode = whileNodeMain;
             --howManyStatementsEnd;
         }
-
         private bool EndOfStatement(string[] lineWords, ref int howManyStatementsEnd)
         {
             howManyStatementsEnd = DetermineHowManyStatementsEnd(lineWords);
 
             return howManyStatementsEnd > 0 ? true : false;
         }
-
         private int DetermineHowManyStatementsEnd(string[] lineWords)
         {
             int i = lineWords.Length - 1;
@@ -314,7 +306,6 @@ namespace SpaWpfApp.Cfg
 
             return closeBracketCounter;
         }
-
         #endregion
 
 
