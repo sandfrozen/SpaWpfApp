@@ -22,12 +22,13 @@ namespace SpaWpfApp.Ast
     {
         private List<TNode> NodeList { get; set; }
         private PkbAPI Pkb;
-        TNode rootNode = null;
+        TNode rootNode;
 
         public AstManager(string sourceCode, PkbAPI Pkb)
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();
+            this.rootNode = null;
 
             BuildTree(sourceCode);
         }
