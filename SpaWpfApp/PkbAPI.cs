@@ -77,7 +77,7 @@ namespace SpaWpfApp
         /// </summary>
         /// <param name="proc1">procedure name which calls proc2</param>
         /// <param name="proc2">procedure name which is called by proc1</param>
-        void SetCalls(String proc1, String proc2);
+        void SetCalls(String proc1, String proc2, int p_line_number);
         /// <summary>
         /// returns list of procedures that are calling 'proc'
         /// </summary>
@@ -90,6 +90,14 @@ namespace SpaWpfApp
         /// <param name="proc">procedure name</param>
         /// <returns>list of procedures that are called by 'proc'</returns>
         List<String> GetCalled(String proc);
+
+        /// <summary>
+        /// returns list of int(calls) which are calling 'proc'
+        /// </summary>
+        /// <param name="proc"></param>
+        /// <returns></returns>
+        List<int> GetCallStmts(String proc);
+        
         /// <summary>
         /// returns true if proc1 calls proc2
         /// </summary>
