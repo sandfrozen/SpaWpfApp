@@ -732,6 +732,56 @@ namespace SpaWpfApp.Ast
 
             return leftSiblingS;
         }
+
+
+
+        public bool IsParent(int p1, int p2)
+        {
+            return ParentTable[p2 - 1] == p1 ? true : false;
+        }
+
+        public bool IsParentS(int p1, int p2)
+        {
+            int parent;
+
+            parent = ParentTable[p2 - 1];
+
+            while(parent != -1)
+            {
+                if(parent == p1)
+                {
+                    return true;
+                }
+
+                parent = ParentTable[parent - 1];
+            }
+
+            return false;
+        }
+
+        public bool IsFollows(int p1, int p2)
+        {
+            return FollowsTable[p1 - 1] == p2 ? true : false;
+        }
+
+        public bool IsFollowsS(int p1, int p2)
+        {
+            int follows;
+
+            follows = FollowsTable[p1 - 1];
+
+            while (follows != -1)
+            {
+                if (follows == p2)
+                {
+                    return true;
+                }
+
+                follows = FollowsTable[follows - 1];
+            }
+
+            return false;
+        }
         #endregion
 
 

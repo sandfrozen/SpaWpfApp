@@ -36,6 +36,8 @@ namespace SpaWpfApp.Ast
         /// <returns></returns>
         List<int> GetChildrenS(int p_programLineNumber);
 
+        Boolean IsParent(int p1, int p2);
+        Boolean IsParentS(int p1, int p2);
 
 
 
@@ -67,5 +69,8 @@ namespace SpaWpfApp.Ast
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
         List<int> GetLeftSiblingS(int p_programLineNumber);
+
+        Boolean IsFollows(int p1, int p2);
+        Boolean IsFollowsS(int p1, int p2);
     }
 }
