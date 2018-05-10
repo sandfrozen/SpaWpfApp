@@ -107,6 +107,15 @@ namespace SpaWpfApp
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
                 pkbCreatedLabel.Content = "Yes";
+
+                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+
+                //pkb = new Pkb(20, 1, 3);
+                //pkb.InsertProc("p500");
+
+                //pkb.InsertVar("x");
+                //pkb.InsertVar("i");
+                //pkb.InsertVar("y");
             }
             catch
             {
@@ -121,10 +130,10 @@ namespace SpaWpfApp
                 result = astManager.GetChildrenS(6);
                 result = astManager.GetParentS(6);
 
-                bool r = astManager.IsFollows(4, 6);
-                r = astManager.IsFollowsS(4, 6);
-                r = astManager.IsParent(6, 8);
-                r = astManager.IsParentS(6, 4);
+                bool r = astManager.IsFollows(9, 11);
+                r = astManager.IsFollowsS(5, 14);
+                r = astManager.IsParent(8, 10);
+                r = astManager.IsParentS(8, 10);
                 astCreatedLabel.Content = "Yes";
             }
             catch
@@ -136,6 +145,8 @@ namespace SpaWpfApp
             try
             {
                 CfgAPI cfgManager = new CfgManager(parsed);
+                bool r = cfgManager.IsNext(11, 13);
+                r = cfgManager.IsNext(9, 12);
                 cfgCreatedLabel.Content = "Yes";
             }
             catch
