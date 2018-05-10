@@ -20,7 +20,7 @@ namespace SpaWpfApp.Parser
 
         public List<string> ProcedureNames = new List<string>();
         public List<(string, int)> VariableNames = new List<(string, int)>();
-        public List<(string, string)> Calls = new List<(string, string)>();
+        public List<(string, string, int)> Calls = new List<(string, string, int)>();
         public List<(string, int)> Modifies = new List<(string, int)>();
 
         public Pkb pkb;
@@ -51,7 +51,7 @@ namespace SpaWpfApp.Parser
             parsedSourceCode = null;
             ProcedureNames = new List<string>();
             VariableNames = new List<(string, int)>();
-            Calls = new List<(string, string)>();
+            Calls = new List<(string, string, int)>();
             Modifies = new List<(string, int)>();
 
             string[] wordsInCode = GetWordsInCode();
@@ -92,7 +92,7 @@ namespace SpaWpfApp.Parser
             }
             foreach (var item in Calls)
             {
-                pkb.SetCalls(item.Item1, item.Item2);
+                pkb.SetCalls(item.Item1, item.Item2, item.Item3);
             }
             foreach (var item in Modifies)
             {

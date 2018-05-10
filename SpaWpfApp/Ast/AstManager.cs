@@ -24,7 +24,7 @@ namespace SpaWpfApp.Ast
         private int[] FollowsTable;
         private int[] ParentTable;
         private PkbAPI Pkb;
-        TNode rootNode = null;
+        TNode rootNode;
 
         public AstManager(string sourceCode, PkbAPI Pkb)
         {
@@ -32,6 +32,7 @@ namespace SpaWpfApp.Ast
             this.NodeList = new List<TNode>();
             this.FollowsTable = new int[Pkb.GetNumberOfLines()];
             this.ParentTable = new int[Pkb.GetNumberOfLines()];
+            this.rootNode = null;
 
             BuildTree(sourceCode);
             GenerateFollowsParentTables(rootNode);

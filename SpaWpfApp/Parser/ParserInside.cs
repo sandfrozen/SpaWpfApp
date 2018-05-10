@@ -78,7 +78,7 @@ namespace SpaWpfApp.Parser
         private void ParseCall()
         {
             ParserMain.Instance.numberOfLines++;
-            ParserMain.Instance.Calls.Add((ParserMain.Instance.CurrentProcedure, words[curentIndex+1]));
+            ParserMain.Instance.Calls.Add((ParserMain.Instance.CurrentProcedure, words[curentIndex+1], ParserMain.Instance.numberOfLines));
             parsedCode += words[GetIndex()] + ParserHelpers.space + EndOfLine(words[GetIndex(true)]) + Environment.NewLine;
         }
         private void ParseWhile()
