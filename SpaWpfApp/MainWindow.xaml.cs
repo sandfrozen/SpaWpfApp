@@ -117,6 +117,10 @@ namespace SpaWpfApp
             try
             {
                 AstAPI astManager = new AstManager(parsed, pkb);
+                List<int> result = astManager.GetChildren(1);
+                result = astManager.GetChildrenS(1);
+                result = astManager.GetParentS(8);
+
                 astCreatedLabel.Content = "Yes";
             }
             catch
