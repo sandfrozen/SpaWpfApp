@@ -17,8 +17,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private List<string> selectClauses;
         private Dictionary<string, Action> relationshipReferences;
-        private Dictionary<string, string> declarationsList;
-        private Dictionary<string, string> returnList;
+        public Dictionary<string, string> declarationsList { get; set; }
+        public  Dictionary<string, string> returnList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -38,20 +38,20 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
             relationshipReferences = new Dictionary<string, Action> {
-                { "ModifiesP", CheckModifies},
-                { "ModifiesS", CheckModifies},
-                { "UsesP", CheckModifies},
-                { "UsesS", CheckModifies},
+                { "Modifies", CheckModifies},
+                { "Modifies*", CheckModifies},
+                { "Uses", CheckModifies},
+                { "Uses*", CheckModifies},
                 { "Calls", CheckModifies},
-                { "CallsT", CheckModifies},
+                { "Calls*", CheckModifies},
                 { "Parent", CheckModifies},
-                { "ParentT", CheckModifies},
+                { "Parent*", CheckModifies},
                 { "Follows", CheckModifies},
-                { "FollowsT", CheckModifies},
+                { "Follows*", CheckModifies},
                 { "Next", CheckModifies},
-                { "NextT", CheckModifies},
+                { "Next*", CheckModifies},
                 { "Affects", CheckModifies},
-                { "AffectsT",CheckModifies },
+                { "Affects*",CheckModifies },
             };
             selectClauses = new List<string>
             {
@@ -393,6 +393,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             CheckRelationship(relationship);
+
+
 
             Trace.WriteLine("Relationship: " + relationship);
             parsedQuery += " " + relationship;
