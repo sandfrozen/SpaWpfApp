@@ -310,11 +310,6 @@ namespace SpaWpfApp.Cfg
 
 
         #region API methods
-        /// <summary>
-        /// returns list of Next programLines or null if parameter is last instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
         public List<int> Next(int p_programLineNumber)
         {
             List<int> resultList = new List<int>();
@@ -345,17 +340,12 @@ namespace SpaWpfApp.Cfg
             }
             else
             {
-                resultList = null;
+                resultList.Add(-1);
             }
 
             return resultList;
         }
 
-        /// <summary>
-        /// returns list of NextS programLines or null if parameter is last instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
         public List<int> NextS(int p_programLineNumber)
         {
             List<int> resultList = new List<int>();
@@ -383,15 +373,15 @@ namespace SpaWpfApp.Cfg
 
             FindAndAddAllNextSInNextNodes(actual, ref resultList);
 
-            return resultList.Count() > 0 ? resultList : null;
+            if(resultList.Count() == 0)
+            {
+                resultList.Add(-1);
+            }
+
+            return resultList;
         }
 
 
-        /// <summary>
-        /// returns list of Previous programLines or null if parameter is first instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
         public List<int> Previous(int p_programLineNumber)
         {
             List<int> resultList = new List<int>();
@@ -421,17 +411,12 @@ namespace SpaWpfApp.Cfg
             }
             else
             {
-                resultList = null;
+                resultList.Add(-1);
             }
 
             return resultList;
         }
 
-        /// <summary>
-        /// returns list of PreviousS programLines or null if parameter is first instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
         public List<int> PreviousS(int p_programLineNumber)
         {
             List<int> resultList = new List<int>();
@@ -458,7 +443,80 @@ namespace SpaWpfApp.Cfg
 
             FindAndAddAllPreviousSInPreviousNodes(actual, ref resultList);
 
-            return resultList.Count() > 0 ? resultList : null;
+            if(resultList.Count() == 0)
+            {
+                resultList.Add(-1);
+            }
+            return resultList;
+        }
+
+        public bool IsNext(int p1, int p2)
+        {
+            List<int> nextList = this.Next(p1);
+
+            foreach(var v in nextList)
+            {
+                if(v == p2)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsNextS(int p1, int p2)
+        {
+            ProcedureCfg cfg = FindCfg(p1);
+            int programLinesInNode;
+
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p1)).FirstOrDefault();
+
+            programLinesInNode = actual.programLineList.Count();
+
+            if (programLinesInNode > 1) // jesli nextS w tym samym nodzie
+            {
+                for (int i = 0; i < programLinesInNode; i++)
+                {
+                    if (actual.programLineList[i] == p1 &&
+                        (i + 1) < programLinesInNode)
+                    {
+                        for (int j = i + 1; j < programLinesInNode; j++)
+                        {
+                            if(actual.programLineList.ElementAt(j) == p2)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return CheckIfNextSInNextNodes(actual, p2);
+        }
+
+        private Boolean CheckIfNextSInNextNodes(GNode actual, int p2)
+        {
+            foreach (var n in actual.nextGNodeList)
+            {
+                if (n.type != GNodeTypeEnum.Ghost)
+                {
+                    foreach (var i in n.programLineList)
+                    {
+                        if(i == p2)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (n.nextGNodeList.Count() > 0)
+                {
+                    CheckIfNextSInNextNodes(n, p2);
+                }
+            }
+
+            return false;
         }
 
         #endregion
