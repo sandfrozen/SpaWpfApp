@@ -1,0 +1,96 @@
+﻿<Window x:Class="SpaWpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SpaWpfApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
+        <RichTextBox x:Name="procedureRichTextBox" HorizontalAlignment="Left" Height="374" Margin="10,35,0,0" VerticalAlignment="Top" Width="235">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </RichTextBox.Resources>
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="procedure First {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = 2 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = 3 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="call Second ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="procedure Second {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = 0 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="i = 5 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="while i {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x + 2 * y ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="call Third ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="i = i - 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="if x then {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x + 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="else {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = 1 ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = z + x + i ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="y = z + 2 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="x = x * y + z ; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="procedure Third {"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="z = 5 ;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="v = z ; }"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click"/>
+        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click"/>
+        <Label x:Name="label" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587"/>
+        <Label x:Name="label1" Content="Parsed?" HorizontalAlignment="Left" Margin="272,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy" Content="PKB created?" HorizontalAlignment="Left" Margin="250,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy1" Content="AST created?" HorizontalAlignment="Left" Margin="250,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="label1_Copy2" Content="CFG created?" HorizontalAlignment="Left" Margin="250,113,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.229,-0.925"/>
+        <Label x:Name="parsedLabel" Content="no" HorizontalAlignment="Left" Margin="327,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="pkbCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="astCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,87,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+        <Label x:Name="cfgCreatedLabel" Content="no" HorizontalAlignment="Left" Margin="327,113,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.715,0.451" Width="455"/>
+
+    </Grid>
+</Window>

@@ -57,7 +57,7 @@ namespace SpaWpfApp
         }
         private void parseButton_Click(object sender, RoutedEventArgs e)
         {
-            SetLogLabels("no");
+            logsRichTextBox.Document.Blocks.Clear();
             Trace.WriteLine("Parse clicked");
             //string code =
             //    "procedure First {" + Environment.NewLine +
@@ -88,12 +88,13 @@ namespace SpaWpfApp
                 parsed = ParserMain.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
                 Trace.WriteLine("===================LAST PARSER======================");
                 Trace.WriteLine(parsed);
-                parsedLabel.Content = "Yes";
+
+                addLog("Source Code Parser: Ok");
                 //MessageBox.Show("Code is ok", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (WrongCodeException)
+            catch (WrongCodeException ex)
             {
-                parsedLabel.Content = "Error: " + MessageBoxImage.Information;
+                addLog("Source Code Parser: Error:\n" + ex);
                 //MessageBox.Show("Error in code", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -107,7 +108,8 @@ namespace SpaWpfApp
                 pkb.PrintModifiesTable();
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
-                pkbCreatedLabel.Content = "Yes";
+
+                addLog("PKB Created: Ok");
 
                 //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
 
@@ -118,9 +120,9 @@ namespace SpaWpfApp
                 //pkb.InsertVar("i");
                 //pkb.InsertVar("y");
             }
-            catch
+            catch (Exception ex)
             {
-                pkbCreatedLabel.Content = "Error";
+                addLog("PKB Created: Error:\n" + ex);
                 return;
             }
 
@@ -135,11 +137,12 @@ namespace SpaWpfApp
                 r = astManager.IsFollowsS(5, 14);
                 r = astManager.IsParent(8, 10);
                 r = astManager.IsParentS(8, 10);
-                astCreatedLabel.Content = "Yes";
+
+                addLog("AST Created: Ok");
             }
-            catch
+            catch (Exception ex)
             {
-                astCreatedLabel.Content = "Error";
+                addLog("AST Created: Error:\n" + ex);
                 return;
             }
 
@@ -148,11 +151,11 @@ namespace SpaWpfApp
                 CfgAPI cfgManager = new CfgManager(parsed);
                 bool r = cfgManager.IsNext(11, 13);
                 r = cfgManager.IsNext(9, 12);
-                cfgCreatedLabel.Content = "Yes";
+                addLog("CFG Created: Ok");
             }
-            catch
+            catch (Exception ex)
             {
-                cfgCreatedLabel.Content = "Error";
+                addLog("CFG Created: Error:\n" + ex);
                 return;
             }
         }
@@ -166,39 +169,44 @@ namespace SpaWpfApp
             return textRange.Text;
         }
 
-        private void SetLogLabels(String value)
-        {
-            parsedLabel.Content = value;
-            pkbCreatedLabel.Content = value;
-            astCreatedLabel.Content = value;
-        }
-
-
-
-        private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
+        private void parseQueryButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
                 queryRichTextBox.Document.Blocks.Clear();
                 queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
-                queryInfoLabel.Content = "Query is ok";
+                addLog("PQL Parser: Ok");
             }
             catch (QueryException ex)
             {
-                queryInfoLabel.Content = ex.Message;
+                addLog("PQL Parser: QueryException:\n" + ex.Message);
                 //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (WrongQueryFromatException ex)
             {
-                queryInfoLabel.Content = ex.Message;
+                addLog("PQL Parser: WrongQueryFromatException:\n" + ex.Message);
                 //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                queryInfoLabel.Content = ex.Message;
+                addLog("PQL Parser: Error:\n" + ex.Message);
                 //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+        }
+
+        private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            resultRichTextBox.Document.Blocks.Clear();
+            string now = DateTime.Now.ToLongTimeString();
+            resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
+        }
+
+        private void addLog(string log)
+        {
+            string now = DateTime.Now.ToLongTimeString();
+            logsRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " " + log)));
+            logsRichTextBox.ScrollToEnd();
         }
     }
 }
