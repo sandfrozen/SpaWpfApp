@@ -19,6 +19,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> relationshipReferences;
         private Dictionary<string, string> declarationsList;
         private Dictionary<string, string> returnList;
+        private List<Relation> relationsList;
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -37,21 +38,22 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
+            relationsList = new List<Relation>();
             relationshipReferences = new Dictionary<string, Action> {
-                { "ModifiesP", CheckModifies},
-                { "ModifiesS", CheckModifies},
-                { "UsesP", CheckModifies},
-                { "UsesS", CheckModifies},
+                { "Modifies", CheckModifies},
+                { "Modifies*", CheckModifies},
+                { "Uses", CheckModifies},
+                { "Uses*", CheckModifies},
                 { "Calls", CheckModifies},
-                { "CallsT", CheckModifies},
+                { "Calls*", CheckModifies},
                 { "Parent", CheckModifies},
-                { "ParentT", CheckModifies},
+                { "Parent*", CheckModifies},
                 { "Follows", CheckModifies},
-                { "FollowsT", CheckModifies},
+                { "Follows*", CheckModifies},
                 { "Next", CheckModifies},
-                { "NextT", CheckModifies},
+                { "Next*", CheckModifies},
                 { "Affects", CheckModifies},
-                { "AffectsT",CheckModifies },
+                { "Affects*",CheckModifies },
             };
             selectClauses = new List<string>
             {
@@ -91,6 +93,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
+            relationsList = new List<Relation>();
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
@@ -191,6 +194,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             foreach (var v in returnList)
             {
                 Trace.WriteLine(v.Value + " " + v.Key);
+            }
+            Trace.WriteLine("Relations List:");
+            foreach (var r in relationsList)
+            {
+                Trace.WriteLine(r.ToString());
             }
 
             return parsedQuery;
@@ -394,7 +402,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             CheckRelationship(relationship);
 
-            Trace.WriteLine("Relationship: " + relationship);
+            //Trace.WriteLine("Relationship: " + relationship);
             parsedQuery += " " + relationship;
         }
 
@@ -404,9 +412,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 string relRef = relationship.Substring(0, relationship.IndexOf('('));
                 relationship = relationship.Substring(relationship.IndexOf('(') + 1);
-                string firstArg = relationship.Substring(0, relationship.IndexOf(','));
+                string arg1 = relationship.Substring(0, relationship.IndexOf(','));
                 relationship = relationship.Substring(relationship.IndexOf(',') + 1);
-                string secArg = relationship.Substring(0, relationship.IndexOf(')'));
+                string arg2 = relationship.Substring(0, relationship.IndexOf(')'));
 
                 switch (relRef)
                 {
@@ -432,6 +440,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     case "AffectsT":
                         break;
                 }
+
+                relationsList.Add(new Relation(relRef, arg1, arg2));
             }
             else
             {
