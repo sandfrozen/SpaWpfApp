@@ -1,5 +1,6 @@
 ﻿
-using SpaWpfApp.ASTFolder;
+using SpaWpfApp.Ast;
+using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.Parser;
 using SpaWpfApp.QueryProcessingSusbsytem;
@@ -107,7 +108,17 @@ namespace SpaWpfApp
                 pkb.PrintUsesTable();
                 Trace.WriteLine(pkb.GetNumberOfLines());
                 pkbCreatedLabel.Content = "Yes";
-            } catch
+
+                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+
+                //pkb = new Pkb(20, 1, 3);
+                //pkb.InsertProc("p500");
+
+                //pkb.InsertVar("x");
+                //pkb.InsertVar("i");
+                //pkb.InsertVar("y");
+            }
+            catch
             {
                 pkbCreatedLabel.Content = "Error";
                 return;
@@ -115,12 +126,33 @@ namespace SpaWpfApp
 
             try
             {
-                ASTAPI ast = new AST(parsed, pkb);
+                AstAPI astManager = new AstManager(parsed, pkb);
+                List<int> result = astManager.GetChildren(6);
+                result = astManager.GetChildrenS(6);
+                result = astManager.GetParentS(6);
+
+                bool r = astManager.IsFollows(9, 11);
+                r = astManager.IsFollowsS(5, 14);
+                r = astManager.IsParent(8, 10);
+                r = astManager.IsParentS(8, 10);
                 astCreatedLabel.Content = "Yes";
-                //Trace.WriteLine(ast.GetParent(8).programLine);
-            } catch
+            }
+            catch
             {
                 astCreatedLabel.Content = "Error";
+                return;
+            }
+
+            try
+            {
+                CfgAPI cfgManager = new CfgManager(parsed);
+                bool r = cfgManager.IsNext(11, 13);
+                r = cfgManager.IsNext(9, 12);
+                cfgCreatedLabel.Content = "Yes";
+            }
+            catch
+            {
+                cfgCreatedLabel.Content = "Error";
                 return;
             }
         }

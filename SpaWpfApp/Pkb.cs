@@ -16,9 +16,9 @@ namespace SpaWpfApp
         private String[] ProcTable;   // [proc]
         private String[] VarTable;    // [var ]
 
-        private Boolean[,] CallsTable;    // [proc, proc]
+        private List<int>[,] CallsTable;    // [proc, proc]
         private Boolean[,] ModifiesTable; // [var , line]
-        private Boolean[,] UsesTable;     // [var , line]
+        private Boolean[,] UsesTable;   // [var , line]
 
         public Pkb(int numberOfLines, int numberOfProcs, int numberOfVars)
         {
@@ -29,7 +29,7 @@ namespace SpaWpfApp
             this.VarTable = new String[numberOfVars];
             this.ProcTable = new String[numberOfProcs];
 
-            this.CallsTable = new Boolean[numberOfProcs, numberOfProcs];
+            this.CallsTable = new List<int>[numberOfProcs, numberOfProcs];
             this.ModifiesTable = new Boolean[numberOfVars, numberOfLines];
             this.UsesTable = new Boolean[numberOfVars, numberOfLines];
         }
@@ -49,7 +49,7 @@ namespace SpaWpfApp
                 {
                     if (ProcTable[i] == proc)
                     {
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -60,7 +60,7 @@ namespace SpaWpfApp
                     if (String.IsNullOrEmpty(ProcTable[i]))
                     {
                         ProcTable[i] = proc;
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -74,7 +74,7 @@ namespace SpaWpfApp
                 {
                     if (ProcTable[i] == proc)
                     {
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -103,7 +103,7 @@ namespace SpaWpfApp
                 {
                     if (VarTable[i] == var)
                     {
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -114,7 +114,7 @@ namespace SpaWpfApp
                     if (String.IsNullOrEmpty(VarTable[i]))
                     {
                         VarTable[i] = var;
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -128,7 +128,7 @@ namespace SpaWpfApp
                 {
                     if (VarTable[i] == var)
                     {
-                        return i+1;
+                        return i + 1;
                     }
                 }
             }
@@ -149,26 +149,30 @@ namespace SpaWpfApp
         }
 
         //NOTE: CallsTable operations
-        public void SetCalls(String proc1, String proc2)
+        public void SetCalls(String proc1, String proc2, int p_line_number)
         {
-            int proc1Index = GetProcIndex(proc1)-1;
-            int proc2Index = GetProcIndex(proc2)-1;
+            int proc1Index = GetProcIndex(proc1) - 1;
+            int proc2Index = GetProcIndex(proc2) - 1;
             if (proc1Index > -1 && proc2Index > -1)
             {
-                CallsTable[proc1Index, proc2Index] = true;
+                if (CallsTable[proc1Index, proc2Index] is null)
+                {
+                    CallsTable[proc1Index, proc2Index] = new List<int>();
+                }
+                CallsTable[proc1Index, proc2Index].Add(p_line_number);
             }
         }
         public List<String> GetCalls(String proc)
         {
             List<String> calls = new List<String>();
-            int procIndex = GetProcIndex(proc)-1;
+            int procIndex = GetProcIndex(proc) - 1;
             if (procIndex != -1)
             {
                 for (int i = 0; i < numberOfProcs; i++)
                 {
-                    if (CallsTable[i, procIndex])
+                    if (CallsTable[i, procIndex] != null)
                     {
-                        calls.Add(GetProcName(i+1));
+                        calls.Add(GetProcName(i + 1));
                     }
                 }
             }
@@ -177,18 +181,40 @@ namespace SpaWpfApp
         public List<String> GetCalled(String proc)
         {
             List<String> called = new List<String>();
-            int procIndex = GetProcIndex(proc)-1;
+            //int procIndex = GetProcIndex(proc)-1;
+            //if (procIndex != -1)
+            //{
+            //    for (int i = 0; i < numberOfProcs; i++)
+            //    {
+            //        if (CallsTable[procIndex, i])
+            //        {
+            //            called.Add(GetProcName(i+1));
+            //        }
+            //    }
+            //}
+            return called;
+        }
+        public List<int> GetCallStmts(string proc)
+        {
+            List<int> calls = new List<int>();
+            int procIndex = GetProcIndex(proc) - 1;
             if (procIndex != -1)
             {
                 for (int i = 0; i < numberOfProcs; i++)
                 {
-                    if (CallsTable[procIndex, i])
+                    if (CallsTable[i, procIndex] != null)
                     {
-                        called.Add(GetProcName(i+1));
+                        foreach(var j in CallsTable[i, procIndex])
+                        {
+                            if (!calls.Contains(j))
+                            {
+                                calls.Add(j);
+                            }
+                        }
                     }
                 }
             }
-            return called;
+            return calls;
         }
         public bool IsCalls(string proc1, string proc2)
         {
@@ -196,7 +222,7 @@ namespace SpaWpfApp
             int proc2Index = GetProcIndex(proc2) - 1;
             if (proc1Index > -1 && proc2Index > -1)
             {
-                return CallsTable[proc1Index, proc2Index];
+                return CallsTable[proc1Index, proc2Index] != null ? true : false;
             }
             return false;
         }
@@ -221,7 +247,7 @@ namespace SpaWpfApp
                 {
                     if (ModifiesTable[varIndex, i])
                     {
-                        lines.Add(i+1);
+                        lines.Add(i + 1);
                     }
                 }
             }
@@ -237,7 +263,7 @@ namespace SpaWpfApp
                 {
                     if (ModifiesTable[i, line])
                     {
-                        String var = GetVarName(i+1);
+                        String var = GetVarName(i + 1);
                         if (var != null)
                         {
                             vars.Add(var);
@@ -278,7 +304,7 @@ namespace SpaWpfApp
                 {
                     if (UsesTable[varIndex, i])
                     {
-                        lines.Add(i+1);
+                        lines.Add(i + 1);
                     }
                 }
             }
@@ -294,7 +320,7 @@ namespace SpaWpfApp
                 {
                     if (UsesTable[i, line])
                     {
-                        String var = GetVarName(i+1);
+                        String var = GetVarName(i + 1);
                         if (var != null)
                         {
                             vars.Add(var);
@@ -319,7 +345,7 @@ namespace SpaWpfApp
         {
             Trace.WriteLine("- - - - - - - - -");
             Trace.WriteLine("ProcTable");
-            for (int i=1; i <= GetNumberOfProcs(); i++)
+            for (int i = 1; i <= GetNumberOfProcs(); i++)
             {
                 Trace.WriteLine(i + " " + GetProcName(i));
             }
@@ -347,7 +373,7 @@ namespace SpaWpfApp
             Trace.Write("\n");
             for (int i = 1; i <= GetNumberOfProcs(); i++)
             {
-                Trace.Write(string.Format("{0,3} ", i.ToString()));
+                Trace.Write(string.Format("{0,-3} ", i.ToString()));
                 for (int j = 1; j <= GetNumberOfProcs(); j++)
                 {
                     Trace.Write(string.Format("{0,-3}", (IsCalls(GetProcName(i), GetProcName(j)) ? "1" : "0")));
@@ -360,17 +386,11 @@ namespace SpaWpfApp
         {
             Trace.WriteLine("- - - - - - - - -");
             Trace.WriteLine("ModifiesTable");
-            Trace.Write("    ");
-            for (int i = 1; i <= GetNumberOfVars(); i++)
-            {
-                Trace.Write(string.Format("{0,-3}", i.ToString()));
-            }
-            Trace.Write("\n");
             for (int i = 1; i <= GetNumberOfVars(); i++)
             {
                 for (int j = 1; j <= GetNumberOfLines(); j++)
                 {
-                    Trace.Write(string.Format("{0,-3}", (IsModified(GetVarName(i), j) ? "1" : "0")));
+                    Trace.Write(IsModified(GetVarName(i), j) ? "1 " : "0 ");
                 }
                 Trace.Write("\n");
             }
@@ -389,5 +409,6 @@ namespace SpaWpfApp
                 Trace.Write("\n");
             }
         }
+
     }
 }
