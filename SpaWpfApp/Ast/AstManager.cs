@@ -20,17 +20,23 @@ namespace SpaWpfApp.Ast
 
     public class AstManager : AstAPI
     {
-        private List<TNode> NodeList { get; set; }
+        private List<TNode> NodeList;
+        private List<TNode> WhileList, IfList, AssignList, CallList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
         private PkbAPI Pkb;
         TNode rootNode;
+        public Dictionary<string, string> declarationsList { get; set; }
 
 
         public AstManager(string sourceCode, PkbAPI Pkb)
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();
+            this.WhileList = new List<TNode>();
+            this.IfList = new List<TNode>();
+            this.AssignList = new List<TNode>();
+            this.CallList = new List<TNode>();
             this.FollowsTable = new TNode[Pkb.GetNumberOfLines()];
             this.ParentTable = new TNode[Pkb.GetNumberOfLines()];
             this.rootNode = null;
@@ -39,62 +45,7 @@ namespace SpaWpfApp.Ast
             GenerateFollowsParentTables(rootNode);
         }
 
-
-
-        #region methods to generate followsTable and ParentTable
-        private void GenerateFollowsParentTables(TNode root)
-        {
-            if (root.type == TNodeTypeEnum.Assign || root.type == TNodeTypeEnum.Call ||
-                root.type == TNodeTypeEnum.If || root.type == TNodeTypeEnum.While)
-            {
-                //set parent
-                this.ParentTable[(int)root.programLine - 1] = FindParent(root);
-
-                //set follow
-                this.FollowsTable[(int)root.programLine - 1] = root.rightSibling != null ? root.rightSibling : null;
-            }
-
-
-            if (root.firstChild == null || root.type == TNodeTypeEnum.Assign)
-            {
-                return;
-            }
-
-            foreach (var v in GetChilds(root))
-            {
-                GenerateFollowsParentTables(v);
-            }
-        }
-
-        private List<TNode> GetChilds(TNode root)
-        {
-            List<TNode> list = new List<TNode>();
-            root = root.firstChild;
-
-            do
-            {
-                list.Add(root);
-                root = root.rightSibling;
-            }
-            while (root != null);
-
-            return list;
-        }
-
-        private TNode FindParent(TNode root)
-        {
-            while (root.up != null)
-            {
-                root = root.up;
-                if (root.type == TNodeTypeEnum.While || root.type == TNodeTypeEnum.If)
-                {
-                    return root;
-                }
-            }
-
-            return null;
-        }
-        #endregion
+       
 
         #region methods to build ast
         private void BuildTree(string sourceCode)
@@ -533,6 +484,23 @@ namespace SpaWpfApp.Ast
         {
             TNode tmp = new TNode(p_type, p_programLine, p_indexOfName);
             NodeList.Add(tmp);
+
+            switch(p_type)
+            {
+                case TNodeTypeEnum.Assign:
+                    AssignList.Add(tmp);
+                    break;
+                case TNodeTypeEnum.Call:
+                    CallList.Add(tmp);
+                    break;
+                case TNodeTypeEnum.While:
+                    WhileList.Add(tmp);
+                    break;
+                case TNodeTypeEnum.If:
+                    IfList.Add(tmp);
+                    break;
+            }
+
             return tmp;
         }
         private void CreateLink(TLinkTypeEnum p_linkType, TNode p_nodeFrom, TNode p_nodeTo)
@@ -618,21 +586,273 @@ namespace SpaWpfApp.Ast
         }
         #endregion
 
+        #region methods to generate followsTable and ParentTable
+        private void GenerateFollowsParentTables(TNode root)
+        {
+            if (root.type == TNodeTypeEnum.Assign || root.type == TNodeTypeEnum.Call ||
+                root.type == TNodeTypeEnum.If || root.type == TNodeTypeEnum.While)
+            {
+                //set parent
+                this.ParentTable[(int)root.programLine - 1] = FindParent(root);
+
+                //set follow
+                this.FollowsTable[(int)root.programLine - 1] = root.rightSibling != null ? root.rightSibling : null;
+            }
+
+
+            if (root.firstChild == null || root.type == TNodeTypeEnum.Assign)
+            {
+                return;
+            }
+
+            foreach (var v in GetChilds(root))
+            {
+                GenerateFollowsParentTables(v);
+            }
+        }
+
+        private List<TNode> GetChilds(TNode root)
+        {
+            List<TNode> list = new List<TNode>();
+            root = root.firstChild;
+
+            do
+            {
+                list.Add(root);
+                root = root.rightSibling;
+            }
+            while (root != null);
+
+            return list;
+        }
+
+        private TNode FindParent(TNode root)
+        {
+            while (root.up != null)
+            {
+                root = root.up;
+                if (root.type == TNodeTypeEnum.While || root.type == TNodeTypeEnum.If)
+                {
+                    return root;
+                }
+            }
+
+            return null;
+        }
+        #endregion
 
         #region API methods
 
         public TNode GetParent(TNode p_child, string p_father)
         {
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_father);
+            TNode findedParent;
 
             if(p_child.programLine is null)
             {
                 return null;
             }
+            if(((int)p_child.programLine - 1) < 0 || ((int)p_child.programLine - 1) > (ParentTable.Length -1))
+            {
+                return null;
+            }
 
-            return ParentTable[p_child.programLine - 1];
+
+            findedParent = ParentTable[(int)p_child.programLine - 1];
+
+            if(findedParent is null)
+            {
+                return null;
+            }
+
+            if (acceptableType.Contains(findedParent.type))
+            {
+                return findedParent;
+            }
+            else
+            {
+                return null;
+            }
+
+        }       
+
+        public List<TNode> GetParentS(TNode p_child, string p_father)
+        {
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_father);
+            List<TNode> parents = new List<TNode>();
+            TNode findedParent;
+
+            if (p_child.programLine is null)
+            {
+                return null;
+            }
+            if (((int)p_child.programLine - 1) < 0 || ((int)p_child.programLine - 1) > (ParentTable.Length - 1))
+            {
+                return null;
+            }
+
+            findedParent = ParentTable[(int)p_child.programLine - 1];
+            while(findedParent != null)
+            {
+                if (acceptableType.Contains(findedParent.type))
+                {
+                    parents.Add(findedParent);
+                }
+                findedParent = ParentTable[(int)findedParent.programLine - 1];
+            }
+
+            return parents.Count() > 0 ? parents : null;
         }
 
+        public List<TNode> GetChildren(TNode p_father, string p_child)
+        {
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_child);
+            List<TNode> children = new List<TNode>();
+
+            if (p_father.programLine is null || (p_father.type != TNodeTypeEnum.If && p_father.type != TNodeTypeEnum.While))
+            {
+                return null;
+            }
+
+            for (int i = 0; i < ParentTable.Length; i++)
+            {
+                if (ParentTable[i] == p_father || acceptableType.Contains(ParentTable[i].type))
+                {
+                    children.Add(NodeList.Where(x => x.programLine == i+1).FirstOrDefault());
+                }
+            }
+
+            return children.Count() > 0 ? children : null;
+        }
+
+        public List<TNode> GetChildrenS(TNode p_father, string p_child)
+        {
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_child);
+            List<TNode> children = new List<TNode>();
+
+            if (p_father.programLine is null || (p_father.type != TNodeTypeEnum.If && p_father.type != TNodeTypeEnum.While))
+            {
+                return null;
+            }
+
+            FindAllChildrenS(ref children, p_father, acceptableType);
+
+            return children.Count() > 0 ? children : null;
+        }
+
+        public bool IsParent(int p1, int p2)
+        {
+            return ParentTable[p2 - 1] == NodeList.Where(x => x.programLine == p1).FirstOrDefault() ? true : false;
+        }
+
+        public bool IsParentS(int p1, int p2)
+        {
+            TNode parent;
+
+            parent = ParentTable[p2 - 1];
+
+            while (parent != null)
+            {
+                if (parent == NodeList.Where(x => x.programLine == p1).FirstOrDefault())
+                {
+                    return true;
+                }
+
+                parent = ParentTable[(int)parent.programLine - 1];
+            }
+
+            return false;
+        }
+
+
+
+
+        //public int GetRightSibling(int p_programLineNumber)
+        //{
+        //    return FollowsTable[p_programLineNumber - 1];
+        //}
+
+        //public int GetLeftSibling(int p_programLineNumber)
+        //{
+        //    for (int i = 0; i < FollowsTable.Length; i++)
+        //    {
+        //        if (FollowsTable[i] == p_programLineNumber)
+        //        {
+        //            return i + 1;
+        //        }
+        //    }
+
+        //    return -1;
+        //}
+
+        //public List<int> GetRightSiblingS(int p_programLineNumber)
+        //{
+        //    List<int> rightSiblingS = new List<int>();
+        //    int tmp = FollowsTable[p_programLineNumber - 1];
+
+        //    while (tmp != -1)
+        //    {
+        //        rightSiblingS.Add(tmp);
+        //        tmp = FollowsTable[tmp - 1];
+        //    }
+
+        //    if (rightSiblingS.Count() == 0)
+        //    {
+        //        rightSiblingS.Add(-1);
+        //    }
+
+        //    return rightSiblingS;
+
+        //}
+
+        //public List<int> GetLeftSiblingS(int p_programLineNumber)
+        //{
+        //    List<int> leftSiblingS = new List<int>();
+
+        //    do
+        //    {
+        //        for (int i = 0; i < FollowsTable.Length; i++)
+        //        {
+        //            if (FollowsTable[i] == p_programLineNumber)
+        //            {
+        //                leftSiblingS.Add(i + 1);
+        //                p_programLineNumber = i + 1;
+        //                break;
+        //            }
+        //        }
+        //    }
+        //    while (p_programLineNumber != -1);
+
+        //    return leftSiblingS;
+        //}  
+
+        //public bool IsFollows(int p1, int p2)
+        //{
+        //    return FollowsTable[p1 - 1] == p2 ? true : false;
+        //}
+
+        //public bool IsFollowsS(int p1, int p2)
+        //{
+        //    int follows;
+
+        //    follows = FollowsTable[p1 - 1];
+
+        //    while (follows != -1)
+        //    {
+        //        if (follows == p2)
+        //        {
+        //            return true;
+        //        }
+
+        //        follows = FollowsTable[follows - 1];
+        //    }
+
+        //    return false;
+        //}
+        #endregion
+
+
+        #region helpful methods for API
         private List<TNodeTypeEnum> DetermineAcceptableTypes(string arg)
         {
             List<TNodeTypeEnum> result = new List<TNodeTypeEnum>();
@@ -647,8 +867,8 @@ namespace SpaWpfApp.Ast
                 return result;
             }
 
-            //no switch arg but type of a 
-            switch (arg)
+            string argType = declarationsList[arg];
+            switch (argType)
             {
                 case "procedure":
                     {
@@ -694,229 +914,17 @@ namespace SpaWpfApp.Ast
             return result;
         }
 
-        public List<TNode> GetParentS(TNode p_child, string p_father)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<TNode> GetChildren(TNode p_father, string p_child)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<TNode> GetChildrenS(TNode p_father, string p_child)
-        {
-            throw new NotImplementedException();
-        }
-        public int GetParent(int p_programLineNumber)
-        {
-            return ParentTable[p_programLineNumber - 1];
-        }
-
-        public List<int> GetParentS(int p_programLineNumber)
-        {
-            List<int> parents = new List<int>();
-            int parent = ParentTable[p_programLineNumber - 1];
-            while (parent != -1)
-            {
-                parents.Add(parent);
-                parent = ParentTable[parent - 1];
-            }
-
-            if (parents.Count() == 0)
-            {
-                parents.Add(-1);
-            }
-
-            return parents;
-        }
-
-        public List<int> GetChildren(int p_programLineNumber)
-        {
-            List<int> children = new List<int>();
-
-            for (int i = 0; i < ParentTable.Length; i++)
-            {
-                if (ParentTable[i] == p_programLineNumber)
-                {
-                    children.Add(i + 1);
-                }
-            }
-
-            if (children.Count() == 0)
-            {
-                children.Add(-1);
-            }
-
-            return children;
-        }
-
-        public List<int> GetChildrenS(int p_programLineNumber)
-        {
-            List<int> children = new List<int>();
-
-            FindAllChildrenS(ref children, p_programLineNumber);
-
-            if (children.Count() == 0)
-            {
-                children.Add(-1);
-            }
-            return children;
-        }
-
-
-
-        public int GetRightSibling(int p_programLineNumber)
-        {
-            return FollowsTable[p_programLineNumber - 1];
-        }
-
-        public int GetLeftSibling(int p_programLineNumber)
-        {
-            for (int i = 0; i < FollowsTable.Length; i++)
-            {
-                if (FollowsTable[i] == p_programLineNumber)
-                {
-                    return i + 1;
-                }
-            }
-
-            return -1;
-        }
-
-        public List<int> GetRightSiblingS(int p_programLineNumber)
-        {
-            List<int> rightSiblingS = new List<int>();
-            int tmp = FollowsTable[p_programLineNumber - 1];
-
-            while (tmp != -1)
-            {
-                rightSiblingS.Add(tmp);
-                tmp = FollowsTable[tmp - 1];
-            }
-
-            if (rightSiblingS.Count() == 0)
-            {
-                rightSiblingS.Add(-1);
-            }
-
-            return rightSiblingS;
-
-        }
-
-        public List<int> GetLeftSiblingS(int p_programLineNumber)
-        {
-            List<int> leftSiblingS = new List<int>();
-
-            do
-            {
-                for (int i = 0; i < FollowsTable.Length; i++)
-                {
-                    if (FollowsTable[i] == p_programLineNumber)
-                    {
-                        leftSiblingS.Add(i + 1);
-                        p_programLineNumber = i + 1;
-                        break;
-                    }
-                }
-            }
-            while (p_programLineNumber != -1);
-
-            return leftSiblingS;
-        }
-
-
-
-        public bool IsParent(int p1, int p2)
-        {
-            return ParentTable[p2 - 1] == p1 ? true : false;
-        }
-
-        public bool IsParentS(int p1, int p2)
-        {
-            int parent;
-
-            parent = ParentTable[p2 - 1];
-
-            while (parent != -1)
-            {
-                if (parent == p1)
-                {
-                    return true;
-                }
-
-                parent = ParentTable[parent - 1];
-            }
-
-            return false;
-        }
-
-        public bool IsFollows(int p1, int p2)
-        {
-            return FollowsTable[p1 - 1] == p2 ? true : false;
-        }
-
-        public bool IsFollowsS(int p1, int p2)
-        {
-            int follows;
-
-            follows = FollowsTable[p1 - 1];
-
-            while (follows != -1)
-            {
-                if (follows == p2)
-                {
-                    return true;
-                }
-
-                follows = FollowsTable[follows - 1];
-            }
-
-            return false;
-        }
-        #endregion
-
-
-        #region helpful methods for API
-        public void FindAllChildrenS(ref List<int> children, TNode parent)
-        {
-            TNode tmp;
-            List<TNode> tmpChildren;
-            if (parent.firstChild is null)
-            {
-                return;
-            }
-
-
-            if (parent.type == TNodeTypeEnum.While || parent.type == TNodeTypeEnum.If || parent.type == TNodeTypeEnum.Assign || parent.type == TNodeTypeEnum.Call)
-            {
-                children.Add((int)parent.programLine);
-            }
-
-            tmpChildren = new List<TNode>();
-            tmp = parent.firstChild;
-            tmpChildren.Add(tmp);
-            while (tmp.rightSibling != null)
-            {
-                tmp = tmp.rightSibling;
-                tmpChildren.Add(tmp);
-            }
-            foreach (var c in tmpChildren)
-            {
-                FindAllChildrenS(ref children, c);
-            }
-        }
-        private void FindAllChildrenS(ref List<int> children, int p_programLineNumber)
+        private void FindAllChildrenS(ref List<TNode> children, TNode p_father, List<TNodeTypeEnum> acceptableType)
         {
             for (int i = 0; i < ParentTable.Length; i++)
             {
-                if (ParentTable[i] == p_programLineNumber)
+                if (ParentTable[i] == p_father || acceptableType.Contains(ParentTable[i].type))
                 {
-                    if (!children.Contains(i + 1))
+                    if (!children.Contains(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault()))
                     {
-                        children.Add(i + 1);
+                        children.Add(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault());
                     }
-                    FindAllChildrenS(ref children, i + 1);
+                    FindAllChildrenS(ref children, NodeList.Where(x => x.programLine == i + 1).FirstOrDefault(), acceptableType);
                 }
             }
         }
