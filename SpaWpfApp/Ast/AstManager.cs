@@ -21,22 +21,25 @@ namespace SpaWpfApp.Ast
     public class AstManager : AstAPI
     {
         private List<TNode> NodeList { get; set; }
-        private int[] FollowsTable;
-        private int[] ParentTable;
+        private TNode[] FollowsTable;
+        private TNode[] ParentTable;
         private PkbAPI Pkb;
         TNode rootNode;
+
 
         public AstManager(string sourceCode, PkbAPI Pkb)
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();
-            this.FollowsTable = new int[Pkb.GetNumberOfLines()];
-            this.ParentTable = new int[Pkb.GetNumberOfLines()];
+            this.FollowsTable = new TNode[Pkb.GetNumberOfLines()];
+            this.ParentTable = new TNode[Pkb.GetNumberOfLines()];
             this.rootNode = null;
 
             BuildTree(sourceCode);
             GenerateFollowsParentTables(rootNode);
         }
+
+
 
         #region methods to generate followsTable and ParentTable
         private void GenerateFollowsParentTables(TNode root)
@@ -48,7 +51,7 @@ namespace SpaWpfApp.Ast
                 this.ParentTable[(int)root.programLine - 1] = FindParent(root);
 
                 //set follow
-                this.FollowsTable[(int)root.programLine - 1] = root.rightSibling != null ? (int)root.rightSibling.programLine : -1;
+                this.FollowsTable[(int)root.programLine - 1] = root.rightSibling != null ? root.rightSibling : null;
             }
 
 
@@ -78,18 +81,18 @@ namespace SpaWpfApp.Ast
             return list;
         }
 
-        private int FindParent(TNode root)
+        private TNode FindParent(TNode root)
         {
             while (root.up != null)
             {
                 root = root.up;
                 if (root.type == TNodeTypeEnum.While || root.type == TNodeTypeEnum.If)
                 {
-                    return (int)root.programLine;
+                    return root;
                 }
             }
 
-            return -1;
+            return null;
         }
         #endregion
 
@@ -617,6 +620,94 @@ namespace SpaWpfApp.Ast
 
 
         #region API methods
+
+        public TNode GetParent(TNode p_child, string p_father)
+        {
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_father);
+
+            if(p_child.programLine is null)
+            {
+                return null;
+            }
+
+            return ParentTable[p_child.programLine - 1];
+        }
+
+        private List<TNodeTypeEnum> DetermineAcceptableTypes(string arg)
+        {
+            List<TNodeTypeEnum> result = new List<TNodeTypeEnum>();
+            int tmp;
+
+            if (arg == "_" || Int32.TryParse(arg, out tmp))
+            {
+                foreach (TNodeTypeEnum v in Enum.GetValues(typeof(TNodeTypeEnum)))
+                {
+                    result.Add(v);
+                }
+                return result;
+            }
+
+            //no switch arg but type of a 
+            switch (arg)
+            {
+                case "procedure":
+                    {
+                        result.Add(TNodeTypeEnum.Procedure);
+                    }
+                    break;
+
+                case "call":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                    }
+                    break;
+
+                case "assign":
+                    {
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+
+                case "if":
+                    {
+                        result.Add(TNodeTypeEnum.If);
+                    }
+                    break;
+
+                case "while":
+                    {
+                        result.Add(TNodeTypeEnum.While);
+                    }
+                    break;
+
+                case "stmt":
+                case "stmtLst":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                        result.Add(TNodeTypeEnum.While);
+                        result.Add(TNodeTypeEnum.If);
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
+        public List<TNode> GetParentS(TNode p_child, string p_father)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<TNode> GetChildren(TNode p_father, string p_child)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<TNode> GetChildrenS(TNode p_father, string p_child)
+        {
+            throw new NotImplementedException();
+        }
         public int GetParent(int p_programLineNumber)
         {
             return ParentTable[p_programLineNumber - 1];
@@ -626,13 +717,13 @@ namespace SpaWpfApp.Ast
         {
             List<int> parents = new List<int>();
             int parent = ParentTable[p_programLineNumber - 1];
-            while(parent != -1)
+            while (parent != -1)
             {
                 parents.Add(parent);
                 parent = ParentTable[parent - 1];
             }
-            
-            if(parents.Count() == 0)
+
+            if (parents.Count() == 0)
             {
                 parents.Add(-1);
             }
@@ -644,15 +735,15 @@ namespace SpaWpfApp.Ast
         {
             List<int> children = new List<int>();
 
-            for(int i=0; i<ParentTable.Length; i++)
+            for (int i = 0; i < ParentTable.Length; i++)
             {
-                if(ParentTable[i] == p_programLineNumber)
+                if (ParentTable[i] == p_programLineNumber)
                 {
                     children.Add(i + 1);
                 }
             }
 
-            if(children.Count()==0)
+            if (children.Count() == 0)
             {
                 children.Add(-1);
             }
@@ -666,14 +757,14 @@ namespace SpaWpfApp.Ast
 
             FindAllChildrenS(ref children, p_programLineNumber);
 
-            if(children.Count() == 0)
+            if (children.Count() == 0)
             {
                 children.Add(-1);
             }
             return children;
         }
 
-       
+
 
         public int GetRightSibling(int p_programLineNumber)
         {
@@ -698,13 +789,13 @@ namespace SpaWpfApp.Ast
             List<int> rightSiblingS = new List<int>();
             int tmp = FollowsTable[p_programLineNumber - 1];
 
-            while(tmp != -1)
+            while (tmp != -1)
             {
                 rightSiblingS.Add(tmp);
                 tmp = FollowsTable[tmp - 1];
             }
-            
-            if(rightSiblingS.Count() == 0)
+
+            if (rightSiblingS.Count() == 0)
             {
                 rightSiblingS.Add(-1);
             }
@@ -747,9 +838,9 @@ namespace SpaWpfApp.Ast
 
             parent = ParentTable[p2 - 1];
 
-            while(parent != -1)
+            while (parent != -1)
             {
-                if(parent == p1)
+                if (parent == p1)
                 {
                     return true;
                 }
@@ -830,5 +921,17 @@ namespace SpaWpfApp.Ast
             }
         }
         #endregion
+
+
+        //private List<string> GetNodeTypeNames()
+        //{
+        //    var table = Enum.GetNames(typeof(TNodeTypeEnum));
+        //    for (int i = 0; i < table.Length; i++)
+        //    {
+        //        table[i] = table[i].Substring(0, 1).ToLower() + table[i].Substring(1);
+        //    }
+
+        //    return table.ToList();
+        //}
     }
 }

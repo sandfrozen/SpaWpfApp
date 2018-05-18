@@ -9,32 +9,36 @@ namespace SpaWpfApp.Ast
     {
         //Parent, ParentS
         /// <summary>
-        /// returns programLine of Parent of stmt or -1 if stmt does't have Parent
+        /// returns Parent of p_child or null if p_child does't have Parent
         /// </summary>
-        /// <param name="p_programLineNumber"></param>
+        /// <param name="p_child"></param>
+        /// <param name="p_father"></param>
         /// <returns></returns>
-        int GetParent(int p_programLineNumber);
+        TNode GetParent(TNode p_child, string p_father);
 
         /// <summary>
-        /// returns programLine of direct ParentS of stmt or -1 if stmt doesn't have any ParentS
+        /// returns lis of ParentS of p_child or null if p_child does't have ParentS
         /// </summary>
-        /// <param name="p_programLineNumber"></param>
+        /// <param name="p_child"></param>
+        /// <param name="p_father"></param>
         /// <returns></returns>
-        List<int> GetParentS(int p_programLineNumber);
+        List<TNode> GetParentS(TNode p_child, string p_father);
 
         /// <summary>
-        /// returns all children of stmt or -1 if stmt doesn't have children
+        /// returns all children of stmt or null if stmt doesn't have children
         /// </summary>
-        /// <param name="p_programLineNumber"></param>
+        /// <param name="p_father"></param>
+        /// <param name="p_child"></param>
         /// <returns></returns>
-        List<int> GetChildren(int p_programLineNumber);
+        List<TNode> GetChildren(TNode p_father, string p_child);
 
         /// <summary>
-        /// returns all direct and indirect children of stmt or -1 if stmt doesn't have any childrenS
+        /// returns all childrenS of stmt or null if stmt doesn't have childrenS
         /// </summary>
-        /// <param name="p_programLineNumber"></param>
+        /// <param name="p_father"></param>
+        /// <param name="p_child"></param>
         /// <returns></returns>
-        List<int> GetChildrenS(int p_programLineNumber);
+        List<TNode> GetChildrenS(TNode p_father, string p_child);
 
         Boolean IsParent(int p1, int p2);
         Boolean IsParentS(int p1, int p2);

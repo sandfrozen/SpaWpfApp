@@ -14,8 +14,6 @@ namespace SpaWpfApp.Enums
         While,
         If,
         StmtLst,
-        StmtLstThen,
-        StmtLstElse,
         Plus,
         Times,
         Minus,
