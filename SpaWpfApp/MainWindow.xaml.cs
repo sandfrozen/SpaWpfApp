@@ -129,14 +129,14 @@ namespace SpaWpfApp
             try
             {
                 AstAPI astManager = new AstManager(parsed, pkb);
-                List<int> result = astManager.GetChildren(6);
-                result = astManager.GetChildrenS(6);
-                result = astManager.GetParentS(6);
+                //List<int> result = astManager.GetChildren(6);
+                //result = astManager.GetChildrenS(6);
+                //result = astManager.GetParentS(6);
 
-                bool r = astManager.IsFollows(9, 11);
-                r = astManager.IsFollowsS(5, 14);
-                r = astManager.IsParent(8, 10);
-                r = astManager.IsParentS(8, 10);
+                //bool r = astManager.IsFollows(9, 11);
+                //r = astManager.IsFollowsS(5, 14);
+                //r = astManager.IsParent(8, 10);
+                //r = astManager.IsParentS(8, 10);
 
                 addLog("AST Created: Ok");
             }
