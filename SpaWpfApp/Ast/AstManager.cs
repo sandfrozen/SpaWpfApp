@@ -1,4 +1,5 @@
 ﻿using SpaWpfApp.Enums;
+using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,19 @@ namespace SpaWpfApp.Ast
         TNode rootNode;
         public Dictionary<string, string> declarationsList { get; set; }
 
+        private static AstManager instance;
+        public static AstManager GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new AstManager();
+            }
+            return instance;
+        }
 
-        public AstManager(string sourceCode, PkbAPI Pkb)
+        public AstManager() { }
+
+        public void GenerateStructures(string sourceCode, PkbAPI Pkb)
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();
@@ -45,7 +57,8 @@ namespace SpaWpfApp.Ast
             GenerateFollowsParentTables(rootNode);
         }
 
-       
+
+
 
         #region methods to build ast
         private void BuildTree(string sourceCode)
@@ -485,7 +498,7 @@ namespace SpaWpfApp.Ast
             TNode tmp = new TNode(p_type, p_programLine, p_indexOfName);
             NodeList.Add(tmp);
 
-            switch(p_type)
+            switch (p_type)
             {
                 case TNodeTypeEnum.Assign:
                     AssignList.Add(tmp);
@@ -648,11 +661,11 @@ namespace SpaWpfApp.Ast
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_father);
             TNode findedParent;
 
-            if(p_child.programLine is null)
+            if (p_child.programLine is null)
             {
                 return null;
             }
-            if(((int)p_child.programLine - 1) < 0 || ((int)p_child.programLine - 1) > (ParentTable.Length -1))
+            if (((int)p_child.programLine - 1) < 0 || ((int)p_child.programLine - 1) > (ParentTable.Length - 1))
             {
                 return null;
             }
@@ -660,7 +673,7 @@ namespace SpaWpfApp.Ast
 
             findedParent = ParentTable[(int)p_child.programLine - 1];
 
-            if(findedParent is null)
+            if (findedParent is null)
             {
                 return null;
             }
@@ -674,7 +687,7 @@ namespace SpaWpfApp.Ast
                 return null;
             }
 
-        }       
+        }
 
         public List<TNode> GetParentS(TNode p_child, string p_father)
         {
@@ -692,7 +705,7 @@ namespace SpaWpfApp.Ast
             }
 
             findedParent = ParentTable[(int)p_child.programLine - 1];
-            while(findedParent != null)
+            while (findedParent != null)
             {
                 if (acceptableType.Contains(findedParent.type))
                 {
@@ -716,9 +729,9 @@ namespace SpaWpfApp.Ast
 
             for (int i = 0; i < ParentTable.Length; i++)
             {
-                if (ParentTable[i] == p_father || acceptableType.Contains(ParentTable[i].type))
+                if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i+1).type))
                 {
-                    children.Add(NodeList.Where(x => x.programLine == i+1).FirstOrDefault());
+                    children.Add(FindNode(i + 1));
                 }
             }
 
@@ -867,7 +880,7 @@ namespace SpaWpfApp.Ast
                 return result;
             }
 
-            string argType = declarationsList[arg];
+            string argType = QueryPreProcessor.GetInstance().declarationsList[arg];
             switch (argType)
             {
                 case "procedure":
@@ -918,11 +931,11 @@ namespace SpaWpfApp.Ast
         {
             for (int i = 0; i < ParentTable.Length; i++)
             {
-                if (ParentTable[i] == p_father || acceptableType.Contains(ParentTable[i].type))
+                if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
                 {
                     if (!children.Contains(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault()))
                     {
-                        children.Add(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault());
+                        children.Add(FindNode(i + 1));
                     }
                     FindAllChildrenS(ref children, NodeList.Where(x => x.programLine == i + 1).FirstOrDefault(), acceptableType);
                 }
@@ -941,5 +954,61 @@ namespace SpaWpfApp.Ast
 
         //    return table.ToList();
         //}
+
+
+        public TNode FindFather(int programLineNumber)
+        {
+            foreach(var w in WhileList)
+            {
+                if(w.programLine == programLineNumber)
+                {
+                    return w;
+                }
+            }
+
+            foreach (var i in IfList)
+            {
+                if (i.programLine == programLineNumber)
+                {
+                    return i;
+                }
+            }
+
+            return null;
+        }
+
+        public TNode FindNode(int programLineNumber)
+        {
+            TNode result = NodeList.Where(x => x.programLine == programLineNumber).FirstOrDefault();
+
+            return result;
+        }
+
+        internal List<TNode> GetAllParents()
+        {
+            List<TNode> fathers = new List<TNode>();
+            foreach (var w in WhileList)
+            {
+                fathers.Add(w);
+            }
+
+            foreach (var i in IfList)
+            {
+                fathers.Add(i);
+            }
+
+            return fathers.Count() > 0 ? fathers : null;
+        }
+
+        internal List<TNode> GetAllWhile()
+        {
+            return WhileList.Count() > 0 ? WhileList : null;
+        }
+
+        internal List<TNode> GetAllIf()
+        {
+            return IfList.Count() > 0 ? IfList : null;
+        }
+
     }
 }

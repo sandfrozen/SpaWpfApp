@@ -66,6 +66,7 @@
     <Compile Include="Enums\GNodeTypeEnum.cs" />
     <Compile Include="Enums\TNodeTypeEnum.cs" />
     <Compile Include="Enums\SignEnum.cs" />
+    <Compile Include="Exceptions\NoResultsException.cs" />
     <Compile Include="Exceptions\QueryException.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />
     <Compile Include="Exceptions\WrongQueryFromatException.cs" />
@@ -74,9 +75,11 @@
     <Compile Include="Parser\ParserMain.cs" />
     <Compile Include="Pkb.cs" />
     <Compile Include="PkbAPI.cs" />
+    <Compile Include="QueryProcessingSusbsytem\QueryEvaluator.cs" />
     <Compile Include="QueryProcessingSusbsytem\Entity.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
     <Compile Include="QueryProcessingSusbsytem\Relation.cs" />
+    <Compile Include="QueryProcessingSusbsytem\Result.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -17,9 +17,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private List<string> selectClauses;
         private Dictionary<string, Action> relationsReference;
-        private Dictionary<string, string> declarationsList;
-        private Dictionary<string, string> returnList;
-        private List<Relation> relationsList;
+        public Dictionary<string, string> declarationsList { get; set; }
+        public  Dictionary<string, string> returnList { get; set; }
+        public List<Relation> relationsList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -40,8 +40,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             returnList = new Dictionary<string, string>();
             relationsList = new List<Relation>();
             relationsReference = new Dictionary<string, Action> {
-                { Relation.Mofidies, CheckModifies},
-                { Relation.MofidiesX, CheckModifies},
+                { Relation.Modifies, CheckModifies},
+                { Relation.ModifiesX, CheckModifies},
                 { Relation.Uses, CheckModifies},
                 { Relation.UsesX, CheckModifies},
                 { Relation.Calls, CheckModifies},
@@ -182,7 +182,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
                 }
-            }
+            }            
 
 
             Trace.WriteLine("Declarations:");
@@ -501,6 +501,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 throw new QueryException("Relationship wrong format: " + relation);
             }
+        }
+
+        internal bool ReturnTypeIsBoolean()
+        {
+            return this.returnList.First().Key == "BOOLEAN" ? true : false;
         }
 
         private void ParseWith()

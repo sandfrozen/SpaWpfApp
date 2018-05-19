@@ -31,6 +31,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public static List<string> ModifiesArgs1 = new List<string> { Entity._int, Entity.stmt, Entity.assign, Entity.procedure, Entity.prog_line, Entity.ident, Entity._while };
         public static List<string> ModifiesArgs2 = new List<string> { Entity.variable, Entity.ident, Entity._ };
 
+        public const string Modifies = "Modifies";
+        public const string ModifiesX = "Modifies*";
         public const string Uses = "Uses";
         public const string UsesX = "Uses*";
         public static List<string> UsesArguments1 = new List<string>();
