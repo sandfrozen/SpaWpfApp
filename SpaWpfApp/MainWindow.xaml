@@ -95,11 +95,10 @@
 
             <FlowDocument>
                 <Paragraph>
-                    <Run Text="assign a; stmt s; while w; procedure p, q; constant c;"/>
+                    <Run Text="assign a; stmt s; while w; procedure p, q; constant c; variable v;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="Select a.stmt# such that "/>
-                    <Run Text="Modifies(a, _)"/>
+                    <Run Text="Select a.stmt# such that Parent(a, 4) and Calls(p, q) and Modifies(a, v) with p.procName = &quot;Second&quot; and s.stmt# = c.value pattern a(&quot;x&quot;, _)"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
