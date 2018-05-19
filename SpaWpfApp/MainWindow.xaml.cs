@@ -111,14 +111,14 @@ namespace SpaWpfApp
 
                 addLog("PKB Created: Ok");
 
-                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+                parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
 
-                //pkb = new Pkb(20, 1, 3);
-                //pkb.InsertProc("p500");
+                pkb = new Pkb(20, 1, 3);
+                pkb.InsertProc("p500");
 
-                //pkb.InsertVar("x");
-                //pkb.InsertVar("i");
-                //pkb.InsertVar("y");
+                pkb.InsertVar("x");
+                pkb.InsertVar("i");
+                pkb.InsertVar("y");
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace SpaWpfApp
 
             try
             {
-                AstAPI astManager = new AstManager(parsed, pkb);
+                AstManager.GetInstance().GenerateStructures(parsed, pkb);
                 //List<int> result = astManager.GetChildren(6);
                 //result = astManager.GetChildrenS(6);
                 //result = astManager.GetParentS(6);
@@ -198,10 +198,27 @@ namespace SpaWpfApp
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
             resultRichTextBox.Document.Blocks.Clear();
-
+            Result.GetInstance().Init();
             QueryEvaluator.GetInstance().Init();
 
-
+            try
+            {
+                foreach (var relation in QueryPreProcessor.GetInstance().relationsList)
+                {
+                    switch (relation.type)
+                    {
+                        case "Parent":
+                            QueryEvaluator.GetInstance().Parent(relation.arg1, relation.arg2);
+                            Result r = Result.GetInstance(); // do testów, potem do usunięcia ta linia
+                            break;
+                    }
+                }
+            }
+            catch(NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
+            finally
+            {
+                //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
+            }
             string now = DateTime.Now.ToLongTimeString();
             resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
         }

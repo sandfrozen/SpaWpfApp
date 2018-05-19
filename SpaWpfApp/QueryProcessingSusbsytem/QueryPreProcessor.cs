@@ -19,6 +19,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> relationshipReferences;
         public Dictionary<string, string> declarationsList { get; set; }
         public  Dictionary<string, string> returnList { get; set; }
+        public List<Relation> relationsList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -37,6 +38,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
+            relationsList = new List<Relation>();
             relationshipReferences = new Dictionary<string, Action> {
                 { "Modifies", CheckModifies},
                 { "Modifies*", CheckModifies},
@@ -91,6 +93,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
+            relationsList = new List<Relation>();
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
@@ -179,7 +182,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
                 }
-            }
+            }            
 
 
             Trace.WriteLine("Declarations:");
@@ -191,6 +194,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             foreach (var v in returnList)
             {
                 Trace.WriteLine(v.Value + " " + v.Key);
+            }
+            Trace.WriteLine("Relations List:");
+            foreach (var r in relationsList)
+            {
+                Trace.WriteLine(r.ToString());
             }
 
             return parsedQuery;
@@ -394,9 +402,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             CheckRelationship(relationship);
 
-
-
-            Trace.WriteLine("Relationship: " + relationship);
+            //Trace.WriteLine("Relationship: " + relationship);
             parsedQuery += " " + relationship;
         }
 
@@ -406,9 +412,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 string relRef = relationship.Substring(0, relationship.IndexOf('('));
                 relationship = relationship.Substring(relationship.IndexOf('(') + 1);
-                string firstArg = relationship.Substring(0, relationship.IndexOf(','));
+                string arg1 = relationship.Substring(0, relationship.IndexOf(','));
                 relationship = relationship.Substring(relationship.IndexOf(',') + 1);
-                string secArg = relationship.Substring(0, relationship.IndexOf(')'));
+                string arg2 = relationship.Substring(0, relationship.IndexOf(')'));
 
                 switch (relRef)
                 {
@@ -434,11 +440,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     case "AffectsT":
                         break;
                 }
+
+                relationsList.Add(new Relation(relRef, arg1, arg2));
             }
             else
             {
                 throw new QueryException("Relationship wrong format: " + relationship);
             }
+        }
+
+        internal bool ReturnTypeIsBoolean()
+        {
+            return this.returnList.First().Key == "BOOLEAN" ? true : false;
         }
 
         private void ParseWith()
