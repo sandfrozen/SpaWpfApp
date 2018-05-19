@@ -207,7 +207,7 @@ namespace SpaWpfApp
                 {
                     switch (relation.type)
                     {
-                        case "Parent":
+                        case Relation.Parent:
                             QueryEvaluator.GetInstance().Parent(relation.arg1, relation.arg2);
                             Result r = Result.GetInstance(); // do testów, potem do usunięcia ta linia
                             break;

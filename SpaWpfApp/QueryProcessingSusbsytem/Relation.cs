@@ -26,8 +26,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
 
         // const means static
-        public const string Mofidies = "Modidfies";
-        public const string MofidiesX = "Modidfies*";
+        public const string Modifies = "Modifies";
+        public const string ModifiesX = "Modifies*";
         public const string Uses = "Uses";
         public const string UsesX = "Uses*";
         public const string Calls = "Calls";

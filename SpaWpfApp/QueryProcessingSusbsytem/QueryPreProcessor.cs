@@ -16,7 +16,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private int currentIndex;
 
         private List<string> selectClauses;
-        private Dictionary<string, Action> relationshipReferences;
+        private Dictionary<string, Action> relationsReference;
         public Dictionary<string, string> declarationsList { get; set; }
         public  Dictionary<string, string> returnList { get; set; }
         public List<Relation> relationsList { get; set; }
@@ -40,8 +40,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             returnList = new Dictionary<string, string>();
             relationsList = new List<Relation>();
             relationsReference = new Dictionary<string, Action> {
-                { Relation.Mofidies, CheckModifies},
-                { Relation.MofidiesX, CheckModifies},
+                { Relation.Modifies, CheckModifies},
+                { Relation.ModifiesX, CheckModifies},
                 { Relation.Uses, CheckModifies},
                 { Relation.UsesX, CheckModifies},
                 { Relation.Calls, CheckModifies},
