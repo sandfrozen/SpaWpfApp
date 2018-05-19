@@ -71,16 +71,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             };
 
             declarationActions = new Dictionary<string, Action>{
-              {"procedure", ParseDeclaration},
-              {"stmtLst", ParseDeclaration},
-              {"stmt", ParseDeclaration},
-              {"assign", ParseDeclaration},
-              {"call", ParseDeclaration},
-              {"while", ParseDeclaration},
-              {"if", ParseDeclaration},
-              {"variable", ParseDeclaration},
-              {"constant", ParseDeclaration},
-              {"prog_line", ParseDeclaration},
+              { Entity.procedure, ParseDeclaration},
+              { Entity.stmtLst, ParseDeclaration},
+              { Entity.stmt, ParseDeclaration},
+              { Entity.assign, ParseDeclaration},
+              { Entity.call, ParseDeclaration},
+              { Entity._while, ParseDeclaration},
+              { Entity._if, ParseDeclaration},
+              { Entity.variable, ParseDeclaration},
+              { Entity.constant, ParseDeclaration},
+              { Entity.prog_line, ParseDeclaration},
             };
         }
 
@@ -389,37 +389,91 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void ParseSuchThat()
         {
-            string relationship = "";
-            relationship += wordsInQuery[currentIndex++];
-            if (!relationsReference.Keys.Contains(relationship))
+            string relation = "";
+            relation += wordsInQuery[currentIndex++];
+            if (!relationsReference.Keys.Contains(relation))
             {
-                throw new QueryException("Unknown Relationship Reference: " + relationship);
+                throw new QueryException("Unknown Relationship Reference: " + relation);
             }
             while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]))
             {
-                relationship += wordsInQuery[currentIndex++];
+                relation += wordsInQuery[currentIndex++];
             }
 
-            CheckRelationship(relationship);
+            CheckRelation(relation);
 
             //Trace.WriteLine("Relationship: " + relationship);
-            parsedQuery += " " + relationship;
+            parsedQuery += " " + relation;
         }
 
-        private void CheckRelationship(string relationship)
+        private void CheckRelation(string relation)
         {
-            if (Regex.IsMatch(relationship, @"^[^(,) ]+[(][^(,) ]+[,][^(,) ]+[)]$"))
+            if (Regex.IsMatch(relation, @"^[^(,) ]+[(][^(,) ]+[,][^(,) ]+[)]$"))
             {
-                string relRef = relationship.Substring(0, relationship.IndexOf('('));
-                relationship = relationship.Substring(relationship.IndexOf('(') + 1);
-                string arg1 = relationship.Substring(0, relationship.IndexOf(','));
-                relationship = relationship.Substring(relationship.IndexOf(',') + 1);
-                string arg2 = relationship.Substring(0, relationship.IndexOf(')'));
+                string relRef = relation.Substring(0, relation.IndexOf('('));
+                relation = relation.Substring(relation.IndexOf('(') + 1);
+
+                string arg1 = relation.Substring(0, relation.IndexOf(','));
+                string arg1type = "";
+                if (int.TryParse(arg1, out int result1))
+                {
+                    arg1type = Entity._int;
+                }
+                else if (arg1 == Entity._)
+                {
+                    arg1type = Entity._;
+                }
+                else if (arg1.First() == '"' && arg1.Last() == '"')
+                {
+                    IsSynonym(arg1.Trim('"'));
+                    arg1type = Entity.ident;
+                }
+                else if (declarationsList.ContainsKey(arg1))
+                {
+                    arg1type = declarationsList[arg1];
+                }
+                else
+                {
+                    throw new QueryException(relRef + " - argument 1 is invalid: " + arg1);
+                }
+
+                relation = relation.Substring(relation.IndexOf(',') + 1);
+                string arg2 = relation.Substring(0, relation.IndexOf(')'));
+                string arg2type = "";
+                if (int.TryParse(arg2, out int result2))
+                {
+                    arg2type = Entity._int;
+                }
+                else if (arg2 == Entity._)
+                {
+                    arg2type = Entity._;
+                }
+                else if (arg2.First() == '"' && arg2.Last() == '"')
+                {
+                    IsSynonym(arg1.Trim('"'));
+                    arg2type = Entity.ident;
+                }
+                else if (declarationsList.ContainsKey(arg2))
+                {
+                    arg2type = declarationsList[arg2];
+                }
+                else
+                {
+                    throw new QueryException(relRef + " - argument 2 is invalid: " + arg2);
+                }
 
                 switch (relRef)
                 {
                     case Relation.Mofidies:
                     case Relation.MofidiesX:
+                        if (!Relation.ModifiesArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.ModifiesArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Uses:
                     case Relation.UsesX:
@@ -445,7 +499,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else
             {
-                throw new QueryException("Relationship wrong format: " + relationship);
+                throw new QueryException("Relationship wrong format: " + relation);
             }
         }
 
@@ -534,7 +588,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private void CheckAssignPattern(string pattern)
         {
             string firstArg = pattern.Substring(0, pattern.IndexOf(','));
-            pattern = pattern.Substring(pattern.IndexOf(',')+1);
+            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
             string secArg = pattern.Substring(0, pattern.IndexOf(')'));
             //check arguments
 

@@ -98,7 +98,8 @@
                     <Run Text="assign a; stmt s; while w; procedure p, q; constant c;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="Select a.stmt# such that Parent(a, 4) and Calls(p, q) with p.procName = &quot;Second&quot; and s.stmt# = c.value pattern a(&quot;x&quot;, _)"/>
+                    <Run Text="Select a.stmt# such that "/>
+                    <Run Text="Modifies(a, _)"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
