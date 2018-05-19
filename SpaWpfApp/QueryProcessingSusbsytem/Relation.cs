@@ -7,6 +7,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 {
     class Relation
     {
+        // Object
         public string type { get; set; }
         public string arg1 { get; set; }
         public string arg2 { get; set; }
@@ -23,5 +24,21 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             return type + "(" + arg1 + "," + arg2 + ")"; 
         }
+
+        // const means static
+        public const string Mofidies = "Modidfies";
+        public const string MofidiesX = "Modidfies*";
+        public const string Uses = "Uses";
+        public const string UsesX = "Uses*";
+        public const string Calls = "Calls";
+        public const string CallsX = "Calls*";
+        public const string Parent = "Parent";
+        public const string ParentX = "Parent*";
+        public const string Follows = "Follows";
+        public const string FollowsX = "Follows*";
+        public const string Next = "Next";
+        public const string NextX = "Next*";
+        public const string Affects = "Affects";
+        public const string AffectsX = "Affects*";
     }
 }

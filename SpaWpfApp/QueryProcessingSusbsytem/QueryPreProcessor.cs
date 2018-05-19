@@ -16,7 +16,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private int currentIndex;
 
         private List<string> selectClauses;
-        private Dictionary<string, Action> relationshipReferences;
+        private Dictionary<string, Action> relationsReference;
         private Dictionary<string, string> declarationsList;
         private Dictionary<string, string> returnList;
         private List<Relation> relationsList;
@@ -39,21 +39,21 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
             relationsList = new List<Relation>();
-            relationshipReferences = new Dictionary<string, Action> {
-                { "Modifies", CheckModifies},
-                { "Modifies*", CheckModifies},
-                { "Uses", CheckModifies},
-                { "Uses*", CheckModifies},
-                { "Calls", CheckModifies},
-                { "Calls*", CheckModifies},
-                { "Parent", CheckModifies},
-                { "Parent*", CheckModifies},
-                { "Follows", CheckModifies},
-                { "Follows*", CheckModifies},
-                { "Next", CheckModifies},
-                { "Next*", CheckModifies},
-                { "Affects", CheckModifies},
-                { "Affects*",CheckModifies },
+            relationsReference = new Dictionary<string, Action> {
+                { Relation.Mofidies, CheckModifies},
+                { Relation.MofidiesX, CheckModifies},
+                { Relation.Uses, CheckModifies},
+                { Relation.UsesX, CheckModifies},
+                { Relation.Calls, CheckModifies},
+                { Relation.CallsX, CheckModifies},
+                { Relation.Parent, CheckModifies},
+                { Relation.ParentX, CheckModifies},
+                { Relation.Follows, CheckModifies},
+                { Relation.FollowsX, CheckModifies},
+                { Relation.Next, CheckModifies},
+                { Relation.NextX, CheckModifies},
+                { Relation.Affects, CheckModifies},
+                { Relation.AffectsX, CheckModifies },
             };
             selectClauses = new List<string>
             {
@@ -391,7 +391,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             string relationship = "";
             relationship += wordsInQuery[currentIndex++];
-            if (!relationshipReferences.Keys.Contains(relationship))
+            if (!relationsReference.Keys.Contains(relationship))
             {
                 throw new QueryException("Unknown Relationship Reference: " + relationship);
             }
@@ -418,26 +418,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 switch (relRef)
                 {
-                    case "ModifiesP":
-                    case "ModifiesS":
+                    case Relation.Mofidies:
+                    case Relation.MofidiesX:
                         break;
-                    case "UsesP":
-                    case "UsesS":
+                    case Relation.Uses:
+                    case Relation.UsesX:
                         break;
-                    case "Calls":
-                    case "CallsT":
+                    case Relation.Calls:
+                    case Relation.CallsX:
                         break;
-                    case "Parent":
-                    case "ParentT":
+                    case Relation.Parent:
+                    case Relation.ParentX:
                         break;
-                    case "Follows":
-                    case "FollowsT":
+                    case Relation.Follows:
+                    case Relation.FollowsX:
                         break;
-                    case "Next":
-                    case "NextT":
+                    case Relation.Next:
+                    case Relation.NextX:
                         break;
-                    case "Affects":
-                    case "AffectsT":
+                    case Relation.Affects:
+                    case Relation.AffectsX:
                         break;
                 }
 
