@@ -10,6 +10,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
     public class QueryEvaluator
     {
         private static QueryEvaluator instance;
+        private AstManager astManager;
+        private Relation actualRelation;
+
         public static QueryEvaluator GetInstance()
         {
             if (instance == null)
@@ -19,12 +22,33 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             return instance;
         }
 
+        public QueryEvaluator()
+        {
+            this.astManager = AstManager.GetInstance();
+        }
+
         internal void Init()
         {
             //clear resultTable
         }
 
-        internal void Parent(string fatherArgument, string childArgument)
+        public void Evaluate(List<Relation> relationList)
+        {
+            Result.GetInstance().Init();
+
+            foreach (var relation in relationList)
+            {
+                switch (relation.type)
+                {
+                    case Relation.Parent:
+                        Parent(relation);
+                        Result r = Result.GetInstance(); // do testów, potem do usunięcia ta linia
+                        break;
+                }
+            }
+        }
+
+        internal void Parent(Relation relation)
         {
             int fatherArgumentInt, childArgumentInt;
             List<TNode> candidateForChildren, candidateForFather;
@@ -34,20 +58,20 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             #region Parent(int, int), Parent(_, _)
             if (Int32.TryParse(fatherArgument, out fatherArgumentInt) && Int32.TryParse(childArgument, out childArgumentInt))
             {
-                bool result = AstManager.GetInstance().IsParent(fatherArgumentInt, childArgumentInt);
+                bool result = astManager.IsParent(fatherArgumentInt, childArgumentInt);
 
                 UpdateResultTable(result);
                 return;
             }
             else if (fatherArgument == "_" && childArgument == "_")
             {
-                var fathers = AstManager.GetInstance().GetAllParents();
+                var fathers = astManager.GetAllParents();
                 List<TNode> result;
                 if (fathers != null)
                 {
                     foreach (var f in fathers)
                     {
-                        result = AstManager.GetInstance().GetChildren(f, childArgument);
+                        result = astManager.GetChildren(f, childArgument);
                         if (result != null)
                         {
                             UpdateResultTable(true);
@@ -63,7 +87,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             else if (Int32.TryParse(fatherArgument, out fatherArgumentInt))
             {
-                TNode father = AstManager.GetInstance().FindFather(fatherArgumentInt);
+                TNode father = astManager.FindFather(fatherArgumentInt);
 
                 #region Parent(int, _)
                 if (childArgument == "_")
@@ -75,7 +99,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        var result = AstManager.GetInstance().GetChildren(father, childArgument) != null ? true : false;
+                        var result = astManager.GetChildren(father, childArgument) != null ? true : false;
                         UpdateResultTable(result);
                         return;
                     }
@@ -95,7 +119,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForChildren)
                         {
-                            if (AstManager.GetInstance().IsParent(fatherArgumentInt, (int)c.programLine))
+                            if (astManager.IsParent(fatherArgumentInt, (int)c.programLine))
                             {
                                 resultList.Add(c);
                             }
@@ -106,14 +130,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    resultList = AstManager.GetInstance().GetChildren(father, childArgument);
+                    resultList = astManager.GetChildren(father, childArgument);
                 }
                 #endregion
             }
 
             else if (Int32.TryParse(childArgument, out childArgumentInt))
             {
-                TNode child = AstManager.GetInstance().FindNode(childArgumentInt);
+                TNode child = astManager.FindNode(childArgumentInt);
 
                 #region Parent(_, int)
                 if (fatherArgument == "_")
@@ -125,7 +149,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        var result = AstManager.GetInstance().GetParent(child, fatherArgument);
+                        var result = astManager.GetParent(child, fatherArgument);
                         UpdateResultTable(result != null ? true : false);
                         return;
                     }
@@ -145,7 +169,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFather)
                         {
-                            if (AstManager.GetInstance().IsParent((int)c.programLine, childArgumentInt))
+                            if (astManager.IsParent((int)c.programLine, childArgumentInt))
                             {
                                 resultList.Add(c);
                                 break;
@@ -157,7 +181,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    TNode tmp = AstManager.GetInstance().GetParent(child, fatherArgument);
+                    TNode tmp = astManager.GetParent(child, fatherArgument);
                     if (tmp != null) { resultList.Add(tmp); }
                     UpdateResultTable(resultList, fatherArgument);
                     return;
@@ -174,7 +198,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Parent(_, *)
                 if (fatherArgument == "_")
                 {
-                    fathers = AstManager.GetInstance().GetAllParents();
+                    fathers = astManager.GetAllParents();
 
                     if (fathers != null)
                     {
@@ -187,7 +211,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 {
                                     foreach (var child in candidateForChildren)
                                     {
-                                        if (AstManager.GetInstance().IsParent((int)father.programLine, (int)child.programLine))
+                                        if (astManager.IsParent((int)father.programLine, (int)child.programLine))
                                         {
                                             resultList.Add(child);
                                         }
@@ -199,7 +223,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         {
                             foreach (var father in fathers)
                             {
-                                tmpResult = AstManager.GetInstance().GetChildren(father, childArgument);
+                                tmpResult = astManager.GetChildren(father, childArgument);
                                 if (tmpResult != null)
                                 {
                                     foreach (var child in tmpResult)
@@ -236,15 +260,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             fatherArgumentType = QueryPreProcessor.GetInstance().declarationsList[fatherArgument];
                             if (fatherArgumentType == "stmt")
                             {
-                                candidateForFather = AstManager.GetInstance().GetAllParents();
+                                candidateForFather = astManager.GetAllParents();
                             }
                             else if (fatherArgumentType == "if")
                             {
-                                candidateForFather = AstManager.GetInstance().GetAllIf();
+                                candidateForFather = astManager.GetAllIf();
                             }
                             else
                             {
-                                candidateForFather = AstManager.GetInstance().GetAllWhile();
+                                candidateForFather = astManager.GetAllWhile();
                             }
                         }
 
@@ -252,7 +276,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         {
                             foreach (var father in candidateForFather)
                             {
-                                var hasChildren = AstManager.GetInstance().GetChildren(father, childArgument) != null ? true : false;
+                                var hasChildren = astManager.GetChildren(father, childArgument) != null ? true : false;
                                 if (hasChildren) { resultList.Add(father); }
                             }
                         }
@@ -276,15 +300,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     fatherArgumentType = QueryPreProcessor.GetInstance().declarationsList[fatherArgument];
                     if (fatherArgumentType == "stmt")
                     {
-                        candidateForFather = AstManager.GetInstance().GetAllParents();
+                        candidateForFather = astManager.GetAllParents();
                     }
                     else if (fatherArgumentType == "if")
                     {
-                        candidateForFather = AstManager.GetInstance().GetAllIf();
+                        candidateForFather = astManager.GetAllIf();
                     }
                     else
                     {
-                        candidateForFather = AstManager.GetInstance().GetAllWhile();
+                        candidateForFather = astManager.GetAllWhile();
                     }
                 }
 
@@ -296,7 +320,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         for(int i=0; i< candidateForFather.Count(); i++)
                         {
-                            if(AstManager.GetInstance().IsParent((int)candidateForFather[i].programLine, (int)candidateForChildren[i].programLine))
+                            if(astManager.IsParent((int)candidateForFather[i].programLine, (int)candidateForChildren[i].programLine))
                             {
                                 resultListTuple.Add((candidateForFather[i], candidateForChildren[i]));
                             }
@@ -307,7 +331,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     foreach (var father in candidateForFather)
                     {
-                        tmpResult = AstManager.GetInstance().GetChildren(father, childArgument);
+                        tmpResult = astManager.GetChildren(father, childArgument);
                         if (tmpResult != null)
                         {
                             foreach (var child in tmpResult)

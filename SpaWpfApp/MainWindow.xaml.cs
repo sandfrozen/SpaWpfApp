@@ -198,27 +198,19 @@ namespace SpaWpfApp
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
             resultRichTextBox.Document.Blocks.Clear();
-            Result.GetInstance().Init();
-            QueryEvaluator.GetInstance().Init();
 
             try
             {
-                foreach (var relation in QueryPreProcessor.GetInstance().relationsList)
-                {
-                    switch (relation.type)
-                    {
-                        case Relation.Parent:
-                            QueryEvaluator.GetInstance().Parent(relation.arg1, relation.arg2);
-                            Result r = Result.GetInstance(); // do testów, potem do usunięcia ta linia
-                            break;
-                    }
-                }
+                List<Relation> relationList = QueryPreProcessor.GetInstance().relationsList;
+                QueryEvaluator.GetInstance().Evaluate(relationList);
             }
-            catch(NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
+            catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
             finally
             {
                 //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
-            }
+            }    
+
+            
             string now = DateTime.Now.ToLongTimeString();
             resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
         }
