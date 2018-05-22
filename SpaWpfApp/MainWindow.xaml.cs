@@ -44,6 +44,7 @@ namespace SpaWpfApp
             {
                 parsed = ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
                 addLog("Source Code Parser: Ok");
+                return;
             }
             catch (WrongCodeException wce)
             {

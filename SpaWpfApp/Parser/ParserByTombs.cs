@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.Parser
 {
@@ -48,15 +49,16 @@ namespace SpaWpfApp.Parser
         {
             if (wordsInCode[currentIndex] != "procedure")
             {
-                throw new WrongCodeException("'procedure' keyword not found in line: " + currentLine);
+                throw new WrongCodeException("'procedure' keyword not found");
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
             currentIndex++;
             if (wordsInCode[currentIndex] != "{")
             {
-                throw new WrongCodeException("'{' not found after 'procedure " + procName + "' in line: " + currentLine);
+                throw new WrongCodeException("'{' not found after 'procedure " + procName + "'");
             }
+            // add to procedures
             ParseBody();
             return;
         }
@@ -84,6 +86,10 @@ namespace SpaWpfApp.Parser
                 {
                     ParseAssign();
                 }
+                else
+                {
+                    throw new WrongCodeException("Unknown string '" + wordsInCode[currentIndex] + "' in line: " + currentLine);
+                }
                 currentLine++;
             }
             currentIndex++;
@@ -104,13 +110,14 @@ namespace SpaWpfApp.Parser
             {
                 throw new WrongCodeException("'{' not found after 'if " + varName + " then' in line: " + currentLine);
             }
+            // add to vars
+            // add to uses
             ParseBody();
             if (wordsInCode[currentIndex] != "else")
             {
                 throw new WrongCodeException("'else' not found after 'if " + varName + " then { ... }' in line: " + currentLine);
             }
             currentIndex++;
-            currentLine++;
             ParseBody();
             currentLine--;
             return;
@@ -125,6 +132,9 @@ namespace SpaWpfApp.Parser
             {
                 throw new WrongCodeException("'{' not found after 'while " + varName + "': (line: " + currentLine + ")");
             }
+            // add to vars
+            // add to uses
+            currentLine++;
             ParseBody();
             return;
         }
@@ -138,15 +148,37 @@ namespace SpaWpfApp.Parser
             {
                 throw new WrongCodeException("Missing ';' after 'call " + procName + "' in line: " + currentLine);
             }
+            // add to calls
             currentIndex++;
         }
 
         private void ParseAssign()
         {
             int i = 0;
+            IsSynonym(wordsInCode[currentIndex]);
+            // add to vars
+            // add to modifies
             for (i = 0; wordsInCode[currentIndex + i] != ";"; i++)
             {
-
+                if( i>1 && i % 2 == 0)
+                {
+                    if(!int.TryParse(wordsInCode[currentIndex + i], out int r))
+                    {
+                        IsSynonym(wordsInCode[currentIndex + i]);
+                    } else
+                    {
+                        // add to vars
+                        // add to uses
+                    }
+                }
+                else if (i > 2 && i % 2 == 1)
+                {
+                    IsAssignArythmetic(wordsInCode[currentIndex+i]);
+                }
+            }
+            if (i < 3 || i % 2 == 0)
+            {
+                throw new WrongCodeException("Invalid factors in assign in line: " + currentLine);
             }
             currentIndex = currentIndex + i + 1;
         }
@@ -168,12 +200,33 @@ namespace SpaWpfApp.Parser
 
         private bool IsSeparatorChar(char toCheck)
         {
-            char[] chars = { '{', '}', ';', '=', '*', '+', '-' };
+            char[] chars = { '{', '}', '=', '+', '-', '*', '(', ')', ';' };
             foreach (char c in chars)
             {
                 if (c == toCheck) return true;
             }
             return false;
+        }
+
+        private void IsAssignArythmetic(string toCheck)
+        {
+            string[] arythmetics = { "+", "-", "*", "(", ")" };
+            foreach (string a in arythmetics)
+            {
+                if (a == toCheck)
+                {
+                    return;
+                }
+            }
+            throw new WrongCodeException("Invalid assign in line: " + currentLine);
+        }
+
+        private void IsSynonym(string synonym)
+        {
+            if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
+            {
+                throw new WrongCodeException("Invalid synonym: " + synonym + " in line: " + currentLine);
+            }
         }
     }
 }
