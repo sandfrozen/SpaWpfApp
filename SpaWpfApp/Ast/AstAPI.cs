@@ -22,7 +22,7 @@ namespace SpaWpfApp.Ast
         /// <param name="p_child"></param>
         /// <param name="p_father"></param>
         /// <returns></returns>
-        List<TNode> GetParentS(TNode p_child, string p_father);
+        List<TNode> GetParentX(TNode p_child, string p_father);
 
         /// <summary>
         /// returns all children of stmt or null if stmt doesn't have children
@@ -38,10 +38,10 @@ namespace SpaWpfApp.Ast
         /// <param name="p_father"></param>
         /// <param name="p_child"></param>
         /// <returns></returns>
-        List<TNode> GetChildrenS(TNode p_father, string p_child);
+        List<TNode> GetChildrenX(TNode p_father, string p_child);
 
         Boolean IsParent(int p1, int p2);
-        Boolean IsParentS(int p1, int p2);
+        Boolean IsParentX(int p1, int p2);
 
 
 

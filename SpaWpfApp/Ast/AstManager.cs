@@ -689,7 +689,7 @@ namespace SpaWpfApp.Ast
 
         }
 
-        public List<TNode> GetParentS(TNode p_child, string p_father)
+        public List<TNode> GetParentX(TNode p_child, string p_father)
         {
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_father);
             List<TNode> parents = new List<TNode>();
@@ -738,7 +738,7 @@ namespace SpaWpfApp.Ast
             return children.Count() > 0 ? children : null;
         }
 
-        public List<TNode> GetChildrenS(TNode p_father, string p_child)
+        public List<TNode> GetChildrenX(TNode p_father, string p_child)
         {
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_child);
             List<TNode> children = new List<TNode>();
@@ -758,7 +758,7 @@ namespace SpaWpfApp.Ast
             return ParentTable[p2 - 1] == NodeList.Where(x => x.programLine == p1).FirstOrDefault() ? true : false;
         }
 
-        public bool IsParentS(int p1, int p2)
+        public bool IsParentX(int p1, int p2)
         {
             TNode parent;
 
