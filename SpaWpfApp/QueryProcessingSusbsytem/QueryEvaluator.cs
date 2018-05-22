@@ -47,10 +47,560 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     case Relation.ParentX:
                         ParentX(relation);
                         break;
+
+                    case Relation.Follows:
+                        Follows(relation);
+                        break;
+                    case Relation.FollowsX:
+                        FolowsX(relation);
+                        break;
                 }
                 Result r = result; // do testów, potem do usunięcia ta linia
             }
         }
+
+        private void FolowsX(Relation relation)
+        {
+            List<TNode> candidateForFrom, candidateForTo;
+            List<TNode> resultList = new List<TNode>();
+            actualRelation = relation;
+
+
+            #region FollowsX(int, int), FollowsX(_, _)
+            if (relation.arg1type == Entity._int && relation.arg2type == Entity._int)
+            {
+                bool result = astManager.IsFollowsX(Int32.Parse(relation.arg1), Int32.Parse(relation.arg2));
+
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                var nodes = astManager.NodeList;
+                List<TNode> result;
+                if (nodes != null)
+                {
+                    foreach (var node in nodes)
+                    {
+                        result = astManager.GetRightSiblingX(node, relation.arg2);
+                        if (result != null)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+                }
+
+                UpdateResultTable(false);
+                return;
+            }
+            #endregion
+
+            else if (relation.arg1type == Entity._int)
+            {
+                TNode from = astManager.FindNode(Int32.Parse(relation.arg1));
+
+                #region FollowsX(int, _)
+                if (relation.arg2type == Entity._)
+                {
+                    if (from is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = astManager.GetRightSiblingX(from, relation.arg2) != null ? true : false;
+                        UpdateResultTable(result);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region FollowsX(int, *)
+                if (from is null)
+                {
+                    UpdateResultTable(null, relation.arg2);
+                    return;
+                }
+                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = result.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        foreach (var c in candidateForTo)
+                        {
+                            if (astManager.IsFollowsX(Int32.Parse(relation.arg1), (int)c.programLine))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+                else
+                {
+                    resultList = astManager.GetRightSiblingX(from, relation.arg2);
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+                #endregion
+            }
+
+            else if (relation.arg2type == Entity._int)
+            {
+                TNode to = astManager.FindNode(Int32.Parse(relation.arg2));
+
+                #region FollowsX(_, int)
+                if (relation.arg1type == Entity._)
+                {
+                    if (to is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = astManager.GetLeftSiblingX(to, relation.arg1);
+                        UpdateResultTable(result != null ? true : false);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region FollowsX(*, int)
+                if (to is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = result.GetNodes(relation.arg1);
+                    if (candidateForFrom != null)
+                    {
+                        foreach (var c in candidateForFrom)
+                        {
+                            if (astManager.IsFollowsX((int)c.programLine, Int32.Parse(relation.arg2)))
+                            {
+                                resultList.Add(c);
+                                break;
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                else
+                {
+                    resultList = astManager.GetLeftSiblingX(to, relation.arg1);
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                #endregion
+            }
+
+            else
+            {
+                List<TNode> fromList = null;
+                List<TNode> tmpResult = null;
+
+                #region FollowsX(_, *)
+                if (relation.arg1type == Entity._)
+                {
+                    fromList = astManager.NodeList;
+
+                    if (fromList != null)
+                    {
+                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        {
+                            candidateForTo = result.GetNodes(relation.arg2);
+                            if (candidateForTo != null)
+                            {
+                                foreach (var from in fromList)
+                                {
+                                    foreach (var to in candidateForTo)
+                                    {
+                                        if (astManager.IsFollowsX((int)from.programLine, (int)to.programLine))
+                                        {
+                                            resultList.Add(to);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (var from in fromList)
+                            {
+                                tmpResult = astManager.GetRightSiblingX(from, relation.arg2);
+                                UpdateResultTable(resultList, relation.arg2);
+                                return;
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg2);
+                        return;
+                    }
+                    else
+                    {
+                        UpdateResultTable(null, relation.arg2);
+                        return;
+                    }
+
+                }
+                #endregion
+
+                else
+                {
+                    #region FollowsX(*, _)
+                    if (relation.arg2 == Entity._)
+                    {
+                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        {
+                            candidateForFrom = result.GetNodes(relation.arg1);
+                        }
+                        else
+                        {
+                            candidateForFrom = astManager.NodeList;
+                        }
+
+                        if (candidateForFrom != null)
+                        {
+                            foreach (var from in candidateForFrom)
+                            {
+                                var hasRightSibling = astManager.GetRightSiblingX(from, relation.arg2) != null ? true : false;
+                                if (hasRightSibling) { resultList.Add(from); }
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg1);
+                        return;
+                    }
+                    #endregion
+                }
+
+                #region FollowsX(*, *)
+                List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+                //candidates for from
+                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = result.GetNodes(relation.arg1);
+                }
+                else
+                {
+                    candidateForFrom = astManager.NodeList;
+                }
+
+                //candidates for to
+                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = result.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        for (int i = 0; i < candidateForFrom.Count(); i++)
+                        {
+                            if (astManager.IsFollowsX((int)candidateForFrom[i].programLine, (int)candidateForTo[i].programLine))
+                            {
+                                resultListTuple.Add((candidateForFrom[i], candidateForTo[i]));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var from in candidateForFrom)
+                    {
+                        tmpResult = astManager.GetRightSiblingX(from, relation.arg2);
+                        if (tmpResult != null)
+                        {
+                            foreach (var to in tmpResult)
+                            {
+                                resultListTuple.Add((from, to));
+                            }
+                        }
+                    }
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+                #endregion
+            }
+        }
+
+
+        private void Follows(Relation relation)
+        {
+            List<TNode> candidateForFrom, candidateForTo;
+            List<TNode> resultList = new List<TNode>();
+            actualRelation = relation;
+
+
+            #region Follows(int, int), Follows(_, _)
+            if (relation.arg1type == Entity._int && relation.arg2type == Entity._int)
+            {
+                bool result = astManager.IsFollows(Int32.Parse(relation.arg1), Int32.Parse(relation.arg2));
+
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                var nodes = astManager.NodeList;
+                TNode result;
+                if (nodes != null)
+                {
+                    foreach (var node in nodes)
+                    {
+                        result = astManager.GetRightSibling(node, relation.arg2);
+                        if (result != null)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+                }
+
+                UpdateResultTable(false);
+                return;
+            }
+            #endregion
+
+            else if (relation.arg1type == Entity._int)
+            {
+                TNode from = astManager.FindNode(Int32.Parse(relation.arg1));
+
+                #region Follows(int, _)
+                if (relation.arg2type == Entity._)
+                {
+                    if (from is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = astManager.GetRightSibling(from, relation.arg2) != null ? true : false;
+                        UpdateResultTable(result);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region Follows(int, *)
+                if (from is null)
+                {
+                    UpdateResultTable(null, relation.arg2);
+                    return;
+                }
+                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = result.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        foreach (var c in candidateForTo)
+                        {
+                            if (astManager.IsFollows(Int32.Parse(relation.arg1), (int)c.programLine))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+                else
+                {
+                    TNode tmp = astManager.GetRightSibling(from, relation.arg2);
+                    if (tmp != null) { resultList.Add(tmp); }
+                    UpdateResultTable(resultList, relation.arg2);
+                }
+                #endregion
+            }
+
+            else if (relation.arg2type == Entity._int)
+            {
+                TNode to = astManager.FindNode(Int32.Parse(relation.arg2));
+
+                #region Follows(_, int)
+                if (relation.arg1type == Entity._)
+                {
+                    if (to is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = astManager.GetLeftSibling(to, relation.arg1);
+                        UpdateResultTable(result != null ? true : false);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region Follows(*, int)
+                if (to is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = result.GetNodes(relation.arg1);
+                    if (candidateForFrom != null)
+                    {
+                        foreach (var c in candidateForFrom)
+                        {
+                            if (astManager.IsFollows((int)c.programLine, Int32.Parse(relation.arg2)))
+                            {
+                                resultList.Add(c);
+                                break;
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                else
+                {
+                    TNode tmp = astManager.GetLeftSibling(to, relation.arg1);
+                    if (tmp != null) { resultList.Add(tmp); }
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                #endregion
+            }
+
+            else
+            {
+                List<TNode> fromList = null;
+                List<TNode> tmpResult = null;
+
+                #region Follows(_, *)
+                if (relation.arg1type == Entity._)
+                {
+                    fromList = astManager.NodeList;
+
+                    if (fromList != null)
+                    {
+                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        {
+                            candidateForTo = result.GetNodes(relation.arg2);
+                            if (candidateForTo != null)
+                            {
+                                foreach (var from in fromList)
+                                {
+                                    foreach (var to in candidateForTo)
+                                    {
+                                        if (astManager.IsFollows((int)from.programLine, (int)to.programLine))
+                                        {
+                                            resultList.Add(to);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (var from in fromList)
+                            {
+                                TNode tmp = astManager.GetRightSibling(from, relation.arg2);
+                                if (tmp != null) { resultList.Add(tmp); }
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg2);
+                        return;
+                    }
+                    else
+                    {
+                        UpdateResultTable(null, relation.arg2);
+                        return;
+                    }
+
+                }
+                #endregion
+
+                else
+                {
+                    #region Follows(*, _)
+                    if (relation.arg2 == Entity._)
+                    {
+                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        {
+                            candidateForFrom = result.GetNodes(relation.arg1);
+                        }
+                        else
+                        {
+                            candidateForFrom = astManager.NodeList;
+                        }
+
+                        if (candidateForFrom != null)
+                        {
+                            foreach (var from in candidateForFrom)
+                            {
+                                var hasRightSibling = astManager.GetRightSibling(from, relation.arg2) != null ? true : false;
+                                if (hasRightSibling) { resultList.Add(from); }
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg1);
+                        return;
+                    }
+                    #endregion
+                }
+
+                #region Follows(*, *)
+                List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+                //candidates for from
+                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = result.GetNodes(relation.arg1);
+                }
+                else
+                {
+                    candidateForFrom = astManager.NodeList;
+                }
+
+                //candidates for to
+                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = result.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        for (int i = 0; i < candidateForFrom.Count(); i++)
+                        {
+                            if (astManager.IsFollows((int)candidateForFrom[i].programLine, (int)candidateForTo[i].programLine))
+                            {
+                                resultListTuple.Add((candidateForFrom[i], candidateForTo[i]));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var from in candidateForFrom)
+                    {
+                        TNode tmp = astManager.GetRightSibling(from, relation.arg2);
+                        if (tmp != null)
+                        {
+                            resultListTuple.Add((from, tmp));
+                        }
+                    }
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+                #endregion
+            }
+        }
+
 
         private void Parent(Relation relation)
         {
@@ -135,6 +685,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     resultList = astManager.GetChildren(father, relation.arg2);
+                    UpdateResultTable(resultList, relation.arg2);
                 }
                 #endregion
             }
@@ -252,7 +803,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     #region Parent(*, _)
-                    if (relation.arg2 == "_")
+                    if (relation.arg2 == Entity._)
                     {
                         if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
                         {
@@ -432,6 +983,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     resultList = astManager.GetChildrenX(father, relation.arg2);
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
                 #endregion
             }
@@ -482,8 +1035,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFather = astManager.GetParentX(child, relation.arg1);
-                    if (candidateForFather != null) { resultList.AddRange(candidateForFather); }
+                    resultList = astManager.GetParentX(child, relation.arg1);
                     UpdateResultTable(resultList, relation.arg1);
                     return;
                 }
@@ -549,7 +1101,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     #region ParentX(*, _)
-                    if (relation.arg2 == "_")
+                    if (relation.arg2 == Entity._)
                     {
                         if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
                         {
@@ -672,11 +1224,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     TNode[] newRecord;
-                    foreach (var result in resultListTuple)
+                    foreach (var res in resultListTuple)
                     {
                         newRecord = new TNode[result.declarationsTable.Length];
-                        newRecord[indexOfDeclarationFirstArgument] = result.Item1;
-                        newRecord[indexOfDeclarationSecondArgument] = result.Item2;
+                        newRecord[indexOfDeclarationFirstArgument] = res.Item1;
+                        newRecord[indexOfDeclarationSecondArgument] = res.Item2;
                         newResultTableList.Add(newRecord);
 
                     }
@@ -717,10 +1269,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     TNode[] newRecord;
-                    foreach (var result in resultList)
+                    foreach (var res in resultList)
                     {
                         newRecord = new TNode[result.declarationsTable.Length];
-                        newRecord[indexOfDeclaration] = result;
+                        newRecord[indexOfDeclaration] = res;
                         newResultTableList.Add(newRecord);
                     }
                 }
@@ -736,21 +1288,21 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             result.SetDeclarationWasDeterminated(argumentLookingFor);
         }
 
-        private void UpdateResultTable(bool result)
+        private void UpdateResultTable(bool p_result)
         {
             if (queryPreProcessor.ReturnTypeIsBoolean())
             {
-                result.ResultBoolean = result;
+                result.ResultBoolean = p_result;
             }
             else
             {
-                if (result is false)
+                if (p_result is false)
                 {
                     result.ClearResultTableList();
                 }
             }
 
-            if (result is false)
+            if (p_result is false)
             {
                 FinishQueryEvaluator();
             }
