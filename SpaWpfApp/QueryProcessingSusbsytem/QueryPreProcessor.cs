@@ -426,7 +426,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else if (arg1.First() == '"' && arg1.Last() == '"')
                 {
                     IsSynonym(arg1.Trim('"'));
-                    arg1type = Entity.ident;
+                    arg1type = Entity._string;
                 }
                 else if (declarationsList.ContainsKey(arg1))
                 {
@@ -451,7 +451,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else if (arg2.First() == '"' && arg2.Last() == '"')
                 {
                     IsSynonym(arg1.Trim('"'));
-                    arg2type = Entity.ident;
+                    arg2type = Entity._string;
                 }
                 else if (declarationsList.ContainsKey(arg2))
                 {
@@ -464,8 +464,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 switch (relRef)
                 {
-                    case Relation.Mofidies:
-                    case Relation.MofidiesX:
+                    case Relation.Modifies:
+                    case Relation.ModifiesX:
                         if (!Relation.ModifiesArgs1.Contains(arg1type))
                         {
                             throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
@@ -477,21 +477,69 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         break;
                     case Relation.Uses:
                     case Relation.UsesX:
+                        if (!Relation.UsesArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.UsesArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Calls:
                     case Relation.CallsX:
+                        if (!Relation.CallsArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.CallsArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Parent:
                     case Relation.ParentX:
+                        if (!Relation.ParentArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.ParentArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Follows:
                     case Relation.FollowsX:
+                        if (!Relation.FollowsArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.FollowsArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Next:
                     case Relation.NextX:
+                        if (!Relation.NextArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.NextArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                     case Relation.Affects:
                     case Relation.AffectsX:
+                        if (!Relation.AffectsArgs1.Contains(arg1type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
+                        }
+                        if (!Relation.AffectsArgs2.Contains(arg2type))
+                        {
+                            throw new QueryException("In " + relRef + " you cannot use: " + arg2type + " as second argument");
+                        }
                         break;
                 }
 

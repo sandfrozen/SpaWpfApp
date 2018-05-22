@@ -9,7 +9,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
     {
         public const string _ = "_";
         public const string _int = "int";
-        public const string ident = "ident";
+        public const string _string = "string";
 
         public const string procedure = "procedure";
         public const string stmtLst = "stmtLst";
