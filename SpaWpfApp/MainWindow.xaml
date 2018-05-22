@@ -10,7 +10,7 @@
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
-        <RichTextBox x:Name="procedureRichTextBox" Margin="10,35,0,10" HorizontalAlignment="Left" Width="235">
+        <RichTextBox x:Name="procedureRichTextBox" Margin="10,35,0,10" HorizontalAlignment="Left" Width="235" FontFamily="Courier New">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -21,69 +21,78 @@
                     <Run Text="procedure First {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="x = 2 ;"/>
+                    <Run Text="    x = 2;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="z = 3 ;"/>
+                    <Run Text="    z = 3;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="call Second ; }"/>
+                    <Run Text="    call Second; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run/>
+                </Paragraph>
+                <Paragraph>
+                    <Run/>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="procedure Second {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="x = 0 ;"/>
+                    <Run Text="    x = 0;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="i = 5 ;"/>
+                    <Run Text="    i = 5;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="while i {"/>
+                    <Run Text="    while i {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="x = x + 2 * y ;"/>
+                    <Run Text="        x = x + 2*y;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="call Third ;"/>
+                    <Run Text="        call Third;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="i = i - 1 ; }"/>
-                </Paragraph>
-                <!--<Paragraph>
-                    <Run Text="if x then {"/>
+                    <Run Text="        i = i - 1; }"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="x = x + 1 ; }"/>
+                    <Run Text="    if x then {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="else {"/>
+                    <Run Text="        x = x+1; }else {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="z = 1 ; }"/>
-                </Paragraph>-->
-                <Paragraph>
-                    <Run Text="z = z + x + i ;"/>
+                    <Run Text="        z = 1; }"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="y = z + 2 ;"/>
+                    <Run Text="    z = z + x + i;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="x = x * y + z ; }"/>
+                    <Run Text="    y = z + 2;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="    x = x * y + z; }"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run/>
+                </Paragraph>
+                <Paragraph>
+                    <Run/>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="procedure Third {"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="z = 5 ;"/>
+                    <Run Text="    z = 5;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="v = z ; }"/>
+                    <Run Text="    v = z; }"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
         <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click" Height="20"/>
-        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Click="formatButton_Click" Height="20"/>
+        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
         <Label x:Name="logsLabel" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Width="37" Padding="0,5,5,5"/>
         <Button x:Name="evaluateQueryButton" Content="Evaluate Query" Margin="346,301,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click" Height="20" VerticalAlignment="Top"/>
         <RichTextBox x:Name="queryRichTextBox" Margin="250,186,10,0" Height="110" VerticalAlignment="Top">
