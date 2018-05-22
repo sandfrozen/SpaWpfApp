@@ -18,7 +18,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private List<string> selectClauses;
         private Dictionary<string, Action> relationsReference;
         public Dictionary<string, string> declarationsList { get; set; }
-        public  Dictionary<string, string> returnList { get; set; }
+        public Dictionary<string, string> returnList { get; set; }
         public List<Relation> relationsList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
@@ -495,7 +495,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         break;
                 }
 
-                relationsList.Add(new Relation(relRef, arg1, arg2));
+                relationsList.Add(new Relation(relRef, arg1, arg1type, arg2, arg2type));
             }
             else
             {

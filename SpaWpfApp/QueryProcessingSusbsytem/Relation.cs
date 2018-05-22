@@ -10,19 +10,23 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         // Object
         public string type { get; set; }
         public string arg1 { get; set; }
+        public string arg1type { get; set; }
         public string arg2 { get; set; }
+        public string arg2type { get; set; }
 
-        public Relation(string type, string arg1, string arg2)
+        public Relation(string type, string arg1, string arg1type, string arg2, string arg2type)
         {
             this.type = type;
             this.arg1 = arg1;
+            this.arg1type = arg1type;
             this.arg2 = arg2;
+            this.arg2type = arg2type;
         }
 
 
         override public string ToString()
         {
-            return type + "(" + arg1 + "," + arg2 + ")"; 
+            return this.type + "(" + this.arg1 + " (" + this.arg1type + "), " + this.arg2 + " (" + this.arg2type + "))";
         }
 
         // const means static
