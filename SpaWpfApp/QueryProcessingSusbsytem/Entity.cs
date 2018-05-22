@@ -21,6 +21,5 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public const string variable = "variable";
         public const string constant = "constant";
         public const string prog_line = "prog_line";
-
     }
 }

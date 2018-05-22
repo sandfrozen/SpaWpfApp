@@ -26,7 +26,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         override public string ToString()
         {
-            return this.type + "(" + this.arg1 + " (" + this.arg1type + "), " + this.arg2 + " (" + this.arg2type + "))";
+            return this.type + "(" + this.arg1 + ", " + this.arg2 + ")";
         }
 
         // const means static

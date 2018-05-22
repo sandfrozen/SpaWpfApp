@@ -50,20 +50,20 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         internal void Parent(Relation relation)
         {
-            int fatherArgumentInt, childArgumentInt;
             List<TNode> candidateForChildren, candidateForFather;
             List<TNode> resultList = new List<TNode>();
+            actualRelation = relation;
 
 
             #region Parent(int, int), Parent(_, _)
-            if (Int32.TryParse(fatherArgument, out fatherArgumentInt) && Int32.TryParse(childArgument, out childArgumentInt))
+            if (relation.arg1type == Entity._int && relation.arg2type == Entity._int)
             {
-                bool result = astManager.IsParent(fatherArgumentInt, childArgumentInt);
+                bool result = astManager.IsParent(Int32.Parse(relation.arg1), Int32.Parse(relation.arg2));
 
                 UpdateResultTable(result);
                 return;
             }
-            else if (fatherArgument == "_" && childArgument == "_")
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
                 var fathers = astManager.GetAllParents();
                 List<TNode> result;
@@ -71,7 +71,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     foreach (var f in fathers)
                     {
-                        result = astManager.GetChildren(f, childArgument);
+                        result = astManager.GetChildren(f, relation.arg2);
                         if (result != null)
                         {
                             UpdateResultTable(true);
@@ -85,12 +85,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             #endregion
 
-            else if (Int32.TryParse(fatherArgument, out fatherArgumentInt))
+            else if (relation.arg1type == Entity._int)
             {
-                TNode father = astManager.FindFather(fatherArgumentInt);
+                TNode father = astManager.FindFather(Int32.Parse(relation.arg1));
 
                 #region Parent(int, _)
-                if (childArgument == "_")
+                if (relation.arg2type == Entity._)
                 {
                     if (father is null)
                     {
@@ -99,7 +99,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        var result = astManager.GetChildren(father, childArgument) != null ? true : false;
+                        var result = astManager.GetChildren(father, relation.arg2) != null ? true : false;
                         UpdateResultTable(result);
                         return;
                     }
@@ -109,38 +109,38 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Parent(int, *)
                 if (father is null)
                 {
-                    UpdateResultTable(null, childArgument);
+                    UpdateResultTable(null, relation.arg2);
                     return;
                 }
-                else if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(childArgument))
+                else if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = Result.GetInstance().GetNodes(childArgument);
+                    candidateForChildren = Result.GetInstance().GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         foreach (var c in candidateForChildren)
                         {
-                            if (astManager.IsParent(fatherArgumentInt, (int)c.programLine))
+                            if (astManager.IsParent(Int32.Parse(relation.arg1), (int)c.programLine))
                             {
                                 resultList.Add(c);
                             }
                         }
                     }
-                    UpdateResultTable(resultList, childArgument);
+                    UpdateResultTable(resultList, relation.arg2);
                     return;
                 }
                 else
                 {
-                    resultList = astManager.GetChildren(father, childArgument);
+                    resultList = astManager.GetChildren(father, relation.arg2);
                 }
                 #endregion
             }
 
-            else if (Int32.TryParse(childArgument, out childArgumentInt))
+            else if (relation.arg2type == Entity._int)
             {
-                TNode child = astManager.FindNode(childArgumentInt);
+                TNode child = astManager.FindNode(Int32.Parse(relation.arg2));
 
                 #region Parent(_, int)
-                if (fatherArgument == "_")
+                if (relation.arg1type == Entity._)
                 {
                     if (child is null)
                     {
@@ -149,7 +149,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        var result = astManager.GetParent(child, fatherArgument);
+                        var result = astManager.GetParent(child, relation.arg1);
                         UpdateResultTable(result != null ? true : false);
                         return;
                     }
@@ -159,31 +159,31 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Parent(*, int)
                 if (child is null)
                 {
-                    UpdateResultTable(null, fatherArgument);
+                    UpdateResultTable(null, relation.arg1);
                     return;
                 }
-                else if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(fatherArgument))
+                else if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = Result.GetInstance().GetNodes(fatherArgument);
+                    candidateForFather = Result.GetInstance().GetNodes(relation.arg1);
                     if (candidateForFather != null)
                     {
                         foreach (var c in candidateForFather)
                         {
-                            if (astManager.IsParent((int)c.programLine, childArgumentInt))
+                            if (astManager.IsParent((int)c.programLine, Int32.Parse(relation.arg2)))
                             {
                                 resultList.Add(c);
                                 break;
                             }
                         }
                     }
-                    UpdateResultTable(resultList, fatherArgument);
+                    UpdateResultTable(resultList, relation.arg1);
                     return;
                 }
                 else
                 {
-                    TNode tmp = astManager.GetParent(child, fatherArgument);
+                    TNode tmp = astManager.GetParent(child, relation.arg1);
                     if (tmp != null) { resultList.Add(tmp); }
-                    UpdateResultTable(resultList, fatherArgument);
+                    UpdateResultTable(resultList, relation.arg1);
                     return;
                 }
                 #endregion
@@ -192,19 +192,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else
             {
                 List<TNode> fathers = null;
-                string fatherArgumentType;
                 List<TNode> tmpResult = null;
 
                 #region Parent(_, *)
-                if (fatherArgument == "_")
+                if (relation.arg1type == Entity._)
                 {
                     fathers = astManager.GetAllParents();
 
                     if (fathers != null)
                     {
-                        if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(childArgument))
+                        if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForChildren = Result.GetInstance().GetNodes(childArgument);
+                            candidateForChildren = Result.GetInstance().GetNodes(relation.arg2);
                             if (candidateForChildren != null)
                             {
                                 foreach (var father in fathers)
@@ -223,7 +222,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         {
                             foreach (var father in fathers)
                             {
-                                tmpResult = astManager.GetChildren(father, childArgument);
+                                tmpResult = astManager.GetChildren(father, relation.arg2);
                                 if (tmpResult != null)
                                 {
                                     foreach (var child in tmpResult)
@@ -234,12 +233,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                         }
 
-                        UpdateResultTable(resultList, childArgument);
+                        UpdateResultTable(resultList, relation.arg2);
                         return;
                     }
                     else
                     {
-                        UpdateResultTable(null, childArgument);
+                        UpdateResultTable(null, relation.arg2);
                         return;
                     }
 
@@ -249,20 +248,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     #region Parent(*, _)
-                    if (childArgument == "_")
+                    if (relation.arg2 == "_")
                     {
-                        if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(fatherArgument))
+                        if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg1))
                         {
-                            candidateForFather = Result.GetInstance().GetNodes(fatherArgument);
+                            candidateForFather = Result.GetInstance().GetNodes(relation.arg1);
                         }
                         else
                         {
-                            fatherArgumentType = QueryPreProcessor.GetInstance().declarationsList[fatherArgument];
-                            if (fatherArgumentType == "stmt")
+                            if (relation.arg1type == Entity.stmt)
                             {
                                 candidateForFather = astManager.GetAllParents();
                             }
-                            else if (fatherArgumentType == "if")
+                            else if (relation.arg1type == Entity._if)
                             {
                                 candidateForFather = astManager.GetAllIf();
                             }
@@ -276,12 +274,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         {
                             foreach (var father in candidateForFather)
                             {
-                                var hasChildren = astManager.GetChildren(father, childArgument) != null ? true : false;
+                                var hasChildren = astManager.GetChildren(father, relation.arg2) != null ? true : false;
                                 if (hasChildren) { resultList.Add(father); }
                             }
                         }
 
-                        UpdateResultTable(resultList, fatherArgument);
+                        UpdateResultTable(resultList, relation.arg1);
                         return;
                     }
                     #endregion
@@ -291,18 +289,17 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
                 //candidates for fathers
-                if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(fatherArgument))
+                if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = Result.GetInstance().GetNodes(fatherArgument);
+                    candidateForFather = Result.GetInstance().GetNodes(relation.arg1);
                 }
                 else
                 {
-                    fatherArgumentType = QueryPreProcessor.GetInstance().declarationsList[fatherArgument];
-                    if (fatherArgumentType == "stmt")
+                    if (relation.arg1type == Entity.stmt)
                     {
                         candidateForFather = astManager.GetAllParents();
                     }
-                    else if (fatherArgumentType == "if")
+                    else if (relation.arg1type == Entity._if)
                     {
                         candidateForFather = astManager.GetAllIf();
                     }
@@ -313,9 +310,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 //candidates for children
-                if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(childArgument))
+                if (Result.GetInstance().HasRecords() && Result.GetInstance().DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = Result.GetInstance().GetNodes(childArgument);
+                    candidateForChildren = Result.GetInstance().GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         for(int i=0; i< candidateForFather.Count(); i++)
@@ -331,7 +328,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     foreach (var father in candidateForFather)
                     {
-                        tmpResult = astManager.GetChildren(father, childArgument);
+                        tmpResult = astManager.GetChildren(father, relation.arg2);
                         if (tmpResult != null)
                         {
                             foreach (var child in tmpResult)
@@ -342,7 +339,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                 }
 
-                UpdateResultTable(resultListTuple, fatherArgument, childArgument);
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;
                 #endregion
             }
@@ -462,7 +459,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private void FinishQueryEvaluator()
         {
             //make relation string
-            throw new NoResultsException("Relation blablabla has no results.");
+            throw new NoResultsException("Relation " + actualRelation.ToString() + " has no results.");
         }
     }
 }
