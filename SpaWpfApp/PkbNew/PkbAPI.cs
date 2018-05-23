@@ -8,6 +8,9 @@ namespace SpaWpfApp.PkbNew
     public interface PkbAPI
     {
         int GetNumberOfLines();
+        void PrintModifiesTable();
+        void PrintUsesTable();
+        void PrintCallsTable();
 
         #region ProcTable
         /// <summary>
@@ -45,13 +48,13 @@ namespace SpaWpfApp.PkbNew
         /// </summary>
         /// <param name="var">variable name</param>
         /// <returns></returns>
-        void InsertVar(String var);
+        void InsertVar(string var, int currentLine);
         /// <summary>
         /// Returns variable index in VarTable for given variable name
         /// </summary>
         /// <param name="var">variable name</param>
         /// <returns></returns>
-        int GetVarIndex(String var);
+        int GetVarIndex(string var);
         /// <summary>
         /// Returns variable name for given variable index in VarTable
         /// </summary>

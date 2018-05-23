@@ -65,30 +65,19 @@ namespace SpaWpfApp.ParserNew
             {
                 Trace.WriteLine(pkb.GetVarName(i));
             }
-            //Trace.WriteLine("procTable:");
-            //foreach (String s in procTable)
-            //{
-            //    Trace.WriteLine(s);
-            //}
-            //Trace.WriteLine("procCalls:");
-            //foreach (String s in procCalls)
-            //{
-            //    if(!procTable.Contains(s))
-            //    {
-            //        throw new WrongCodeException("Procedure '" + s + "' is used, but not delacred !");
-            //    }
-            //    Trace.WriteLine(s);
-            //}
+            Trace.WriteLine("MODIFIES TABLE:");
+            pkb.PrintModifiesTable();
 
-            //Trace.WriteLine("CallsTable:");
-            //for (int i=0; i< callsTable.Count; i++)
-            //{
-            //    for(int j=0; j<callsTable.ElementAt(i).Count; j++)
-            //    {
-            //        Trace.Write(callsTable.ElementAt(i).ElementAt(j) + " ");
-            //    }
-            //    Trace.WriteLine("");
-            //}
+            Trace.WriteLine("USES TABLE:");
+            pkb.PrintUsesTable();
+
+            Trace.WriteLine("CALLS TABLE:");
+            pkb.PrintCallsTable();
+
+            //Trace.WriteLine("GET CALLS STMTS:");
+            //var t1 = pkb.IsCalls("First", "Second");
+            //var t2 = pkb.IsCalls("Second", "Third");
+            //var t3 = pkb.IsCalls("First", "Third");
 
             return "";
 
@@ -103,7 +92,7 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             string procName = wordsInCode[currentIndex];
             pkb.InsertProc(procName);
-            //addProc(procName);
+
             currentProcedure = procName;
             lastParent = "procedure " + procName;
             ParseBody();
@@ -167,9 +156,10 @@ namespace SpaWpfApp.ParserNew
             lastParent = "if " + varName;
 
             // add to vars
-            pkb.InsertVar(varName);
-            //addVar(varName);
+            pkb.InsertVar(varName, currentLine);
+
             // add to uses
+            pkb.SetUses(varName, currentLine);
 
             ParseBody();
             if (wordsInCode[currentIndex] != "else")
@@ -188,9 +178,10 @@ namespace SpaWpfApp.ParserNew
             lastParent = "while " + varName;
 
             // add to vars
-            pkb.InsertVar(varName);
-            //addVar(varName);
+            pkb.InsertVar(varName, currentLine);
+
             // add to uses
+            pkb.SetUses(varName, currentLine);
 
             ParseBody();
             return;
@@ -200,13 +191,13 @@ namespace SpaWpfApp.ParserNew
         {
             currentIndex++;
             string procName = wordsInCode[currentIndex];
+            pkb.InsertProc(procName);
             addProcCall(procName);
             currentIndex++;
             if (wordsInCode[currentIndex] != ";")
             {
                 throw new WrongCodeException("; expected after 'call " + procName + "' in line: " + currentLine);
             }
-            //SetCalls(currentProcedure, procName, currentLine);
             pkb.SetCalls(currentProcedure, procName, currentLine);
             currentIndex++;
         }
@@ -218,9 +209,10 @@ namespace SpaWpfApp.ParserNew
             IsSynonym(varModified);
 
             // add to vars
-            pkb.InsertVar(varModified);
-            //addVar(varModified);
+            pkb.InsertVar(varModified, currentLine);
+
             // add to modifies
+            pkb.SetModifies(varModified, currentLine);
 
             for (i = 0; wordsInCode[currentIndex + i] != ";"; i++)
             {
@@ -232,9 +224,10 @@ namespace SpaWpfApp.ParserNew
                         IsSynonym(varUsed);
 
                         // add to vars
-                        pkb.InsertVar(varUsed);
-                        //addVar(varUsed);
+                        pkb.InsertVar(varUsed, currentLine);
+
                         // add to uses
+                        pkb.SetUses(varUsed, currentLine);
                     }
                     else
                     {

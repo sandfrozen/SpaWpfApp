@@ -9,7 +9,13 @@ namespace SpaWpfApp.PkbNew
     internal class Pkb : PkbAPI
     {
 
-        private int numberOfLines = -1;
+        public int numberOfLines
+        {
+            get
+            {
+                return ModifiesTable.Count != 0 ? ModifiesTable.ElementAt(0).LinesCount() : -1;
+            }
+        }
         private List<string> ProcTable;   // [proc]
         private List<string> VarTable;    // [var ]
 
@@ -24,8 +30,46 @@ namespace SpaWpfApp.PkbNew
 
             CallsTable = new List<List<int>>();
 
-            ModifiesTable = new List<ListContainer> ();
-            UsesTable = new List<ListContainer> ();
+            ModifiesTable = new List<ListContainer>();
+            UsesTable = new List<ListContainer>();
+        }
+
+        public void PrintModifiesTable()
+        {
+            for (int i = 0; i < VarTable.Count; i++)
+            {
+                Trace.Write(GetVarName(i) + "  ");
+                for (int j = 0; j < numberOfLines; j++)
+                {
+                    Trace.Write(ModifiesTable.ElementAt(i).ValueAt(j) ? "1 " : "0 ");
+                }
+                Trace.WriteLine("");
+            }
+        }
+
+        public void PrintUsesTable()
+        {
+            for (int i = 0; i < VarTable.Count; i++)
+            {
+                Trace.Write(GetVarName(i) + "  ");
+                for (int j = 0; j < numberOfLines; j++)
+                {
+                    Trace.Write(UsesTable.ElementAt(i).ValueAt(j) ? "1 " : "0 ");
+                }
+                Trace.WriteLine("");
+            }
+        }
+
+        public void PrintCallsTable()
+        {
+            for (int i = 0; i < ProcTable.Count; i++)
+            {
+                for (int j = 0; j < ProcTable.Count; j++)
+                {
+                    Trace.Write(CallsTable.ElementAt(i).ElementAt(j) + " ");
+                }
+                Trace.WriteLine("");
+            }
         }
 
         public int GetNumberOfLines()
@@ -33,7 +77,7 @@ namespace SpaWpfApp.PkbNew
             return numberOfLines;
         }
 
-        #region ProcTable operations
+        #region ProcTable
         public void InsertProc(String proc)
         {
             if (!ProcTable.Contains(proc))
@@ -42,6 +86,7 @@ namespace SpaWpfApp.PkbNew
                 IncreaseCallsTable(proc);
             }
         }
+
         private void IncreaseCallsTable(string proc)
         {
             CallsTable.Insert(CallsTable.Count, new List<int>());
@@ -55,224 +100,170 @@ namespace SpaWpfApp.PkbNew
                 }
             }
         }
+
         public int GetProcIndex(String proc)
         {
-            if (ProcTable.Contains(proc))
-            {
-                for (int i = 0; i < ProcTable.Count; i++)
-                {
-                    if (ProcTable.ElementAt(i) == proc)
-                    {
-                        return i;
-                    }
-                }
-            }
-            return -1;
+            return ProcTable.Contains(proc) ? ProcTable.IndexOf(proc) : -1;
         }
+
         public string GetProcName(int index)
         {
-            if (index < ProcTable.Count)
-            {
-                return ProcTable.ElementAt(index);
-            }
-            return null;
+            return index > -1 && index < ProcTable.Count ? ProcTable.ElementAt(index) : null;
         }
+
         public int GetNumberOfProcs()
         {
             return ProcTable.Count;
         }
         #endregion
 
-        #region VarTable operations
-        public void InsertVar(String var)
+        #region VarTable
+        public void InsertVar(string var, int currentLine)
         {
             if (!VarTable.Contains(var))
             {
                 VarTable.Add(var);
+                InsertVarToModifiesAndUses(VarTable.IndexOf(var), var);
             }
+            InsertNewLines(currentLine);
         }
-        public int GetVarIndex(String var)
+
+        private void InsertNewLines(int currentLine)
         {
-            if (VarTable.Contains(var))
+            for (int i = 0; i < ModifiesTable.Count; i++)
             {
-                for (int i = 0; i < VarTable.Count; i++)
+                while (ModifiesTable.ElementAt(i).LinesCount() < currentLine)
                 {
-                    if (VarTable.ElementAt(i) == var)
-                    {
-                        return i;
-                    }
+                    ModifiesTable.ElementAt(i).Add(false);
+                    UsesTable.ElementAt(i).Add(false);
                 }
             }
-            return -1;
         }
+
+        private void InsertVarToModifiesAndUses(int varIndex, string varName)
+        {
+            ModifiesTable.Insert(ModifiesTable.Count, new ListContainer(varIndex, varName));
+            UsesTable.Insert(UsesTable.Count, new ListContainer(varIndex, varName));
+        }
+
+        public int GetVarIndex(String var)
+        {
+            return VarTable.Contains(var) ? VarTable.IndexOf(var) : -1;
+        }
+
         public String GetVarName(int index)
         {
-            if (index < VarTable.Count)
-            {
-                return VarTable.ElementAt(index);
-            }
-            return null;
+            return index > -1 && index < VarTable.Count ? VarTable.ElementAt(index) : null;
         }
+
         public int GetNumberOfVars()
         {
             return VarTable.Count;
         }
         #endregion
 
-        public void InsertVarToModifiesAndUses(int varIndex, string varName)
-        {
-            ModifiesTable.Insert(ModifiesTable.Count, new ListContainer(varIndex, varName));
-            UsesTable.Insert(UsesTable.Count, new ListContainer(varIndex, varName));
-
-            int size = ModifiesTable.ElementAt(0).LinesCount();
-
-            for (int i = 0; i < ModifiesTable.Count; i++)
-            {
-                while (ModifiesTable.ElementAt(i).LinesCount() < size)
-                {
-                    ModifiesTable.ElementAt(i).Add(false);
-                    UsesTable.ElementAt(i).Add(false);
-                }
-            }
-
-            if( ModifiesTable.Count == 1 )
-            {
-
-            }
-        }
-
-        public void InsertLineToModifiesAndUses(int maxLines)
-        {
-            //int size = ModifiesTable.ElementAt(0).Count;
-
-            for (int i = 0; i < ModifiesTable.Count; i++)
-            {
-                while (ModifiesTable.ElementAt(i).LinesCount() < maxLines)
-                {
-                    ModifiesTable.ElementAt(i).Add(false);
-                    UsesTable.ElementAt(i).Add(false);
-                }
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //NOTE: CallsTable operations
+        #region CallsTable
         public void SetCalls(String proc1, String proc2, int line)
         {
             int proc1Index = GetProcIndex(proc1);
             int proc2Index = GetProcIndex(proc2);
             if (proc1Index > -1 && proc2Index > -1)
             {
-                CallsTable.ElementAt(proc1Index).Insert(proc2Index, line);
+                CallsTable.ElementAt(proc1Index)[proc2Index] = line;
             }
         }
+
         public List<String> GetCalls(String proc)
         {
             List<String> calls = new List<String>();
-            int procIndex = GetProcIndex(proc) - 1;
+            int procIndex = GetProcIndex(proc);
             if (procIndex != -1)
             {
                 for (int i = 0; i < ProcTable.Count; i++)
                 {
-                    //if (CallsTable[i, procIndex] != null)
-                    //{
-                    //    calls.Add(GetProcName(i + 1));
-                    //}
+                    if (CallsTable.ElementAt(i).ElementAt(procIndex) != -1)
+                    {
+                        calls.Add(GetProcName(i));
+                    }
                 }
             }
             return calls;
         }
+
         public List<String> GetCalled(String proc)
         {
             List<String> called = new List<String>();
-            //int procIndex = GetProcIndex(proc)-1;
-            //if (procIndex != -1)
-            //{
-            //    for (int i = 0; i < numberOfProcs; i++)
-            //    {
-            //        if (CallsTable[procIndex, i])
-            //        {
-            //            called.Add(GetProcName(i+1));
-            //        }
-            //    }
-            //}
-            return called;
-        }
-        public List<int> GetCallStmts(string proc)
-        {
-            List<int> calls = new List<int>();
-            int procIndex = GetProcIndex(proc) - 1;
+            int procIndex = GetProcIndex(proc);
             if (procIndex != -1)
             {
                 for (int i = 0; i < ProcTable.Count; i++)
                 {
-                    //if (CallsTable[i, procIndex] != null)
-                    //{
-                    //    foreach(var j in CallsTable[i, procIndex])
-                    //    {
-                    //        if (!calls.Contains(j))
-                    //        {
-                    //            calls.Add(j);
-                    //        }
-                    //    }
-                    //}
+                    if (CallsTable.ElementAt(procIndex).ElementAt(i) != -1)
+                    {
+                        called.Add(GetProcName(i));
+                    }
+                }
+            }
+            return called;
+        }
+
+        public List<int> GetCallStmts(string proc)
+        {
+            List<int> calls = new List<int>();
+            int procIndex = GetProcIndex(proc);
+            if (procIndex != -1)
+            {
+                for (int i = 0; i < ProcTable.Count; i++)
+                {
+                    int value = CallsTable.ElementAt(i).ElementAt(procIndex);
+                    if (value != -1)
+                    {
+                        calls.Add(value);
+                    }
                 }
             }
             return calls;
         }
+
         public bool IsCalls(string proc1, string proc2)
         {
-            int proc1Index = GetProcIndex(proc1) - 1;
-            int proc2Index = GetProcIndex(proc2) - 1;
+            int proc1Index = GetProcIndex(proc1);
+            int proc2Index = GetProcIndex(proc2);
             if (proc1Index > -1 && proc2Index > -1)
             {
-                //return CallsTable[proc1Index, proc2Index] != null ? true : false;
+                return CallsTable.ElementAt(proc1Index).ElementAt(proc2Index) != -1;
             }
             return false;
         }
+        #endregion
 
-        //NOTE: ModifiesTable operations
+        #region ModifiesTable
         public void SetModifies(String var, int line)
         {
             --line;
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
-                //ModifiesTable[varIndex, line] = true;
+                ModifiesTable.ElementAt(varIndex).Lines[line] = true;
             }
         }
         public List<int> GetModifies(String var)
         {
             List<int> lines = new List<int>();
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex != -1)
             {
                 for (int i = 0; i < numberOfLines; i++)
                 {
-                    //if (ModifiesTable[varIndex, i])
-                    //{
-                    //    lines.Add(i + 1);
-                    //}
+                    if (ModifiesTable.ElementAt(varIndex).Lines[i])
+                    {
+                        lines.Add(i+1);
+                    }
                 }
             }
             return lines;
         }
+
         public List<String> GetModified(int line)
         {
             --line;
@@ -281,55 +272,59 @@ namespace SpaWpfApp.PkbNew
             {
                 for (int i = 0; i < VarTable.Count; i++)
                 {
-                    //if (ModifiesTable[i, line])
-                    //{
-                    //    String var = GetVarName(i + 1);
-                    //    if (var != null)
-                    //    {
-                    //        vars.Add(var);
-                    //    }
-                    //}
+                    if (ModifiesTable.ElementAt(i).Lines[line])
+                    {
+                        String var = GetVarName(i);
+                        if (var != null)
+                        {
+                            vars.Add(var);
+                        }
+                    }
                 }
             }
             return vars;
         }
+
         public Boolean IsModified(String var, int line)
         {
             --line;
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
-                //return ModifiesTable[varIndex, line];
+                return ModifiesTable.ElementAt(varIndex).Lines[line];
             }
             return false;
         }
+        #endregion
 
-        //NOTE: UsesTable operations
+        #region UsesTable
         public void SetUses(string var, int line)
         {
             --line;
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex != -1 && line > 0 && line < numberOfLines)
             {
-                //UsesTable[varIndex, line] = true;
+                UsesTable.ElementAt(varIndex).Lines[line] = true;
             }
         }
+
         public List<int> GetUses(string var)
         {
             List<int> lines = new List<int>();
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex > -1)
             {
                 for (int i = 0; i < numberOfLines; i++)
                 {
-                    //if (UsesTable[varIndex, i])
-                    //{
-                    //    lines.Add(i + 1);
-                    //}
+                    if (UsesTable.ElementAt(varIndex).Lines[i])
+                    {
+                        lines.Add(i + 1);
+                    }
                 }
             }
             return lines;
         }
+
         public List<string> GetUsed(int line)
         {
             --line;
@@ -338,27 +333,29 @@ namespace SpaWpfApp.PkbNew
             {
                 for (int i = 0; i < VarTable.Count; i++)
                 {
-                    //if (UsesTable[i, line])
-                    //{
-                    //    String var = GetVarName(i + 1);
-                    //    if (var != null)
-                    //    {
-                    //        vars.Add(var);
-                    //    }
-                    //}
+                    if (UsesTable.ElementAt(i).Lines[line])
+                    {
+                        String var = GetVarName(i);
+                        if (var != null)
+                        {
+                            vars.Add(var);
+                        }
+                    }
                 }
             }
             return vars;
         }
+
         public bool IsUsed(string var, int line)
         {
             --line;
-            int varIndex = GetVarIndex(var) - 1;
+            int varIndex = GetVarIndex(var);
             if (varIndex > -1 && line > -1 && line < numberOfLines)
             {
-                //return UsesTable[varIndex, line];
+                return UsesTable.ElementAt(varIndex).Lines[line];
             }
             return false;
         }
+        #endregion
     }
 }

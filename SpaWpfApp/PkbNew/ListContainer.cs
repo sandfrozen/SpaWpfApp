@@ -9,7 +9,7 @@ namespace SpaWpfApp.PkbNew
     {
         private string Name;
         private int Number;
-        private List<bool> Lines;
+        public List<bool> Lines { get; set; }
 
         public ListContainer(int number, string name)
         {
@@ -26,6 +26,11 @@ namespace SpaWpfApp.PkbNew
         public void Add(bool value)
         {
             Lines.Add(value);
+        }
+
+        public bool ValueAt(int i)
+        {
+            return Lines.ElementAt(i);
         }
     }
 }
