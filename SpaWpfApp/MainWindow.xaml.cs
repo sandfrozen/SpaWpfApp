@@ -1,23 +1,15 @@
-﻿using SpaWpfApp.PkbFolder;
-using SpaWpfApp.Ast;
+﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
-using SpaWpfApp.Parser;
+using SpaWpfApp.ParserNew;
+using SpaWpfApp.ParserOld;
+using SpaWpfApp.PkbOld;
 using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SpaWpfApp
 {
@@ -31,7 +23,7 @@ namespace SpaWpfApp
         private int numberOfProcs;
         private int numerOfVars;
         private string parsed;
-        private PkbAPI Pkb;
+        private PkbAPI pkb;
 
         public MainWindow()
         {
@@ -54,24 +46,24 @@ namespace SpaWpfApp
 
             try
             {
-                //pkb = ParserMain.Instance.pkb;
-                //pkb.PrintProcTable();
-                //pkb.PrintVarTable();
-                //pkb.PrintCallsTable();
-                //pkb.PrintModifiesTable();
-                //pkb.PrintUsesTable();
-                //Trace.WriteLine(pkb.GetNumberOfLines());
+                pkb = ParserMain.Instance.pkb;
+                pkb.PrintProcTable();
+                pkb.PrintVarTable();
+                pkb.PrintCallsTable();
+                pkb.PrintModifiesTable();
+                pkb.PrintUsesTable();
+                Trace.WriteLine(pkb.GetNumberOfLines());
 
-                //addLog("PKB Created: Ok");
+                addLog("PKB Created: Ok");
 
-                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+                parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
 
-                //pkb = new Pkb(20, 1, 3);
-                //pkb.InsertProc("p500");
+                pkb = new Pkb(20, 1, 3);
+                pkb.InsertProc("p500");
 
-                //pkb.InsertVar("x");
-                //pkb.InsertVar("i");
-                //pkb.InsertVar("y");
+                pkb.InsertVar("x");
+                pkb.InsertVar("i");
+                pkb.InsertVar("y");
             }
             catch (Exception ex)
             {
@@ -81,7 +73,7 @@ namespace SpaWpfApp
 
             try
             {
-                AstManager.GetInstance().GenerateStructures(parsed, Pkb);
+                AstManager.GetInstance().GenerateStructures(parsed, pkb);
                 //List<int> result = astManager.GetChildren(6);
                 //result = astManager.GetChildrenS(6);
                 //result = astManager.GetParentS(6);

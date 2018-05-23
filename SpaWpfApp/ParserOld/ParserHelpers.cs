@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SpaWpfApp.Parser
+namespace SpaWpfApp.ParserOld
 {
     static class ParserHelpers
     {

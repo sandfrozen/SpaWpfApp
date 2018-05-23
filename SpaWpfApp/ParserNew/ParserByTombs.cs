@@ -1,5 +1,5 @@
 ﻿using SpaWpfApp.Exceptions;
-using SpaWpfApp.PkbFolder;
+using SpaWpfApp.PkbNew;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace SpaWpfApp.Parser
+namespace SpaWpfApp.ParserNew
 {
     class ParserByTombs
     {

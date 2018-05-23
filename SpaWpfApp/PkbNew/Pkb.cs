@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace SpaWpfApp.PkbFolder
+namespace SpaWpfApp.PkbNew
 {
     internal class Pkb : PkbAPI
     {
