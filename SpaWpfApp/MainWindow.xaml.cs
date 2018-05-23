@@ -1,4 +1,4 @@
-﻿
+﻿using SpaWpfApp.PkbFolder;
 using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
@@ -31,7 +31,7 @@ namespace SpaWpfApp
         private int numberOfProcs;
         private int numerOfVars;
         private string parsed;
-        private PkbAPI pkb;
+        private PkbAPI Pkb;
 
         public MainWindow()
         {
@@ -81,7 +81,7 @@ namespace SpaWpfApp
 
             try
             {
-                AstManager.GetInstance().GenerateStructures(parsed, pkb);
+                AstManager.GetInstance().GenerateStructures(parsed, Pkb);
                 //List<int> result = astManager.GetChildren(6);
                 //result = astManager.GetChildrenS(6);
                 //result = astManager.GetParentS(6);

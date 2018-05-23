@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace SpaWpfApp
+namespace SpaWpfApp.PkbFolder
 {
-    public class Pkb : PkbAPI
+    internal class Pkb : PkbAPI
     {
 
         private int numberOfLines = -1;
@@ -14,19 +14,23 @@ namespace SpaWpfApp
         private List<string> VarTable;    // [var ]
 
         private List<List<int>> CallsTable;    // [proc, proc]
-        private Boolean[,] ModifiesTable; // [var , line]
-        private Boolean[,] UsesTable;   // [var , line]
+        private List<ListContainer> ModifiesTable; // [var , line]
+        private List<ListContainer> UsesTable;   // [var , line]
 
         public Pkb()
         {
             ProcTable = new List<string>();
             VarTable = new List<string>();
+
             CallsTable = new List<List<int>>();
+
+            ModifiesTable = new List<ListContainer> ();
+            UsesTable = new List<ListContainer> ();
         }
 
         public int GetNumberOfLines()
         {
-            return -1;
+            return numberOfLines;
         }
 
         #region ProcTable operations
@@ -115,6 +119,59 @@ namespace SpaWpfApp
         }
         #endregion
 
+        public void InsertVarToModifiesAndUses(int varIndex, string varName)
+        {
+            ModifiesTable.Insert(ModifiesTable.Count, new ListContainer(varIndex, varName));
+            UsesTable.Insert(UsesTable.Count, new ListContainer(varIndex, varName));
+
+            int size = ModifiesTable.ElementAt(0).LinesCount();
+
+            for (int i = 0; i < ModifiesTable.Count; i++)
+            {
+                while (ModifiesTable.ElementAt(i).LinesCount() < size)
+                {
+                    ModifiesTable.ElementAt(i).Add(false);
+                    UsesTable.ElementAt(i).Add(false);
+                }
+            }
+
+            if( ModifiesTable.Count == 1 )
+            {
+
+            }
+        }
+
+        public void InsertLineToModifiesAndUses(int maxLines)
+        {
+            //int size = ModifiesTable.ElementAt(0).Count;
+
+            for (int i = 0; i < ModifiesTable.Count; i++)
+            {
+                while (ModifiesTable.ElementAt(i).LinesCount() < maxLines)
+                {
+                    ModifiesTable.ElementAt(i).Add(false);
+                    UsesTable.ElementAt(i).Add(false);
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //NOTE: CallsTable operations
         public void SetCalls(String proc1, String proc2, int line)
         {
@@ -197,7 +254,7 @@ namespace SpaWpfApp
             int varIndex = GetVarIndex(var) - 1;
             if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
-                ModifiesTable[varIndex, line] = true;
+                //ModifiesTable[varIndex, line] = true;
             }
         }
         public List<int> GetModifies(String var)
@@ -208,10 +265,10 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < numberOfLines; i++)
                 {
-                    if (ModifiesTable[varIndex, i])
-                    {
-                        lines.Add(i + 1);
-                    }
+                    //if (ModifiesTable[varIndex, i])
+                    //{
+                    //    lines.Add(i + 1);
+                    //}
                 }
             }
             return lines;
@@ -224,14 +281,14 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < VarTable.Count; i++)
                 {
-                    if (ModifiesTable[i, line])
-                    {
-                        String var = GetVarName(i + 1);
-                        if (var != null)
-                        {
-                            vars.Add(var);
-                        }
-                    }
+                    //if (ModifiesTable[i, line])
+                    //{
+                    //    String var = GetVarName(i + 1);
+                    //    if (var != null)
+                    //    {
+                    //        vars.Add(var);
+                    //    }
+                    //}
                 }
             }
             return vars;
@@ -242,7 +299,7 @@ namespace SpaWpfApp
             int varIndex = GetVarIndex(var) - 1;
             if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
-                return ModifiesTable[varIndex, line];
+                //return ModifiesTable[varIndex, line];
             }
             return false;
         }
@@ -254,7 +311,7 @@ namespace SpaWpfApp
             int varIndex = GetVarIndex(var) - 1;
             if (varIndex != -1 && line > 0 && line < numberOfLines)
             {
-                UsesTable[varIndex, line] = true;
+                //UsesTable[varIndex, line] = true;
             }
         }
         public List<int> GetUses(string var)
@@ -265,10 +322,10 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < numberOfLines; i++)
                 {
-                    if (UsesTable[varIndex, i])
-                    {
-                        lines.Add(i + 1);
-                    }
+                    //if (UsesTable[varIndex, i])
+                    //{
+                    //    lines.Add(i + 1);
+                    //}
                 }
             }
             return lines;
@@ -281,14 +338,14 @@ namespace SpaWpfApp
             {
                 for (int i = 0; i < VarTable.Count; i++)
                 {
-                    if (UsesTable[i, line])
-                    {
-                        String var = GetVarName(i + 1);
-                        if (var != null)
-                        {
-                            vars.Add(var);
-                        }
-                    }
+                    //if (UsesTable[i, line])
+                    //{
+                    //    String var = GetVarName(i + 1);
+                    //    if (var != null)
+                    //    {
+                    //        vars.Add(var);
+                    //    }
+                    //}
                 }
             }
             return vars;
@@ -299,7 +356,7 @@ namespace SpaWpfApp
             int varIndex = GetVarIndex(var) - 1;
             if (varIndex > -1 && line > -1 && line < numberOfLines)
             {
-                return UsesTable[varIndex, line];
+                //return UsesTable[varIndex, line];
             }
             return false;
         }

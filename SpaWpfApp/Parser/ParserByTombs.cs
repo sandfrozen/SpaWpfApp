@@ -1,4 +1,5 @@
 ﻿using SpaWpfApp.Exceptions;
+using SpaWpfApp.PkbFolder;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +19,7 @@ namespace SpaWpfApp.Parser
         private string currentProcedure;
         private List<string> procCalls;
 
-        private PkbAPI pkb = new Pkb();
+        private PkbAPI pkb;
 
         string[] arythmetics = { "+", "-", "*", "(", ")" };
         string[] keywords = { "if", "while", "call", "else", "procedure" };
@@ -40,7 +41,7 @@ namespace SpaWpfApp.Parser
         public string Parse(string code)
         {
             procCalls = new List<string>();
-
+            pkb = new Pkb();
             lastParent = "";
             currentProcedure = "";
             currentIndex = 0;
