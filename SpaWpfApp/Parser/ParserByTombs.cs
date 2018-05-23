@@ -17,8 +17,10 @@ namespace SpaWpfApp.Parser
         private string lastParent = "";
 
 
-        private ParserByTombs() { }
+        string[] arythmetics = { "+", "-", "*", "(", ")" };
+        string[] keywords = { "if", "while", "call", "else", "procedure" };
 
+        private ParserByTombs() { }
         private static ParserByTombs instance;
         public static ParserByTombs Instance
         {
@@ -94,10 +96,11 @@ namespace SpaWpfApp.Parser
                 }
                 else
                 {
-                    string message = "Unknown string '" + wordsInCode[currentIndex] + "' in line: " + currentLine;
-                    if (wordsInCode[currentIndex] == "procedure")
+                    string unknown = wordsInCode[currentIndex];
+                    string message = "Unknown string '" + unknown + "' in line: " + currentLine;
+                    if (unknown == "procedure" || unknown == "else")
                     {
-                        message += ". Propaby You forgot about '}' in line: " + (currentLine - 1);
+                        message += ". You probably forgot about '}' in line: " + (currentLine - 1);
                     }
                     throw new WrongCodeException(message);
                 }
@@ -116,7 +119,7 @@ namespace SpaWpfApp.Parser
                 throw new WrongCodeException("'then' not found after 'if " + varName + "' in line: " + currentLine);
             }
             lastParent = "if " + varName;
- 
+
             // add to vars
             // add to uses
 
@@ -150,7 +153,7 @@ namespace SpaWpfApp.Parser
             currentIndex++;
             if (wordsInCode[currentIndex] != ";")
             {
-                throw new WrongCodeException("Missing ';' after 'call " + procName + "' in line: " + currentLine);
+                throw new WrongCodeException("; expected after 'call " + procName + "' in line: " + currentLine);
             }
             // add to calls
             currentIndex++;
@@ -159,7 +162,8 @@ namespace SpaWpfApp.Parser
         private void ParseAssign()
         {
             int i = 0;
-            IsSynonym(wordsInCode[currentIndex]);
+            string varModified = wordsInCode[currentIndex];
+            IsSynonym(varModified);
 
             // add to vars
             // add to modifies
@@ -170,7 +174,9 @@ namespace SpaWpfApp.Parser
                 {
                     if (!int.TryParse(wordsInCode[currentIndex + i], out int r))
                     {
-                        IsSynonym(wordsInCode[currentIndex + i]);
+                        string varUsed = wordsInCode[currentIndex + i];
+                        IsSynonym(varUsed);
+
                         // add to vars
                         // add to uses
                     }
@@ -184,9 +190,13 @@ namespace SpaWpfApp.Parser
                     IsAssignArythmetic(wordsInCode[currentIndex + i]);
                 }
             }
-            if (i < 3 || i % 2 == 0)
+            if (i < 3)
             {
-                throw new WrongCodeException("Invalid factors in assign in line: " + currentLine);
+                throw new WrongCodeException("Assign '" + varModified + " = ...' is too short in line: " + currentLine);
+            }
+            else if (i % 2 == 0)
+            {
+                throw new WrongCodeException("Assign '" + varModified + " = ...' is ending with wrong char in line: " + currentLine);
             }
             currentIndex = currentIndex + i + 1;
         }
@@ -218,7 +228,6 @@ namespace SpaWpfApp.Parser
 
         private void IsAssignArythmetic(string toCheck)
         {
-            string[] arythmetics = { "+", "-", "*", "(", ")" };
             foreach (string a in arythmetics)
             {
                 if (a == toCheck)
@@ -226,14 +235,24 @@ namespace SpaWpfApp.Parser
                     return;
                 }
             }
-            throw new WrongCodeException("Invalid assign in line: " + currentLine);
+
+            throw new WrongCodeException("; expected after assign in line: " + currentLine);
+            //if (keywords.Contains(toCheck))
+            //{
+            //    throw new WrongCodeException("; expected after assign in line: " + currentLine);
+            //}
+            //else
+            //{
+            //    throw new WrongCodeException("Invalid assign in line: " + currentLine + ". '" + toCheck + "' should be one of: +, -, *, (, )");
+            //}
+            
         }
 
         private void IsSynonym(string synonym)
         {
             if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
-                throw new WrongCodeException("Invalid synonym: " + synonym + " in line: " + currentLine);
+                throw new WrongCodeException("Wrong synonym format: '" + synonym + "' in line: " + currentLine);
             }
         }
     }
