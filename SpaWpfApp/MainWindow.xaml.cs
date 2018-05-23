@@ -54,24 +54,24 @@ namespace SpaWpfApp
 
             try
             {
-                pkb = ParserMain.Instance.pkb;
-                pkb.PrintProcTable();
-                pkb.PrintVarTable();
-                pkb.PrintCallsTable();
-                pkb.PrintModifiesTable();
-                pkb.PrintUsesTable();
-                Trace.WriteLine(pkb.GetNumberOfLines());
+                //pkb = ParserMain.Instance.pkb;
+                //pkb.PrintProcTable();
+                //pkb.PrintVarTable();
+                //pkb.PrintCallsTable();
+                //pkb.PrintModifiesTable();
+                //pkb.PrintUsesTable();
+                //Trace.WriteLine(pkb.GetNumberOfLines());
 
-                addLog("PKB Created: Ok");
+                //addLog("PKB Created: Ok");
 
-                parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
 
-                pkb = new Pkb(20, 1, 3);
-                pkb.InsertProc("p500");
+                //pkb = new Pkb(20, 1, 3);
+                //pkb.InsertProc("p500");
 
-                pkb.InsertVar("x");
-                pkb.InsertVar("i");
-                pkb.InsertVar("y");
+                //pkb.InsertVar("x");
+                //pkb.InsertVar("i");
+                //pkb.InsertVar("y");
             }
             catch (Exception ex)
             {

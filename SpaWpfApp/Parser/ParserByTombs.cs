@@ -1,6 +1,7 @@
 ﻿using SpaWpfApp.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,12 +11,14 @@ namespace SpaWpfApp.Parser
     class ParserByTombs
     {
         private int currentIndex = 0;
-        private int currentLine = 1;
+        private int currentLine = 0;
         private int currentLevel = 0;
-        private string[] wordsInCode = null;
+        private string[] wordsInCode;
+        private string lastParent;
+        private string currentProcedure;
+        private List<string> procCalls;
 
-        private string lastParent = "";
-
+        private PkbAPI pkb = new Pkb();
 
         string[] arythmetics = { "+", "-", "*", "(", ")" };
         string[] keywords = { "if", "while", "call", "else", "procedure" };
@@ -36,8 +39,10 @@ namespace SpaWpfApp.Parser
 
         public string Parse(string code)
         {
-            lastParent = "";
+            procCalls = new List<string>();
 
+            lastParent = "";
+            currentProcedure = "";
             currentIndex = 0;
             currentLine = 0;
             currentLevel = 0;
@@ -48,7 +53,44 @@ namespace SpaWpfApp.Parser
             {
                 ParseProcedure();
             }
+
+            Trace.WriteLine("PROC TABLE:");
+            for(int i=0; i<pkb.GetNumberOfProcs(); i++)
+            {
+                Trace.WriteLine(pkb.GetProcName(i));
+            }
+            Trace.WriteLine("VAR TABLE:");
+            for (int i = 0; i < pkb.GetNumberOfVars(); i++)
+            {
+                Trace.WriteLine(pkb.GetVarName(i));
+            }
+            //Trace.WriteLine("procTable:");
+            //foreach (String s in procTable)
+            //{
+            //    Trace.WriteLine(s);
+            //}
+            //Trace.WriteLine("procCalls:");
+            //foreach (String s in procCalls)
+            //{
+            //    if(!procTable.Contains(s))
+            //    {
+            //        throw new WrongCodeException("Procedure '" + s + "' is used, but not delacred !");
+            //    }
+            //    Trace.WriteLine(s);
+            //}
+
+            //Trace.WriteLine("CallsTable:");
+            //for (int i=0; i< callsTable.Count; i++)
+            //{
+            //    for(int j=0; j<callsTable.ElementAt(i).Count; j++)
+            //    {
+            //        Trace.Write(callsTable.ElementAt(i).ElementAt(j) + " ");
+            //    }
+            //    Trace.WriteLine("");
+            //}
+
             return "";
+
         }
 
         private void ParseProcedure()
@@ -59,6 +101,9 @@ namespace SpaWpfApp.Parser
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
+            pkb.InsertProc(procName);
+            //addProc(procName);
+            currentProcedure = procName;
             lastParent = "procedure " + procName;
             ParseBody();
             return;
@@ -121,6 +166,8 @@ namespace SpaWpfApp.Parser
             lastParent = "if " + varName;
 
             // add to vars
+            pkb.InsertVar(varName);
+            //addVar(varName);
             // add to uses
 
             ParseBody();
@@ -140,6 +187,8 @@ namespace SpaWpfApp.Parser
             lastParent = "while " + varName;
 
             // add to vars
+            pkb.InsertVar(varName);
+            //addVar(varName);
             // add to uses
 
             ParseBody();
@@ -150,12 +199,14 @@ namespace SpaWpfApp.Parser
         {
             currentIndex++;
             string procName = wordsInCode[currentIndex];
+            addProcCall(procName);
             currentIndex++;
             if (wordsInCode[currentIndex] != ";")
             {
                 throw new WrongCodeException("; expected after 'call " + procName + "' in line: " + currentLine);
             }
-            // add to calls
+            //SetCalls(currentProcedure, procName, currentLine);
+            pkb.SetCalls(currentProcedure, procName, currentLine);
             currentIndex++;
         }
 
@@ -166,6 +217,8 @@ namespace SpaWpfApp.Parser
             IsSynonym(varModified);
 
             // add to vars
+            pkb.InsertVar(varModified);
+            //addVar(varModified);
             // add to modifies
 
             for (i = 0; wordsInCode[currentIndex + i] != ";"; i++)
@@ -178,6 +231,8 @@ namespace SpaWpfApp.Parser
                         IsSynonym(varUsed);
 
                         // add to vars
+                        pkb.InsertVar(varUsed);
+                        //addVar(varUsed);
                         // add to uses
                     }
                     else
@@ -245,7 +300,7 @@ namespace SpaWpfApp.Parser
             //{
             //    throw new WrongCodeException("Invalid assign in line: " + currentLine + ". '" + toCheck + "' should be one of: +, -, *, (, )");
             //}
-            
+
         }
 
         private void IsSynonym(string synonym)
@@ -254,6 +309,11 @@ namespace SpaWpfApp.Parser
             {
                 throw new WrongCodeException("Wrong synonym format: '" + synonym + "' in line: " + currentLine);
             }
+        }
+
+        private void addProcCall(string proc)
+        {
+            if (!procCalls.Contains(proc)) procCalls.Add(proc);
         }
     }
 }

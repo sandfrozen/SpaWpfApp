@@ -74,8 +74,8 @@
     <Compile Include="Parser\ParserInside.cs" />
     <Compile Include="Parser\ParserHelpers.cs" />
     <Compile Include="Parser\ParserMain.cs" />
-    <Compile Include="Pkb.cs" />
-    <Compile Include="PkbAPI.cs" />
+    <Compile Include="Pkb\Pkb.cs" />
+    <Compile Include="Pkb\PkbAPI.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryEvaluator.cs" />
     <Compile Include="QueryProcessingSusbsytem\Entity.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
