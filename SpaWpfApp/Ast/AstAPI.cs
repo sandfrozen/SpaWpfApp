@@ -22,7 +22,7 @@ namespace SpaWpfApp.Ast
         /// <param name="p_child"></param>
         /// <param name="p_father"></param>
         /// <returns></returns>
-        List<TNode> GetParentS(TNode p_child, string p_father);
+        List<TNode> GetParentX(TNode p_child, string p_father);
 
         /// <summary>
         /// returns all children of stmt or null if stmt doesn't have children
@@ -38,43 +38,43 @@ namespace SpaWpfApp.Ast
         /// <param name="p_father"></param>
         /// <param name="p_child"></param>
         /// <returns></returns>
-        List<TNode> GetChildrenS(TNode p_father, string p_child);
+        List<TNode> GetChildrenX(TNode p_father, string p_child);
 
         Boolean IsParent(int p1, int p2);
-        Boolean IsParentS(int p1, int p2);
+        Boolean IsParentX(int p1, int p2);
 
 
 
-        ////Follows, FollowsS
-        ///// <summary>
-        ///// returns direct right sibling of stmt or -1 if stmt doesn't have right sibling
-        ///// </summary>
-        ///// <param name="p_programLineNumber"></param>
-        ///// <returns></returns>
-        //int GetRightSibling(int p_programLineNumber);
+        //Follows, FollowsS
+        /// <summary>
+        /// returns direct right sibling of stmt or -1 if stmt doesn't have right sibling
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        TNode GetRightSibling(TNode p_from, string p_to);
 
-        ///// <summary>
-        ///// returns direct left sibling of stmt or -1 if stmt is the only child
-        ///// </summary>
-        ///// <param name="p_programLineNumber"></param>
-        ///// <returns></returns>
-        //int GetLeftSibling(int p_programLineNumber);
+        /// <summary>
+        /// returns direct left sibling of stmt or -1 if stmt is the only child
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        TNode GetLeftSibling(TNode p_to, string p_from);
 
-        ///// <summary>
-        ///// retrurns list of stmt that Follows stmt or -1 if stmt doesn't have rightSiblingS
-        ///// </summary>
-        ///// <param name="p_programLineNumber"></param>
-        ///// <returns></returns>
-        //List<int> GetRightSiblingS(int p_programLineNumber);
+        /// <summary>
+        /// retrurns list of stmt that Follows stmt or -1 if stmt doesn't have rightSiblingS
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        List<TNode> GetRightSiblingX(TNode p_from, string p_to);
 
-        ///// <summary>
-        ///// returns list of leftSiblingS or -1 if stmt is the only child
-        ///// </summary>
-        ///// <param name="p_programLineNumber"></param>
-        ///// <returns></returns>
-        //List<int> GetLeftSiblingS(int p_programLineNumber);
+        /// <summary>
+        /// returns list of leftSiblingS or -1 if stmt is the only child
+        /// </summary>
+        /// <param name="p_programLineNumber"></param>
+        /// <returns></returns>
+        List<TNode> GetLeftSiblingX(TNode p_to, string p_from);
 
-        //Boolean IsFollows(int p1, int p2);
-        //Boolean IsFollowsS(int p1, int p2);
+        Boolean IsFollows(int p1, int p2);
+        Boolean IsFollowsX(int p1, int p2);
     }
 }
