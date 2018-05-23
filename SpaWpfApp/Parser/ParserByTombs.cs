@@ -13,9 +13,11 @@ namespace SpaWpfApp.Parser
         private int currentLine = 1;
         private int currentLevel = 0;
         private string[] wordsInCode = null;
-        private ParserByTombs()
-        {
-        }
+
+        private string lastParent = "";
+
+
+        private ParserByTombs() { }
 
         private static ParserByTombs instance;
         public static ParserByTombs Instance
@@ -32,8 +34,10 @@ namespace SpaWpfApp.Parser
 
         public string Parse(string code)
         {
+            lastParent = "";
+
             currentIndex = 0;
-            currentLine = 1;
+            currentLine = 0;
             currentLevel = 0;
             wordsInCode = null;
 
@@ -53,23 +57,25 @@ namespace SpaWpfApp.Parser
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
-            currentIndex++;
-            if (wordsInCode[currentIndex] != "{")
-            {
-                throw new WrongCodeException("'{' not found after 'procedure " + procName + "'");
-            }
-            // add to procedures
+            lastParent = "procedure " + procName;
             ParseBody();
             return;
         }
 
         private void ParseBody()
         {
+            currentIndex++;
+            if (wordsInCode[currentIndex] != "{")
+            {
+                throw new WrongCodeException("'{' not found after '" + lastParent + "' in line: " + currentLine);
+            }
+
             int localLevel = currentLevel;
             currentLevel++;
             currentIndex++;
             while (currentLevel > localLevel && wordsInCode[currentIndex] != "}")
             {
+                currentLine++;
                 if (wordsInCode[currentIndex] == "if")
                 {
                     ParseIf();
@@ -88,9 +94,13 @@ namespace SpaWpfApp.Parser
                 }
                 else
                 {
-                    throw new WrongCodeException("Unknown string '" + wordsInCode[currentIndex] + "' in line: " + currentLine);
+                    string message = "Unknown string '" + wordsInCode[currentIndex] + "' in line: " + currentLine;
+                    if (wordsInCode[currentIndex] == "procedure")
+                    {
+                        message += ". Propaby You forgot about '}' in line: " + (currentLine - 1);
+                    }
+                    throw new WrongCodeException(message);
                 }
-                currentLine++;
             }
             currentIndex++;
             currentLevel--;
@@ -105,21 +115,18 @@ namespace SpaWpfApp.Parser
             {
                 throw new WrongCodeException("'then' not found after 'if " + varName + "' in line: " + currentLine);
             }
-            currentIndex++;
-            if (wordsInCode[currentIndex] != "{")
-            {
-                throw new WrongCodeException("'{' not found after 'if " + varName + " then' in line: " + currentLine);
-            }
+            lastParent = "if " + varName;
+ 
             // add to vars
             // add to uses
+
             ParseBody();
             if (wordsInCode[currentIndex] != "else")
             {
                 throw new WrongCodeException("'else' not found after 'if " + varName + " then { ... }' in line: " + currentLine);
             }
-            currentIndex++;
+            lastParent = "if " + varName + " { ... } else";
             ParseBody();
-            currentLine--;
             return;
         }
 
@@ -127,14 +134,11 @@ namespace SpaWpfApp.Parser
         {
             currentIndex++;
             string varName = wordsInCode[currentIndex];
-            currentIndex++;
-            if (wordsInCode[currentIndex] != "{")
-            {
-                throw new WrongCodeException("'{' not found after 'while " + varName + "': (line: " + currentLine + ")");
-            }
+            lastParent = "while " + varName;
+
             // add to vars
             // add to uses
-            currentLine++;
+
             ParseBody();
             return;
         }
@@ -156,24 +160,28 @@ namespace SpaWpfApp.Parser
         {
             int i = 0;
             IsSynonym(wordsInCode[currentIndex]);
+
             // add to vars
             // add to modifies
+
             for (i = 0; wordsInCode[currentIndex + i] != ";"; i++)
             {
-                if( i>1 && i % 2 == 0)
+                if (i > 1 && i % 2 == 0)
                 {
-                    if(!int.TryParse(wordsInCode[currentIndex + i], out int r))
+                    if (!int.TryParse(wordsInCode[currentIndex + i], out int r))
                     {
                         IsSynonym(wordsInCode[currentIndex + i]);
-                    } else
-                    {
                         // add to vars
                         // add to uses
+                    }
+                    else
+                    {
+
                     }
                 }
                 else if (i > 2 && i % 2 == 1)
                 {
-                    IsAssignArythmetic(wordsInCode[currentIndex+i]);
+                    IsAssignArythmetic(wordsInCode[currentIndex + i]);
                 }
             }
             if (i < 3 || i % 2 == 0)
