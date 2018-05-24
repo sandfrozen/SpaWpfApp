@@ -56,7 +56,7 @@ namespace SpaWpfApp.ParserNew
             }
 
             Trace.WriteLine("PROC TABLE:");
-            for(int i=0; i<pkb.GetNumberOfProcs(); i++)
+            for (int i = 0; i < pkb.GetNumberOfProcs(); i++)
             {
                 Trace.WriteLine(pkb.GetProcName(i));
             }
@@ -214,30 +214,48 @@ namespace SpaWpfApp.ParserNew
             // add to modifies
             pkb.SetModifies(varModified, currentLine);
 
-            for (i = 0; wordsInCode[currentIndex + i] != ";"; i++)
+            i++;
+            if (wordsInCode[currentIndex + i] != "=")
             {
-                if (i > 1 && i % 2 == 0)
+                throw new WrongCodeException("= expected after '" + varModified + "' in line: " + currentLine);
+            }
+
+            i++;
+            string next = "var";
+            while (wordsInCode[currentIndex + i] != ";")
+            {
+                if (next == "var")
                 {
-                    if (!int.TryParse(wordsInCode[currentIndex + i], out int r))
+                    if (wordsInCode[currentIndex + i] == "(")
                     {
-                        string varUsed = wordsInCode[currentIndex + i];
-                        IsSynonym(varUsed);
-
-                        // add to vars
-                        pkb.InsertVar(varUsed, currentLine);
-
-                        // add to uses
-                        pkb.SetUses(varUsed, currentLine);
+                        i = ParseInnerBracket(i);
                     }
                     else
                     {
+                        if (!int.TryParse(wordsInCode[currentIndex + i], out int r))
+                        {
+                            string varUsed = wordsInCode[currentIndex + i];
+                            IsSynonym(varUsed);
 
+                            // add to vars
+                            pkb.InsertVar(varUsed, currentLine);
+
+                            // add to uses
+                            pkb.SetUses(varUsed, currentLine);
+                        }
+                        else
+                        {
+                            // its number
+                        }
                     }
+                    next = "operator";
                 }
-                else if (i > 2 && i % 2 == 1)
+                else
                 {
                     IsAssignArythmetic(wordsInCode[currentIndex + i]);
+                    next = "var";
                 }
+                i++;
             }
             if (i < 3)
             {
@@ -248,6 +266,48 @@ namespace SpaWpfApp.ParserNew
                 throw new WrongCodeException("Assign '" + varModified + " = ...' is ending with wrong char in line: " + currentLine);
             }
             currentIndex = currentIndex + i + 1;
+        }
+
+        private int ParseInnerBracket(int i)
+        {
+            i++;
+            string next = "var";
+            while (wordsInCode[currentIndex + i] != ")")
+            {
+                if (next == "var")
+                {
+                    if (wordsInCode[currentIndex + i] == "(")
+                    {
+                        i = ParseInnerBracket(i);
+                    }
+                    else
+                    {
+                        if (!int.TryParse(wordsInCode[currentIndex + i], out int r))
+                        {
+                            string varUsed = wordsInCode[currentIndex + i];
+                            IsSynonym(varUsed);
+
+                            // add to vars
+                            pkb.InsertVar(varUsed, currentLine);
+
+                            // add to uses
+                            pkb.SetUses(varUsed, currentLine);
+                        }
+                        else
+                        {
+                            // its number
+                        }
+                    }
+                    next = "operator";
+                }
+                else
+                {
+                    IsAssignArythmetic(wordsInCode[currentIndex + i]);
+                    next = "var";
+                }
+                i++;
+            }
+            return i;
         }
 
         private string[] GetWordsInCode(string code)
@@ -285,15 +345,15 @@ namespace SpaWpfApp.ParserNew
                 }
             }
 
-            throw new WrongCodeException("; expected after assign in line: " + currentLine);
-            //if (keywords.Contains(toCheck))
-            //{
-            //    throw new WrongCodeException("; expected after assign in line: " + currentLine);
-            //}
-            //else
-            //{
-            //    throw new WrongCodeException("Invalid assign in line: " + currentLine + ". '" + toCheck + "' should be one of: +, -, *, (, )");
-            //}
+            //throw new WrongCodeException("; expected after assign in line: " + currentLine);
+            if (keywords.Contains(toCheck))
+            {
+                throw new WrongCodeException("; expected after assign in line: " + currentLine);
+            }
+            else
+            {
+                throw new WrongCodeException("Invalid assign in line: " + currentLine + ". '" + toCheck + "' should be one of: +, -, *, (, ) or ;");
+            }
 
         }
 
