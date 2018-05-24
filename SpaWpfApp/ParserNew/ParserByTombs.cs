@@ -38,7 +38,7 @@ namespace SpaWpfApp.ParserNew
             }
         }
 
-        public string Parse(string code)
+        public void Parse(string code)
         {
             procCalls = new List<string>();
             pkb = new Pkb();
@@ -79,8 +79,22 @@ namespace SpaWpfApp.ParserNew
             //var t2 = pkb.IsCalls("Second", "Third");
             //var t3 = pkb.IsCalls("First", "Third");
 
-            return "";
+            return;
+        }
 
+        public string GetParsedSourceCode()
+        {
+            string parsed = "";
+            foreach(string s in wordsInCode)
+            {
+                if( s == "}")
+                {
+                    parsed = parsed + Environment.NewLine;
+                }
+                parsed = parsed + s + " ";
+            }
+
+            return parsed;
         }
 
         private void ParseProcedure()
@@ -92,8 +106,8 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             string procName = wordsInCode[currentIndex];
             pkb.InsertProc(procName);
-
             currentProcedure = procName;
+
             lastParent = "procedure " + procName;
             ParseBody();
             return;
