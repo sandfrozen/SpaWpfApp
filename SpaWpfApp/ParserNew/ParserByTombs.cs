@@ -346,13 +346,17 @@ namespace SpaWpfApp.ParserNew
             }
 
             //throw new WrongCodeException("; expected after assign in line: " + currentLine);
-            if (keywords.Contains(toCheck))
+            if (keywords.Contains(toCheck) || int.TryParse(toCheck, out int r) || Regex.IsMatch(toCheck, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
                 throw new WrongCodeException("; expected after assign in line: " + currentLine);
             }
+            else if (toCheck == ";")
+            {
+                throw new WrongCodeException(") expected before ; in assign in line: " + currentLine);
+            }
             else
             {
-                throw new WrongCodeException("Invalid assign in line: " + currentLine + ". '" + toCheck + "' should be one of: +, -, *, (, ) or ;");
+                throw new WrongCodeException("Invalid assign in line: " + currentLine );
             }
 
         }
