@@ -302,7 +302,7 @@ namespace SpaWpfApp.PkbNew
         {
             --line;
             int varIndex = GetVarIndex(var);
-            if (varIndex != -1 && line > 0 && line < numberOfLines)
+            if (varIndex != -1 && line > -1 && line < numberOfLines)
             {
                 UsesTable.ElementAt(varIndex).Lines[line] = true;
             }
