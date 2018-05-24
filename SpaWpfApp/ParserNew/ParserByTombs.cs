@@ -74,27 +74,48 @@ namespace SpaWpfApp.ParserNew
             Trace.WriteLine("CALLS TABLE:");
             pkb.PrintCallsTable();
 
-            //Trace.WriteLine("GET CALLS STMTS:");
-            //var t1 = pkb.IsCalls("First", "Second");
-            //var t2 = pkb.IsCalls("Second", "Third");
-            //var t3 = pkb.IsCalls("First", "Third");
-
             return;
         }
 
         public string GetParsedSourceCode()
         {
+            int level = 0;
             string parsed = "";
-            foreach(string s in wordsInCode)
+
+            for (int i = 0; i < wordsInCode.Length; i++)
             {
-                if( s == "}")
+                string s = wordsInCode[i];
+                if (s == "{")
                 {
-                    parsed = parsed + Environment.NewLine;
+                    level++;
+                }
+                else if (s == "}")
+                {
+                    level--;
                 }
                 parsed = parsed + s + " ";
-            }
 
+                if (s == ";" && wordsInCode[i + 1] == "}")
+                {
+                    parsed = parsed + Environment.NewLine + (level > 0 ? GetSpaces(level-1) : "");
+                }
+                else if (s == "{" || s == "}" || s == ";")
+                {
+                    parsed = parsed + Environment.NewLine + GetSpaces(level);
+                }
+
+            }
             return parsed;
+        }
+
+        public string GetSpaces(int size)
+        {
+            string spaces = "";
+            for(int i=0; i<4*size; i++)
+            {
+                spaces += " ";
+            }
+            return spaces;
         }
 
         private void ParseProcedure()

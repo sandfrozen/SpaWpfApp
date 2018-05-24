@@ -36,8 +36,10 @@ namespace SpaWpfApp
             try
             {
                 ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
-                //.Document.Blocks.Clear();
-                //queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
+                parsed = ParserByTombs.Instance.GetParsedSourceCode();
+
+                procedureRichTextBox.Document.Blocks.Clear();
+                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsed)));
                 addLog("Source Code Parser: Ok");
                 return;
             }
