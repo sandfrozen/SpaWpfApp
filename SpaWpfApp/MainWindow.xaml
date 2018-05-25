@@ -10,31 +10,13 @@
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
-        <RichTextBox x:Name="procedureRichTextBox" Margin="10,35,0,10" HorizontalAlignment="Left" Width="235" FontFamily="Courier New">
+        <RichTextBox x:Name="procedureRichTextBox" Margin="39,35,547,10" FontFamily="Courier New">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
                 </Style>
             </RichTextBox.Resources>
             <FlowDocument>
-                <Paragraph>
-                    <Run Text="procedure First {"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    x = 2;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    z = 3;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    call Second; }"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run/>
-                </Paragraph>
-                <Paragraph>
-                    <Run/>
-                </Paragraph>
                 <Paragraph>
                     <Run Text="procedure Second {"/>
                 </Paragraph>
@@ -51,7 +33,6 @@
                     <Run Text="        x = x + 2*y;"/>
                 </Paragraph>
                 <Paragraph>
-                    <Run Text="        call Third;"/>
                 </Paragraph>
                 <Paragraph>
                     <Run Text="        i = i - 1; }"/>
@@ -79,15 +60,6 @@
                 </Paragraph>
                 <Paragraph>
                     <Run/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="procedure Third {"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    z = 5;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="    v = z; }"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
@@ -134,6 +106,13 @@
             <FlowDocument>
                 <Paragraph>
                     <Run Text="result"/>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <RichTextBox x:Name="linesRichTextBox" HorizontalAlignment="Left" Margin="10,35,0,10" Width="29" FontFamily="Courier New" HorizontalContentAlignment="Right">
+            <FlowDocument>
+                <Paragraph>
+                    <Run Text="0"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>

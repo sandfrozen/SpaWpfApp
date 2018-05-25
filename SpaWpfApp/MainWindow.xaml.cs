@@ -37,13 +37,16 @@ namespace SpaWpfApp
             try
             {
                 ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
-                String formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
+                var formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
                 // formatted - ONLY FOR "MAIN WINDOW"
                 // parsed    - FOR AST AND CFG
                 parsed = ParserByTombs.Instance.GetParsedSouceCode();
 
                 procedureRichTextBox.Document.Blocks.Clear();
-                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted)));
+                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.Item1)));
+
+                linesRichTextBox.Document.Blocks.Clear();
+                linesRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.Item2)));
                 addLog("Source Code Parser: Ok");
                 return;
             }

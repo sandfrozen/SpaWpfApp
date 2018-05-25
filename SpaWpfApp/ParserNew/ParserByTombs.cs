@@ -77,10 +77,12 @@ namespace SpaWpfApp.ParserNew
             return;
         }
 
-        public string GetParsedFormattedSourceCode()
+        public Tuple<string, string> GetParsedFormattedSourceCode()
         {
             int level = 0;
             string parsed = "";
+            int line = 0;
+            string lines = Environment.NewLine;
             int length = wordsInCode.Length;
 
             for (int i = 0; i < length; i++)
@@ -99,6 +101,7 @@ namespace SpaWpfApp.ParserNew
                 if (s == "{")
                 {
                     parsed += Environment.NewLine + InsertSpaces(level);
+                    lines += ++line + Environment.NewLine;
                 }
                 else if (s == ";" && wordsInCode[i + 1] == "}")
                 {
@@ -106,7 +109,8 @@ namespace SpaWpfApp.ParserNew
                 }
                 else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "procedure")
                 {
-                    parsed += Environment.NewLine + Environment.NewLine;
+                    parsed += Environment.NewLine;
+                    lines += Environment.NewLine;
                 }
                 else if (s == "else" && wordsInCode[i + 1] == "{")
                 {
@@ -115,6 +119,7 @@ namespace SpaWpfApp.ParserNew
                 else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "else")
                 {
                     parsed += Environment.NewLine + InsertSpaces(level);
+                    lines += Environment.NewLine;
                 }
                 else if (s == "}" && i == length - 1)
                 {
@@ -123,10 +128,12 @@ namespace SpaWpfApp.ParserNew
                 else if (s == "}")
                 {
                     parsed += Environment.NewLine + InsertSpaces(level);
+                    lines += ++line + Environment.NewLine;
                 }
                 else if (s == ";")
                 {
                     parsed += Environment.NewLine + InsertSpaces(level);
+                    lines += ++line + Environment.NewLine;
                 }
                 else
                 {
@@ -134,7 +141,7 @@ namespace SpaWpfApp.ParserNew
                 }
 
             }
-            return parsed;
+            return Tuple.Create(parsed, lines);
         }
 
         public string GetParsedSouceCode()
@@ -218,7 +225,7 @@ namespace SpaWpfApp.ParserNew
             int localLevel = currentLevel;
             currentLevel++;
             currentIndex++;
-            while (currentLevel > localLevel && wordsInCode[currentIndex] != "}")
+            while (currentLevel > localLevel && currentIndex< wordsInCode.Length && wordsInCode[currentIndex] != "}")
             {
                 currentLine++;
                 if (wordsInCode[currentIndex] == "if")
@@ -270,7 +277,7 @@ namespace SpaWpfApp.ParserNew
             pkb.SetUses(varName, currentLine);
 
             ParseBody();
-            if (wordsInCode[currentIndex] != "else")
+            if (currentIndex < wordsInCode.Length && wordsInCode[currentIndex] != "else")
             {
                 throw new WrongCodeException("'else' not found after 'if " + varName + " then { ... }' in line: " + currentLine);
             }
