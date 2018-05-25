@@ -11,7 +11,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
     {
         private static QueryEvaluator instance;
         private AstManager astManager;
-        private Result result;
+        public Result result { get; }
         private QueryPreProcessor queryPreProcessor;
         private Relation actualRelation;
 
