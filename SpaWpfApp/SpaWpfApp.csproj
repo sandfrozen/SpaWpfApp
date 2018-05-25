@@ -83,7 +83,7 @@
     <Compile Include="QueryProcessingSusbsytem\Entity.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
     <Compile Include="QueryProcessingSusbsytem\Relation.cs" />
-    <Compile Include="QueryProcessingSusbsytem\Result.cs" />
+    <Compile Include="QueryProcessingSusbsytem\QueryResult.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

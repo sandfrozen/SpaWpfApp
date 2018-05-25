@@ -11,7 +11,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
     {
         private static QueryEvaluator instance;
         private AstManager astManager;
-        public Result result { get; }
+        public QueryResult queryResult { get; }
         private QueryPreProcessor queryPreProcessor;
         private Relation actualRelation;
 
@@ -27,14 +27,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public QueryEvaluator()
         {
             this.astManager = AstManager.GetInstance();
-            this.result = Result.GetInstance();
+            this.queryResult = QueryResult.GetInstance();
             this.queryPreProcessor = QueryPreProcessor.GetInstance(); ;
         }
 
 
         public void Evaluate(List<Relation> relationList)
         {
-            result.Init();
+            queryResult.Init();
 
             foreach (var relation in relationList)
             {
@@ -55,7 +55,17 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         FolowsX(relation);
                         break;
                 }
-                Result r = result; // do testów, potem do usunięcia ta linia
+                QueryResult r = queryResult; // do testów, potem do usunięcia ta linia
+            }
+
+            HandleBooleanReturn();
+        }
+
+        private void HandleBooleanReturn()
+        {
+            if (queryResult.resultIsBoolean && queryResult.resultBoolean is null) // sytuacja, kiedy zapytanie jest typu boolean ale relacje zwracaly wartosci do resultTable
+            {
+                queryResult.resultBoolean = queryResult.resultTableList.Count > 0 ? true : false;
             }
         }
 
@@ -123,9 +133,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg2);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForTo = result.GetNodes(relation.arg2);
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
                     if (candidateForTo != null)
                     {
                         foreach (var c in candidateForTo)
@@ -175,9 +185,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFrom = result.GetNodes(relation.arg1);
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
                     if (candidateForFrom != null)
                     {
                         foreach (var c in candidateForFrom)
@@ -213,9 +223,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     if (fromList != null)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForTo = result.GetNodes(relation.arg2);
+                            candidateForTo = queryResult.GetNodes(relation.arg2);
                             if (candidateForTo != null)
                             {
                                 foreach (var from in fromList)
@@ -258,9 +268,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     #region FollowsX(*, _)
                     if (relation.arg2 == Entity._)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                         {
-                            candidateForFrom = result.GetNodes(relation.arg1);
+                            candidateForFrom = queryResult.GetNodes(relation.arg1);
                         }
                         else
                         {
@@ -286,9 +296,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
                 //candidates for from
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFrom = result.GetNodes(relation.arg1);
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
                 }
                 else
                 {
@@ -296,9 +306,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 //candidates for to
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForTo = result.GetNodes(relation.arg2);
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
                     if (candidateForTo != null)
                     {
                         for (int i = 0; i < candidateForFrom.Count(); i++)
@@ -396,9 +406,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg2);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForTo = result.GetNodes(relation.arg2);
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
                     if (candidateForTo != null)
                     {
                         foreach (var c in candidateForTo)
@@ -448,9 +458,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFrom = result.GetNodes(relation.arg1);
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
                     if (candidateForFrom != null)
                     {
                         foreach (var c in candidateForFrom)
@@ -487,9 +497,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     if (fromList != null)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForTo = result.GetNodes(relation.arg2);
+                            candidateForTo = queryResult.GetNodes(relation.arg2);
                             if (candidateForTo != null)
                             {
                                 foreach (var from in fromList)
@@ -531,9 +541,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     #region Follows(*, _)
                     if (relation.arg2 == Entity._)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                         {
-                            candidateForFrom = result.GetNodes(relation.arg1);
+                            candidateForFrom = queryResult.GetNodes(relation.arg1);
                         }
                         else
                         {
@@ -559,9 +569,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
                 //candidates for from
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFrom = result.GetNodes(relation.arg1);
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
                 }
                 else
                 {
@@ -569,9 +579,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 //candidates for to
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForTo = result.GetNodes(relation.arg2);
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
                     if (candidateForTo != null)
                     {
                         for (int i = 0; i < candidateForFrom.Count(); i++)
@@ -666,9 +676,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg2);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = result.GetNodes(relation.arg2);
+                    candidateForChildren = queryResult.GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         foreach (var c in candidateForChildren)
@@ -717,9 +727,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = result.GetNodes(relation.arg1);
+                    candidateForFather = queryResult.GetNodes(relation.arg1);
                     if (candidateForFather != null)
                     {
                         foreach (var c in candidateForFather)
@@ -756,9 +766,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     if (fathers != null)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForChildren = result.GetNodes(relation.arg2);
+                            candidateForChildren = queryResult.GetNodes(relation.arg2);
                             if (candidateForChildren != null)
                             {
                                 foreach (var father in fathers)
@@ -805,9 +815,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     #region Parent(*, _)
                     if (relation.arg2 == Entity._)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                         {
-                            candidateForFather = result.GetNodes(relation.arg1);
+                            candidateForFather = queryResult.GetNodes(relation.arg1);
                         }
                         else
                         {
@@ -844,9 +854,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
                 //candidates for fathers
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = result.GetNodes(relation.arg1);
+                    candidateForFather = queryResult.GetNodes(relation.arg1);
                 }
                 else
                 {
@@ -865,9 +875,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 //candidates for children
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = result.GetNodes(relation.arg2);
+                    candidateForChildren = queryResult.GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         for (int i = 0; i < candidateForFather.Count(); i++)
@@ -964,9 +974,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg2);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = result.GetNodes(relation.arg2);
+                    candidateForChildren = queryResult.GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         foreach (var c in candidateForChildren)
@@ -1016,9 +1026,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
-                else if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = result.GetNodes(relation.arg1);
+                    candidateForFather = queryResult.GetNodes(relation.arg1);
                     if (candidateForFather != null)
                     {
                         foreach (var c in candidateForFather)
@@ -1054,9 +1064,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     if (fathers != null)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForChildren = result.GetNodes(relation.arg2);
+                            candidateForChildren = queryResult.GetNodes(relation.arg2);
                             if (candidateForChildren != null)
                             {
                                 foreach (var father in fathers)
@@ -1103,9 +1113,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     #region ParentX(*, _)
                     if (relation.arg2 == Entity._)
                     {
-                        if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                         {
-                            candidateForFather = result.GetNodes(relation.arg1);
+                            candidateForFather = queryResult.GetNodes(relation.arg1);
                         }
                         else
                         {
@@ -1142,9 +1152,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
                 //candidates for fathers
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg1))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFather = result.GetNodes(relation.arg1);
+                    candidateForFather = queryResult.GetNodes(relation.arg1);
                 }
                 else
                 {
@@ -1163,9 +1173,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 //candidates for children
-                if (result.HasRecords() && result.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForChildren = result.GetNodes(relation.arg2);
+                    candidateForChildren = queryResult.GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
                         for (int i = 0; i < candidateForFather.Count(); i++)
@@ -1204,12 +1214,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             if (resultListTuple != null && resultListTuple.Any())
             {
                 List<TNode[]> newResultTableList = new List<TNode[]>();
-                int indexOfDeclarationFirstArgument = result.FindIndexOfDeclaration(firstArgument);
-                int indexOfDeclarationSecondArgument = result.FindIndexOfDeclaration(secondArgument);
+                int indexOfDeclarationFirstArgument = queryResult.FindIndexOfDeclaration(firstArgument);
+                int indexOfDeclarationSecondArgument = queryResult.FindIndexOfDeclaration(secondArgument);
 
-                if (result.HasRecords())
+                if (queryResult.HasRecords())
                 {
-                    var earlierResultRecords = result.GetResultTableList();
+                    var earlierResultRecords = queryResult.GetResultTableList();
 
                     foreach (var result in resultListTuple)
                     {
@@ -1226,7 +1236,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     TNode[] newRecord;
                     foreach (var res in resultListTuple)
                     {
-                        newRecord = new TNode[result.declarationsTable.Length];
+                        newRecord = new TNode[queryResult.declarationsTable.Length];
                         newRecord[indexOfDeclarationFirstArgument] = res.Item1;
                         newRecord[indexOfDeclarationSecondArgument] = res.Item2;
                         newResultTableList.Add(newRecord);
@@ -1234,16 +1244,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                 }
 
-                result.UpdateResutTableList(newResultTableList);
+                queryResult.UpdateResutTableList(newResultTableList);
             }
             else
             {
-                result.ClearResultTableList();
+                queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
             }
 
-            result.SetDeclarationWasDeterminated(firstArgument);
-            result.SetDeclarationWasDeterminated(secondArgument);
+            queryResult.SetDeclarationWasDeterminated(firstArgument);
+            queryResult.SetDeclarationWasDeterminated(secondArgument);
         }
 
         private void UpdateResultTable(List<TNode> resultList, string argumentLookingFor)
@@ -1251,11 +1261,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             if (resultList != null && resultList.Any())
             {
                 List<TNode[]> newResultTableList = new List<TNode[]>();
-                int indexOfDeclaration = result.FindIndexOfDeclaration(argumentLookingFor);
+                int indexOfDeclaration = queryResult.FindIndexOfDeclaration(argumentLookingFor);
 
-                if (result.HasRecords())
+                if (queryResult.HasRecords())
                 {
-                    var earlierResultRecords = result.GetResultTableList();
+                    var earlierResultRecords = queryResult.GetResultTableList();
 
                     foreach (var result in resultList)
                     {
@@ -1271,46 +1281,43 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     TNode[] newRecord;
                     foreach (var res in resultList)
                     {
-                        newRecord = new TNode[result.declarationsTable.Length];
+                        newRecord = new TNode[queryResult.declarationsTable.Length];
                         newRecord[indexOfDeclaration] = res;
                         newResultTableList.Add(newRecord);
                     }
                 }
 
-                result.UpdateResutTableList(newResultTableList);
+                queryResult.UpdateResutTableList(newResultTableList);
             }
             else
             {
-                result.ClearResultTableList();
+                queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
             }
 
-            result.SetDeclarationWasDeterminated(argumentLookingFor);
+            queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
         }
 
         private void UpdateResultTable(bool p_result)
         {
-            if (queryPreProcessor.ReturnTypeIsBoolean())
+            if (queryResult.resultIsBoolean)
             {
-                result.ResultBoolean = p_result;
-            }
-            else
-            {
-                if (p_result is false)
-                {
-                    result.ClearResultTableList();
-                }
-            }
+                queryResult.resultBoolean = p_result;
+            } 
 
-            if (p_result is false)
+            if(p_result is false)
             {
+                queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
             }
-
         }
 
         private void FinishQueryEvaluator()
         {
+            if (queryResult.resultIsBoolean && queryResult.resultBoolean is null) // sytuacja, kiedy zapytanie jest typu boolean ale relacje zwracaly wartosci do resultTable
+            {
+                queryResult.resultBoolean = queryResult.resultTableList.Count > 0 ? true : false;
+            }
             throw new NoResultsException("Relation " + actualRelation.ToString() + " has no results.");
         }
     }

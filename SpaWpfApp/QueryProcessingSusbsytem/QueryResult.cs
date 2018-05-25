@@ -20,36 +20,47 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
     }
 
-    public class Result
+    public class QueryResult
     {
         public DeclarationEntry[] declarationsTable { get; set; }
-        public List<TNode[]> ResultTableList { get; set; } = new List<TNode[]>();
+        public List<TNode[]> resultTableList { get; set; } = new List<TNode[]>();
 
-        public Boolean? ResultBoolean { get; set; } = null;
+        public Boolean? resultBoolean { get; set; } = null;
 
-        private static Result instance;
-        public static Result GetInstance()
+        public Boolean resultIsBoolean
+        {
+            get
+            {
+                return queryPreProcessor.ReturnTypeIsBoolean();
+            }
+        }
+
+        QueryPreProcessor queryPreProcessor = QueryPreProcessor.GetInstance();
+
+        private static QueryResult instance;
+
+        public static QueryResult GetInstance()
         {
             if (instance == null)
             {
-                instance = new Result();
+                instance = new QueryResult();
             }
             return instance;
         }
 
         public void Init()
         {
-            ResultTableList.Clear();
-            ResultBoolean = null;
+            resultTableList.Clear();
+            resultBoolean = null;
 
-            int length = QueryPreProcessor.GetInstance().declarationsList.Count();
+            int length = queryPreProcessor.declarationsList.Count();
             int i;
 
             if(length > 0)
             {
                 i = 0;
                 declarationsTable = new DeclarationEntry[length];
-                foreach(var declaration in QueryPreProcessor.GetInstance().declarationsList)
+                foreach(var declaration in queryPreProcessor.declarationsList)
                 {
                     declarationsTable[i++] = new DeclarationEntry(declaration.Key, declaration.Value);
                 }
@@ -74,7 +85,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> result = new List<TNode>();
             int indexOfDeclaration = FindIndexOfDeclaration(argument);
-            foreach(var resultTable in ResultTableList)
+            foreach(var resultTable in resultTableList)
             {
                 result.Add(resultTable[indexOfDeclaration]);
             }
@@ -97,22 +108,22 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         internal bool HasRecords()
         {
-            return ResultTableList.Any();
+            return resultTableList.Any();
         }
 
         internal List<TNode[]> GetResultTableList()
         {
-            return ResultTableList;
+            return resultTableList;
         }
 
         internal void ClearResultTableList()
         {
-            this.ResultTableList.Clear();
+            this.resultTableList.Clear();
         }
 
         internal void UpdateResutTableList(List<TNode[]> newResultTableList)
         {
-            this.ResultTableList = newResultTableList;
+            this.resultTableList = newResultTableList;
         }
 
         internal void SetDeclarationWasDeterminated(string argument)

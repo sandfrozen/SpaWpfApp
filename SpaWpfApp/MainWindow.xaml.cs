@@ -108,8 +108,8 @@ namespace SpaWpfApp
             try
             {
                 CfgAPI cfgManager = new CfgManager(parsed);
-                bool r = cfgManager.IsNext(11, 13);
-                r = cfgManager.IsNext(9, 12);
+                //bool r = cfgManager.IsNext(11, 13);
+                //r = cfgManager.IsNext(9, 12);
                 addLog("CFG Created: Ok");
             }
             catch (Exception ex)
@@ -167,11 +167,11 @@ namespace SpaWpfApp
             finally
             {
                 //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
-                Result result = QueryEvaluator.GetInstance().result;
-                if (result.ResultBoolean == true)
+                QueryResult queryResult = QueryResult.GetInstance();
+                if (queryResult.resultIsBoolean)
                 {
-                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("true")));
-                    addLog("Result: true");
+                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryResult.resultBoolean.ToString().ToLower())));
+                    addLog("Result: " + queryResult.resultBoolean.ToString().ToLower());
                 }
                 else
                 {
