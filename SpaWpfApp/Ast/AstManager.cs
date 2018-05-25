@@ -1,6 +1,7 @@
 ﻿using SpaWpfApp.Enums;
+using SpaWpfApp.PkbNew;
 using SpaWpfApp.QueryProcessingSusbsytem;
-using SpaWpfApp.PkbOld;
+//using SpaWpfApp.PkbOld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -838,7 +839,7 @@ namespace SpaWpfApp.Ast
 
             var children = GetChilds(p_to.up);
 
-            foreach(var child in children)
+            foreach (var child in children)
             {
                 if (child == p_to) { break; }
                 if (acceptableType.Contains(child.type))
