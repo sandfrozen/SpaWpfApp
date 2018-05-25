@@ -114,7 +114,7 @@ namespace SpaWpfApp.ParserNew
                 }
                 else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "else")
                 {
-                    parsed += " ";
+                    parsed += Environment.NewLine + InsertSpaces(level);
                 }
                 else if (s == "}" && i == length - 1)
                 {
