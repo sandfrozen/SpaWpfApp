@@ -2,8 +2,9 @@
 using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.ParserNew;
-using SpaWpfApp.ParserOld;
-using SpaWpfApp.PkbOld;
+using SpaWpfApp.PkbNew;
+//using SpaWpfApp.ParserOld;
+//using SpaWpfApp.PkbOld;
 using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
 using System.Collections.Generic;
@@ -36,10 +37,13 @@ namespace SpaWpfApp
             try
             {
                 ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
-                parsed = ParserByTombs.Instance.GetParsedSourceCode();
+                String formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
+                // formatted - ONLY FOR "MAIN WINDOW"
+                // parsed    - FOR AST AND CFG
+                parsed = ParserByTombs.Instance.GetParsedSouceCode();
 
                 procedureRichTextBox.Document.Blocks.Clear();
-                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsed)));
+                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted)));
                 addLog("Source Code Parser: Ok");
                 return;
             }
@@ -48,27 +52,29 @@ namespace SpaWpfApp
                 addLog("Error while parsing Source Code:\n" + wce.Message);
                 return;
             }
+        }
 
+        private void astCfgButton_Click(object sender, RoutedEventArgs e)
+        {
             try
             {
-                pkb = ParserMain.Instance.pkb;
-                pkb.PrintProcTable();
-                pkb.PrintVarTable();
-                pkb.PrintCallsTable();
-                pkb.PrintModifiesTable();
-                pkb.PrintUsesTable();
-                Trace.WriteLine(pkb.GetNumberOfLines());
-
+                pkb = ParserByTombs.Instance.pkb;
                 addLog("PKB Created: Ok");
+                //pkb.PrintProcTable();
+                //pkb.PrintVarTable();
+                //pkb.PrintCallsTable();
+                //pkb.PrintModifiesTable();
+                //pkb.PrintUsesTable();
+                //Trace.WriteLine(pkb.GetNumberOfLines());
 
-                parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
+                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
 
-                pkb = new Pkb(20, 1, 3);
-                pkb.InsertProc("p500");
+                //pkb = new Pkb(20, 1, 3);
+                //pkb.InsertProc("p500");
 
-                pkb.InsertVar("x");
-                pkb.InsertVar("i");
-                pkb.InsertVar("y");
+                //pkb.InsertVar("x");
+                //pkb.InsertVar("i");
+                //pkb.InsertVar("y");
             }
             catch (Exception ex)
             {
@@ -158,11 +164,23 @@ namespace SpaWpfApp
             finally
             {
                 //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
-            }    
+                Result result = QueryEvaluator.GetInstance().result;
+                if (result.ResultBoolean == true)
+                {
+                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("true")));
+                    addLog("Result: true");
+                }
+                else
+                {
+                    string now = DateTime.Now.ToLongTimeString();
+                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
+                    addLog("Result: NotSupported");
+                }
 
-            
-            string now = DateTime.Now.ToLongTimeString();
-            resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
+            }
+
+
+
         }
 
         private void addLog(string log)

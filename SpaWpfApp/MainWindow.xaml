@@ -92,7 +92,7 @@
             </FlowDocument>
         </RichTextBox>
         <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click" Height="20"/>
-        <Button x:Name="formatButton" Content="Format" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
+        <Button x:Name="astCfgButton" Content="AST i CFG" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Height="20" Click="astCfgButton_Click"/>
         <Label x:Name="logsLabel" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Width="37" Padding="0,5,5,5"/>
         <Button x:Name="evaluateQueryButton" Content="Evaluate Query" Margin="346,301,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click" Height="20" VerticalAlignment="Top"/>
         <RichTextBox x:Name="queryRichTextBox" Margin="250,186,10,0" Height="110" VerticalAlignment="Top">
@@ -104,10 +104,7 @@
 
             <FlowDocument>
                 <Paragraph>
-                    <Run Text="assign a; stmt s; while w; procedure p, q; constant c; variable v;"/>
-                </Paragraph>
-                <Paragraph>
-                    <Run Text="Select a.stmt# such that Parent(a, 4) and Calls(p, q) and Modifies(a, v) with p.procName = &quot;Second&quot; and s.stmt# = c.value pattern a(&quot;x&quot;, _)"/>
+                    <Run Text="Select BOOLEAN such that Parent(6,7)"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>

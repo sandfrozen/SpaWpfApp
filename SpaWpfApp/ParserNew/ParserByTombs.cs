@@ -19,7 +19,7 @@ namespace SpaWpfApp.ParserNew
         private string currentProcedure;
         private List<string> procCalls;
 
-        private PkbAPI pkb;
+        public PkbAPI pkb { get; set; }
 
         string[] arythmetics = { "+", "-", "*", "(", ")" };
         string[] keywords = { "if", "while", "call", "else", "procedure" };
@@ -77,12 +77,13 @@ namespace SpaWpfApp.ParserNew
             return;
         }
 
-        public string GetParsedSourceCode()
+        public string GetParsedFormattedSourceCode()
         {
             int level = 0;
             string parsed = "";
+            int length = wordsInCode.Length;
 
-            for (int i = 0; i < wordsInCode.Length; i++)
+            for (int i = 0; i < length; i++)
             {
                 string s = wordsInCode[i];
                 if (s == "{")
@@ -93,25 +94,97 @@ namespace SpaWpfApp.ParserNew
                 {
                     level--;
                 }
-                parsed = parsed + s + " ";
+                parsed += s;
 
-                if (s == ";" && wordsInCode[i + 1] == "}")
+                if (s == "{")
                 {
-                    parsed = parsed + Environment.NewLine + (level > 0 ? GetSpaces(level-1) : "");
+                    parsed += Environment.NewLine + InsertSpaces(level);
                 }
-                else if (s == "{" || s == "}" || s == ";")
+                else if (s == ";" && wordsInCode[i + 1] == "}")
                 {
-                    parsed = parsed + Environment.NewLine + GetSpaces(level);
+                    parsed += " ";
+                }
+                else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "procedure")
+                {
+                    parsed += Environment.NewLine + Environment.NewLine;
+                }
+                else if (s == "else" && wordsInCode[i + 1] == "{")
+                {
+                    parsed += " ";
+                }
+                else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "else")
+                {
+                    parsed += " ";
+                }
+                else if (s == "}" && i == length - 1)
+                {
+                    break;
+                }
+                else if (s == "}")
+                {
+                    parsed += Environment.NewLine + InsertSpaces(level);
+                }
+                else if (s == ";")
+                {
+                    parsed += Environment.NewLine + InsertSpaces(level);
+                }
+                else
+                {
+                    parsed += " ";
                 }
 
             }
             return parsed;
         }
 
-        public string GetSpaces(int size)
+        public string GetParsedSouceCode()
+        {
+            string parsed = "";
+            int length = wordsInCode.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                string s = wordsInCode[i];
+
+                parsed += s;
+
+                if (s == "{")
+                {
+                    parsed += Environment.NewLine;
+                }
+                else if (i < length-1 && s == ";" && wordsInCode[i + 1] == "}")
+                {
+                    parsed += " ";
+                }
+                else if (i < length - 1 && s == "}" && wordsInCode[i + 1] == "else")
+                {
+                    parsed += Environment.NewLine;
+                }
+                else if (i > 0 && wordsInCode[i - 1] == ";" && s == "}")
+                {
+                    parsed += Environment.NewLine;
+                }
+                else if (i > 0 && wordsInCode[i - 1] == "else" && s == "{")
+                {
+                    parsed += Environment.NewLine;
+                }
+                else if (s == ";")
+                {
+                    parsed += Environment.NewLine;
+                }
+                else
+                {
+                    parsed += " ";
+                }
+            }
+
+            return parsed;
+        }
+
+        public string InsertSpaces(int size)
         {
             string spaces = "";
-            for(int i=0; i<4*size; i++)
+            for (int i = 0; i < 4 * size; i++)
             {
                 spaces += " ";
             }
@@ -391,7 +464,7 @@ namespace SpaWpfApp.ParserNew
             }
             else
             {
-                throw new WrongCodeException("Invalid assign in line: " + currentLine );
+                throw new WrongCodeException("Invalid assign in line: " + currentLine);
             }
 
         }
