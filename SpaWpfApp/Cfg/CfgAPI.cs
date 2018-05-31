@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpaWpfApp.Ast;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,34 +9,23 @@ namespace SpaWpfApp.Cfg
     public interface CfgAPI
     {
         /// <summary>
-        /// returns list of Next programLines or -1 if parameter is last instruction in code
+        /// returns list of Next TNode or null if parameter is last instruction in code
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        List<int> Next(int p_programLineNumber);
+        List<TNode> Next(TNode p_from, string p_to);
 
         /// <summary>
         /// returns list of NextS programLines or -1 if parameter is last instruction in code
         /// </summary>
         /// <param name="p_programLineNumber"></param>
         /// <returns></returns>
-        List<int> NextS(int p_programLineNumber);
+        List<TNode> NextX(TNode p_from, string p_to);
 
-        /// <summary>
-        /// returns list of Previous programLines or -1 if parameter is first instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
-        List<int> Previous(int p_programLineNumber);
-
-        /// <summary>
-        /// returns list of PreviousS programLines or -1 if parameter is first instruction in code
-        /// </summary>
-        /// <param name="p_programLineNumber"></param>
-        /// <returns></returns>
-        List<int> PreviousS(int p_programLineNumber);
+        List<TNode> Previous(TNode p_to, string p_from);
+        List<TNode> PreviousX(TNode p_to, string p_from);
 
         Boolean IsNext(int p1, int p2);
-        Boolean IsNextS(int p1, int p2);
+        Boolean IsNextX(int p1, int p2);
     }
 }

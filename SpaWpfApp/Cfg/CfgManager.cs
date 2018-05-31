@@ -1,4 +1,6 @@
-﻿using SpaWpfApp.Enums;
+﻿using SpaWpfApp.Ast;
+using SpaWpfApp.Enums;
+using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,14 +12,24 @@ namespace SpaWpfApp.Cfg
     {
         List<ProcedureCfg> CfgList;
 
+        private static CfgManager instance;
+        public static CfgManager GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new CfgManager();
+            }
+            return instance;
+        }
 
-        public CfgManager(string sourceCode)
+        public CfgManager() { }
+
+        public void GenerateStructure(string sourceCode)
         {
             this.CfgList = new List<ProcedureCfg>();
 
             this.BuildCfgList(sourceCode);
         }
-
 
         #region methods to build Cfg
         private void BuildCfgList(string p_sourceCode)
@@ -156,7 +168,7 @@ namespace SpaWpfApp.Cfg
 
                     default:
                         {
-                            BuildAssignCall( ref currentPreviousNode, ref actualNode, ref actualCfgStructure, ref programLineNumber);
+                            BuildAssignCall(ref currentPreviousNode, ref actualNode, ref actualCfgStructure, ref programLineNumber);
 
                             if (EndOfStatement(lineWords, ref howManyStatementsEnd)) // end of then section
                             {
@@ -310,23 +322,27 @@ namespace SpaWpfApp.Cfg
 
 
         #region API methods
-        public List<int> Next(int p_programLineNumber)
+        public List<TNode> Next(TNode p_from, string p_to)
         {
-            List<int> resultList = new List<int>();
-            ProcedureCfg cfg = FindCfg(p_programLineNumber);
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_to);
+            TNode tmp;
+            List<TNode> resultList = new List<TNode>();
+            ProcedureCfg cfg = FindCfg((int)p_from.programLine);
             int programLinesInNode;
 
-            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p_programLineNumber)).FirstOrDefault();
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains((int)p_from.programLine)).FirstOrDefault();
 
             programLinesInNode = actual.programLineList.Count();
             if (programLinesInNode > 1) // jesli next w tym samym nodzie
             {
                 for (int i = 0; i < programLinesInNode; i++)
                 {
-                    if (actual.programLineList[i] == p_programLineNumber &&
+                    if (actual.programLineList[i] == (int)p_from.programLine &&
                         (i + 1) < programLinesInNode)
                     {
-                        resultList.Add(actual.programLineList.ElementAt(i + 1));
+                        tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(i + 1));
+                        if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
+
                         break;
                     }
                 }
@@ -335,24 +351,26 @@ namespace SpaWpfApp.Cfg
             {
                 foreach (var nodeNext in actual.nextGNodeList)
                 {
-                    FindAndAddNextResult(nodeNext, ref resultList);
+                    FindAndAddNextResult(nodeNext, ref resultList, acceptableType);
                 }
             }
             else
             {
-                resultList.Add(-1);
             }
 
-            return resultList;
+            return resultList.Count > 0 ? resultList : null;
         }
 
-        public List<int> NextS(int p_programLineNumber)
+        public List<TNode> NextX(TNode p_from, string p_to)
         {
-            List<int> resultList = new List<int>();
-            ProcedureCfg cfg = FindCfg(p_programLineNumber);
-            int programLinesInNode;
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_to);
 
-            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p_programLineNumber)).FirstOrDefault();
+            List<TNode> resultList = new List<TNode>();
+            ProcedureCfg cfg = FindCfg((int)p_from.programLine);
+            int programLinesInNode;
+            TNode tmp;
+
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains((int)p_from.programLine)).FirstOrDefault();
 
             programLinesInNode = actual.programLineList.Count();
 
@@ -360,45 +378,47 @@ namespace SpaWpfApp.Cfg
             {
                 for (int i = 0; i < programLinesInNode; i++)
                 {
-                    if (actual.programLineList[i] == p_programLineNumber &&
+                    if (actual.programLineList[i] == (int)p_from.programLine &&
                         (i + 1) < programLinesInNode)
                     {
                         for (int j = i + 1; j < programLinesInNode; j++)
                         {
-                            resultList.Add(actual.programLineList.ElementAt(j));
+                            tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(j));
+                            if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
                         }
                     }
                 }
             }
 
-            FindAndAddAllNextSInNextNodes(actual, ref resultList);
+            FindAndAddAllNextSInNextNodes(actual, ref resultList, acceptableType);
 
-            if(resultList.Count() == 0)
-            {
-                resultList.Add(-1);
-            }
 
-            return resultList;
+            return resultList.Count > 0 ? resultList : null; ;
         }
 
 
-        public List<int> Previous(int p_programLineNumber)
+        public List<TNode> Previous(TNode p_to, string p_from)
         {
-            List<int> resultList = new List<int>();
-            ProcedureCfg cfg = FindCfg(p_programLineNumber);
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
+
+            List<TNode> resultList = new List<TNode>();
+            TNode tmp;
+            ProcedureCfg cfg = FindCfg((int)p_to.programLine);
             int programLinesInNode;
 
-            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p_programLineNumber)).FirstOrDefault();
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains((int)p_to.programLine)).FirstOrDefault();
 
             programLinesInNode = actual.programLineList.Count();
             if (programLinesInNode > 1) // jesli previous w tym samym nodzie
             {
                 for (int i = 0; i < programLinesInNode; i++)
                 {
-                    if (actual.programLineList[i] == p_programLineNumber &&
+                    if (actual.programLineList[i] == (int)p_to.programLine &&
                         i != 0)
                     {
-                        resultList.Add(actual.programLineList.ElementAt(i - 1));
+                        tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(i - 1));
+                        if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
+                        
                     }
                 }
             }
@@ -406,24 +426,22 @@ namespace SpaWpfApp.Cfg
             {
                 foreach (var nodePrevious in actual.previousGNodeList)
                 {
-                    FindAndAddPreviousResult(nodePrevious, ref resultList);
+                    FindAndAddPreviousResult(nodePrevious, ref resultList, acceptableType);
                 }
             }
-            else
-            {
-                resultList.Add(-1);
-            }
 
-            return resultList;
+            return resultList.Count > 0 ? resultList : null;
         }
 
-        public List<int> PreviousS(int p_programLineNumber)
+        public List<TNode> PreviousX(TNode p_to, string p_from)
         {
-            List<int> resultList = new List<int>();
-            ProcedureCfg cfg = FindCfg(p_programLineNumber);
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
+            List<TNode> resultList = new List<TNode>();
+            TNode tmp;
+            ProcedureCfg cfg = FindCfg((int)p_to.programLine);
             int programLinesInNode;
 
-            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p_programLineNumber)).FirstOrDefault();
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains((int)p_to.programLine)).FirstOrDefault();
 
             programLinesInNode = actual.programLineList.Count();
 
@@ -431,32 +449,29 @@ namespace SpaWpfApp.Cfg
             {
                 for (int i = 1; i < programLinesInNode; i++)
                 {
-                    if (actual.programLineList[i] == p_programLineNumber)
+                    if (actual.programLineList[i] == (int)p_to.programLine)
                     {
                         for (int j = i - 1; j >= 0; j--)
                         {
-                            resultList.Add(actual.programLineList.ElementAt(j));
+                            tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(j));
+                            if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
                         }
                     }
                 }
             }
 
-            FindAndAddAllPreviousSInPreviousNodes(actual, ref resultList);
+            FindAndAddAllPreviousSInPreviousNodes(actual, ref resultList, acceptableType);
 
-            if(resultList.Count() == 0)
-            {
-                resultList.Add(-1);
-            }
-            return resultList;
+            return resultList.Count > 0 ? resultList : null;
         }
 
         public bool IsNext(int p1, int p2)
         {
-            List<int> nextList = this.Next(p1);
+            List<TNode> nextList = this.Next(AstManager.GetInstance().FindNode(p1), p2.ToString());
 
-            foreach(var v in nextList)
+            foreach (var v in nextList)
             {
-                if(v == p2)
+                if (v.programLine == p2)
                 {
                     return true;
                 }
@@ -465,7 +480,7 @@ namespace SpaWpfApp.Cfg
             return false;
         }
 
-        public bool IsNextS(int p1, int p2)
+        public bool IsNextX(int p1, int p2)
         {
             ProcedureCfg cfg = FindCfg(p1);
             int programLinesInNode;
@@ -483,7 +498,7 @@ namespace SpaWpfApp.Cfg
                     {
                         for (int j = i + 1; j < programLinesInNode; j++)
                         {
-                            if(actual.programLineList.ElementAt(j) == p2)
+                            if (actual.programLineList.ElementAt(j) == p2)
                             {
                                 return true;
                             }
@@ -503,7 +518,7 @@ namespace SpaWpfApp.Cfg
                 {
                     foreach (var i in n.programLineList)
                     {
-                        if(i == p2)
+                        if (i == p2)
                         {
                             return true;
                         }
@@ -537,72 +552,149 @@ namespace SpaWpfApp.Cfg
             }
             return null;
         }
-        private void FindAndAddNextResult(GNode nodeNext, ref List<int> resultList)
+        private void FindAndAddNextResult(GNode nodeNext, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
         {
+            TNode tmp;
             if (nodeNext.type != GNodeTypeEnum.Ghost)
             {
-                resultList.Add(nodeNext.programLineList[0]);
+                tmp = AstManager.GetInstance().FindNode(nodeNext.programLineList[0]);
+                if(acceptableType.Contains(tmp.type))
+                {
+                    resultList.Add(tmp);
+                }
                 return;
             }
 
-            foreach (var n in nodeNext.nextGNodeList)
+            foreach (var p in nodeNext.previousGNodeList)
             {
-                FindAndAddNextResult(n, ref resultList);
+                FindAndAddNextResult(p, ref resultList, acceptableType);
             }
+
         }
-        private void FindAndAddPreviousResult(GNode nodePrevious, ref List<int> resultList)
+        private void FindAndAddPreviousResult(GNode nodePrevious, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
         {
+            TNode tmp;
             if (nodePrevious.type != GNodeTypeEnum.Ghost)
             {
-                resultList.Add(nodePrevious.programLineList.Last());
+                tmp = AstManager.GetInstance().FindNode(nodePrevious.programLineList.Last());
+                if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
+                
                 return;
             }
 
             foreach (var p in nodePrevious.previousGNodeList)
             {
-                FindAndAddPreviousResult(p, ref resultList);
+                FindAndAddPreviousResult(p, ref resultList, acceptableType);
             }
+
         }
-        private void FindAndAddAllNextSInNextNodes(GNode actual, ref List<int> resultList)
+        private void FindAndAddAllNextSInNextNodes(GNode actual, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
         {
+            TNode tmp;
+
             foreach (var n in actual.nextGNodeList)
             {
                 if (n.type != GNodeTypeEnum.Ghost)
                 {
                     foreach (var i in n.programLineList)
                     {
-                        resultList.Add(i);
+                        tmp = AstManager.GetInstance().FindNode(i);
+                        if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
                     }
                 }
 
                 if (n.nextGNodeList.Count() > 0)
                 {
-                    FindAndAddAllNextSInNextNodes(n, ref resultList);
+                    FindAndAddAllNextSInNextNodes(n, ref resultList, acceptableType);
                 }
             }
         }
-        private void FindAndAddAllPreviousSInPreviousNodes(GNode actual, ref List<int> resultList)
+        private void FindAndAddAllPreviousSInPreviousNodes(GNode actual, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
         {
+            TNode tmp;
             foreach (var p in actual.previousGNodeList)
             {
                 if (p.type != GNodeTypeEnum.Ghost)
                 {
-                    if (resultList.Contains(p.programLineList[0])) // jesli resultList zawiera element z tego noda, to ścieżki powrotów się złączyły i należy przerwać powielaną ściężkę
+                    if (resultList.Contains(AstManager.GetInstance().FindNode(p.programLineList[0]))) // jesli resultList zawiera element z tego noda, to ścieżki powrotów się złączyły i należy przerwać powielaną ściężkę
                     {
                         return;
                     }
                     for (int i = p.programLineList.Count() - 1; i >= 0; i--)
                     {
-                        resultList.Add(p.programLineList[i]);
+                        tmp = AstManager.GetInstance().FindNode(p.programLineList[i]);
+                        if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
+                        
                     }
                 }
 
                 if (p.previousGNodeList.Count() > 0)
                 {
-                    FindAndAddAllPreviousSInPreviousNodes(p, ref resultList);
+                    FindAndAddAllPreviousSInPreviousNodes(p, ref resultList, acceptableType);
                 }
             }
         }
         #endregion
+
+        private List<TNodeTypeEnum> DetermineAcceptableTypes(string arg)
+        {
+            List<TNodeTypeEnum> result = new List<TNodeTypeEnum>();
+            int tmp;
+
+            if (arg == "_" || Int32.TryParse(arg, out tmp))
+            {
+                foreach (TNodeTypeEnum v in Enum.GetValues(typeof(TNodeTypeEnum)))
+                {
+                    result.Add(v);
+                }
+                return result;
+            }
+
+            string argType = QueryPreProcessor.GetInstance().declarationsList[arg];
+            switch (argType)
+            {
+                case "procedure":
+                    {
+                        result.Add(TNodeTypeEnum.Procedure);
+                    }
+                    break;
+
+                case "call":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                    }
+                    break;
+
+                case "assign":
+                    {
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+
+                case "if":
+                    {
+                        result.Add(TNodeTypeEnum.If);
+                    }
+                    break;
+
+                case "while":
+                    {
+                        result.Add(TNodeTypeEnum.While);
+                    }
+                    break;
+
+                case "stmt":
+                case "stmtLst":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                        result.Add(TNodeTypeEnum.While);
+                        result.Add(TNodeTypeEnum.If);
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+            }
+
+            return result;
+        }
     }
 }
