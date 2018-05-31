@@ -72,8 +72,276 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void NextX(Relation relation)
         {
-            throw new NotImplementedException();
+            List<TNode> candidateForFrom, candidateForTo;
+            List<TNode> resultList = new List<TNode>();
+            actualRelation = relation;
+
+
+            #region NextX(int, int), NextX(_, _)
+            if (relation.arg1type == Entity._int && relation.arg2type == Entity._int)
+            {
+                bool result = cfgManager.IsNextX(Int32.Parse(relation.arg1), Int32.Parse(relation.arg2));
+
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                var nodes = astManager.NodeWithLineNumberList;
+                List<TNode> result = new List<TNode>();
+                if (nodes != null)
+                {
+                    foreach (var node in nodes)
+                    {
+                        result = cfgManager.NextX(node, relation.arg2);
+                        if (result != null)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+                }
+
+                UpdateResultTable(false);
+                return;
+            }
+            #endregion
+
+            else if (relation.arg1type == Entity._int)
+            {
+                TNode from = astManager.FindNode(Int32.Parse(relation.arg1));
+
+                #region NexXt(int, _)
+                if (relation.arg2type == Entity._)
+                {
+                    if (from is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = cfgManager.NextX(from, relation.arg2) != null ? true : false;
+                        UpdateResultTable(result);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region NextX(int, *)
+                if (from is null)
+                {
+                    UpdateResultTable(null, relation.arg2);
+                    return;
+                }
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        foreach (var c in candidateForTo)
+                        {
+                            if (cfgManager.IsNextX(Int32.Parse(relation.arg1), (int)c.programLine))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+                else
+                {
+                    List<TNode> tmp = cfgManager.NextX(from, relation.arg2);
+                    if (tmp != null) { resultList = tmp; }
+                    UpdateResultTable(resultList, relation.arg2);
+                }
+                #endregion
+            }
+
+            else if (relation.arg2type == Entity._int)
+            {
+                TNode to = astManager.FindNode(Int32.Parse(relation.arg2));
+
+                #region Next(_, int)
+                if (relation.arg1type == Entity._)
+                {
+                    if (to is null)
+                    {
+                        UpdateResultTable(false);
+                        return;
+                    }
+                    else
+                    {
+                        var result = cfgManager.PreviousX(to, relation.arg1);
+                        UpdateResultTable(result != null ? true : false);
+                        return;
+                    }
+                }
+                #endregion
+
+                #region Next(*, int)
+                if (to is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+                else if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
+                    if (candidateForFrom != null)
+                    {
+                        foreach (var c in candidateForFrom)
+                        {
+                            if (cfgManager.IsNextX((int)c.programLine, Int32.Parse(relation.arg2)))
+                            {
+                                resultList.Add(c);
+                                break;
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                else
+                {
+                    List<TNode> tmp = cfgManager.PreviousX(to, relation.arg1);
+                    if (tmp != null) { resultList = tmp; }
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+                #endregion
+            }
+
+            else
+            {
+                List<TNode> fromList = null;
+                List<TNode> tmpResult = null;
+
+                #region Next(_, *)
+                if (relation.arg1type == Entity._)
+                {
+                    fromList = astManager.NodeWithLineNumberList;
+
+                    if (fromList != null)
+                    {
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                        {
+                            candidateForTo = queryResult.GetNodes(relation.arg2);
+                            if (candidateForTo != null)
+                            {
+                                foreach (var from in fromList)
+                                {
+                                    foreach (var to in candidateForTo)
+                                    {
+                                        if (cfgManager.IsNextX((int)from.programLine, (int)to.programLine))
+                                        {
+                                            resultList.Add(to);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (var from in fromList)
+                            {
+                                List<TNode> tmp = cfgManager.NextX(from, relation.arg2);
+                                if (tmp != null) { resultList = tmp; }
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg2);
+                        return;
+                    }
+                    else
+                    {
+                        UpdateResultTable(null, relation.arg2);
+                        return;
+                    }
+
+                }
+                #endregion
+
+                else
+                {
+                    #region NextX(*, _)
+                    if (relation.arg2 == Entity._)
+                    {
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
+                        {
+                            candidateForFrom = queryResult.GetNodes(relation.arg1);
+                        }
+                        else
+                        {
+                            candidateForFrom = astManager.NodeWithLineNumberList;
+                        }
+
+                        if (candidateForFrom != null)
+                        {
+                            foreach (var from in candidateForFrom)
+                            {
+                                var hasRightSibling = cfgManager.NextX(from, relation.arg2) != null ? true : false;
+                                if (hasRightSibling) { resultList.Add(from); }
+                            }
+                        }
+
+                        UpdateResultTable(resultList, relation.arg1);
+                        return;
+                    }
+                    #endregion
+                }
+
+                #region Next(*, *)
+                List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+                //candidates for from
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
+                {
+                    candidateForFrom = queryResult.GetNodes(relation.arg1);
+                }
+                else
+                {
+                    candidateForFrom = astManager.NodeWithLineNumberList;
+                }
+
+                //candidates for to
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidateForTo = queryResult.GetNodes(relation.arg2);
+                    if (candidateForTo != null)
+                    {
+                        for (int i = 0; i < candidateForFrom.Count(); i++)
+                        {
+                            if (cfgManager.IsNextX((int)candidateForFrom[i].programLine, (int)candidateForTo[i].programLine))
+                            {
+                                resultListTuple.Add((candidateForFrom[i], candidateForTo[i]));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var from in candidateForFrom)
+                    {
+                        List<TNode> tmp = cfgManager.NextX(from, relation.arg2);
+                        if (tmp != null)
+                        {
+                            foreach (var to in tmp)
+                            {
+                                resultListTuple.Add((from, to));
+                            }
+                        }
+                    }
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+                #endregion
+            }
         }
+
 
         private void Next(Relation relation)
         {
@@ -92,7 +360,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeList;
+                var nodes = astManager.NodeWithLineNumberList;
                 List<TNode> result = new List<TNode>();
                 if (nodes != null)
                 {
@@ -226,7 +494,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Next(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeList;
+                    fromList = astManager.NodeWithLineNumberList;
 
                     if (fromList != null)
                     {
@@ -280,7 +548,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeList;
+                            candidateForFrom = astManager.NodeWithLineNumberList;
                         }
 
                         if (candidateForFrom != null)
@@ -308,7 +576,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeList;
+                    candidateForFrom = astManager.NodeWithLineNumberList;
                 }
 
                 //candidates for to
@@ -366,7 +634,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeList;
+                var nodes = astManager.NodeWithLineNumberList;
                 List<TNode> result;
                 if (nodes != null)
                 {
@@ -499,7 +767,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region FollowsX(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeList;
+                    fromList = astManager.NodeWithLineNumberList;
 
                     if (fromList != null)
                     {
@@ -554,7 +822,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeList;
+                            candidateForFrom = astManager.NodeWithLineNumberList;
                         }
 
                         if (candidateForFrom != null)
@@ -582,7 +850,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeList;
+                    candidateForFrom = astManager.NodeWithLineNumberList;
                 }
 
                 //candidates for to
@@ -639,7 +907,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeList;
+                var nodes = astManager.NodeWithLineNumberList;
                 TNode result;
                 if (nodes != null)
                 {
@@ -773,7 +1041,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Follows(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeList;
+                    fromList = astManager.NodeWithLineNumberList;
 
                     if (fromList != null)
                     {
@@ -827,7 +1095,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeList;
+                            candidateForFrom = astManager.NodeWithLineNumberList;
                         }
 
                         if (candidateForFrom != null)
@@ -855,7 +1123,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeList;
+                    candidateForFrom = astManager.NodeWithLineNumberList;
                 }
 
                 //candidates for to

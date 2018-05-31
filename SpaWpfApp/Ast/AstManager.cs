@@ -24,6 +24,7 @@ namespace SpaWpfApp.Ast
     public class AstManager : AstAPI
     {
         public List<TNode> NodeList { get; set; }
+        public List<TNode> NodeWithLineNumberList { get; set; }
         private List<TNode> WhileList, IfList, AssignList, CallList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
@@ -48,6 +49,7 @@ namespace SpaWpfApp.Ast
         {
             this.Pkb = Pkb;
             this.NodeList = new List<TNode>();
+            this.NodeWithLineNumberList = new List<TNode>();
             this.WhileList = new List<TNode>();
             this.IfList = new List<TNode>();
             this.AssignList = new List<TNode>();
@@ -507,15 +509,19 @@ namespace SpaWpfApp.Ast
             {
                 case TNodeTypeEnum.Assign:
                     AssignList.Add(tmp);
+                    NodeWithLineNumberList.Add(tmp);
                     break;
                 case TNodeTypeEnum.Call:
                     CallList.Add(tmp);
+                    NodeWithLineNumberList.Add(tmp);
                     break;
                 case TNodeTypeEnum.While:
                     WhileList.Add(tmp);
+                    NodeWithLineNumberList.Add(tmp);
                     break;
                 case TNodeTypeEnum.If:
                     IfList.Add(tmp);
+                    NodeWithLineNumberList.Add(tmp);
                     break;
             }
 

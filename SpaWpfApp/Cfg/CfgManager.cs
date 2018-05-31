@@ -324,6 +324,8 @@ namespace SpaWpfApp.Cfg
         #region API methods
         public List<TNode> Next(TNode p_from, string p_to)
         {
+            if (p_from is null) { return null; }
+
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_to);
             TNode tmp;
             List<TNode> resultList = new List<TNode>();
@@ -363,6 +365,8 @@ namespace SpaWpfApp.Cfg
 
         public List<TNode> NextX(TNode p_from, string p_to)
         {
+            if (p_from is null) { return null; }
+
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_to);
 
             List<TNode> resultList = new List<TNode>();
@@ -399,6 +403,7 @@ namespace SpaWpfApp.Cfg
 
         public List<TNode> Previous(TNode p_to, string p_from)
         {
+            if (p_to is null) { return null; }
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
 
             List<TNode> resultList = new List<TNode>();
@@ -418,7 +423,7 @@ namespace SpaWpfApp.Cfg
                     {
                         tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(i - 1));
                         if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
-                        
+
                     }
                 }
             }
@@ -435,6 +440,8 @@ namespace SpaWpfApp.Cfg
 
         public List<TNode> PreviousX(TNode p_to, string p_from)
         {
+            if (p_to is null) { return null; }
+
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
             List<TNode> resultList = new List<TNode>();
             TNode tmp;
@@ -467,6 +474,7 @@ namespace SpaWpfApp.Cfg
 
         public bool IsNext(int p1, int p2)
         {
+            if (OutOfRange(p1) || OutOfRange(p2)) { return false; }
             List<TNode> nextList = this.Next(AstManager.GetInstance().FindNode(p1), p2.ToString());
 
             foreach (var v in nextList)
@@ -482,8 +490,11 @@ namespace SpaWpfApp.Cfg
 
         public bool IsNextX(int p1, int p2)
         {
+            if (OutOfRange(p1) || OutOfRange(p2)) { return false; }
+
             ProcedureCfg cfg = FindCfg(p1);
             int programLinesInNode;
+            Boolean findedNextX = false;
 
             GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p1)).FirstOrDefault();
 
@@ -506,11 +517,11 @@ namespace SpaWpfApp.Cfg
                     }
                 }
             }
-
-            return CheckIfNextSInNextNodes(actual, p2);
+            CheckIfNextSInNextNodes(actual, p2, ref findedNextX);
+            return findedNextX;
         }
 
-        private Boolean CheckIfNextSInNextNodes(GNode actual, int p2)
+        private void CheckIfNextSInNextNodes(GNode actual, int p2, ref Boolean findedNextX)
         {
             foreach (var n in actual.nextGNodeList)
             {
@@ -520,18 +531,22 @@ namespace SpaWpfApp.Cfg
                     {
                         if (i == p2)
                         {
-                            return true;
+                            findedNextX = true;
+                            return;
                         }
                     }
                 }
 
                 if (n.nextGNodeList.Count() > 0)
                 {
-                    CheckIfNextSInNextNodes(n, p2);
+                    if (!(n.nextGNodeList[0].type != GNodeTypeEnum.Ghost
+                        && n.type != GNodeTypeEnum.Ghost
+                        && n.programLineList[0] > n.nextGNodeList.First().programLineList[0]))
+                    {
+                        CheckIfNextSInNextNodes(n, p2, ref findedNextX);
+                    }
                 }
             }
-
-            return false;
         }
 
         #endregion
@@ -545,7 +560,7 @@ namespace SpaWpfApp.Cfg
             for (int i = 0; i < CfgList.Count(); i++)
             {
                 if (programLineNumber >= CfgList[i].GNodeList.First().programLineList.First() &&
-                    programLineNumber < CfgList[i].lastProgramLineNumber)
+                    programLineNumber <= CfgList[i].lastProgramLineNumber)
                 {
                     return CfgList[i];
                 }
@@ -558,7 +573,7 @@ namespace SpaWpfApp.Cfg
             if (nodeNext.type != GNodeTypeEnum.Ghost)
             {
                 tmp = AstManager.GetInstance().FindNode(nodeNext.programLineList[0]);
-                if(acceptableType.Contains(tmp.type))
+                if (acceptableType.Contains(tmp.type))
                 {
                     resultList.Add(tmp);
                 }
@@ -578,7 +593,7 @@ namespace SpaWpfApp.Cfg
             {
                 tmp = AstManager.GetInstance().FindNode(nodePrevious.programLineList.Last());
                 if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
-                
+
                 return;
             }
 
@@ -599,14 +614,19 @@ namespace SpaWpfApp.Cfg
                     foreach (var i in n.programLineList)
                     {
                         tmp = AstManager.GetInstance().FindNode(i);
-                        if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
+                        if (acceptableType.Contains(tmp.type) && !resultList.Contains(tmp)) { resultList.Add(tmp); }
+                    }
+                }
+                if (n.nextGNodeList.Count() > 0)
+                {
+                    if (!(n.nextGNodeList[0].type != GNodeTypeEnum.Ghost
+                        && n.type != GNodeTypeEnum.Ghost
+                        && n.programLineList[0] > n.nextGNodeList.First().programLineList[0]))
+                    {
+                        FindAndAddAllNextSInNextNodes(n, ref resultList, acceptableType);
                     }
                 }
 
-                if (n.nextGNodeList.Count() > 0)
-                {
-                    FindAndAddAllNextSInNextNodes(n, ref resultList, acceptableType);
-                }
             }
         }
         private void FindAndAddAllPreviousSInPreviousNodes(GNode actual, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
@@ -624,7 +644,7 @@ namespace SpaWpfApp.Cfg
                     {
                         tmp = AstManager.GetInstance().FindNode(p.programLineList[i]);
                         if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
-                        
+
                     }
                 }
 
@@ -696,5 +716,11 @@ namespace SpaWpfApp.Cfg
 
             return result;
         }
+        private bool OutOfRange(int lineNumber)
+        {
+            return (lineNumber < 1 || lineNumber > CfgList.LastOrDefault().lastProgramLineNumber) ? true : false;
+        }
     }
+
+
 }
