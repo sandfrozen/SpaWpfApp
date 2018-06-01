@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
-    class QueryPreProcessor
+    public class QueryPreProcessor
     {
         private string parsedQuery;
 
@@ -97,7 +97,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
-                throw new WrongQueryFromatException("Select is missing.");
+                throw new QueryException("Select is missing.");
             }
             wordsInQuery = GetWordsInCode(query);
             currentIndex = 0;
@@ -116,13 +116,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        throw new WrongQueryFromatException("Invalid word or character in declaration: " + wordsInQuery[currentIndex]);
+                        throw new QueryException("Invalid word or character in declaration: " + wordsInQuery[currentIndex]);
                     }
                 }
             }
             if (wordsInQuery[currentIndex] != "Select")
             {
-                throw new WrongQueryFromatException("Select not found: " + wordsInQuery[currentIndex]);
+                throw new QueryException("Select not found: " + wordsInQuery[currentIndex]);
             }
             parsedQuery += wordsInQuery[currentIndex++];
             ParseTouple();
@@ -137,7 +137,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        throw new WrongQueryFromatException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
+                        throw new QueryException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
                     }
                     do
                     {
@@ -180,7 +180,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 else
                 {
-                    throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
+                    throw new QueryException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
                 }
             }            
 
@@ -300,7 +300,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
-                throw new WrongQueryFromatException("Invalid synonym: " + synonym);
+                throw new QueryException("Invalid synonym: " + synonym);
             }
         }
 

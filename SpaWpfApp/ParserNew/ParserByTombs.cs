@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.ParserNew
 {
-    class ParserByTombs
+    public class ParserByTombs
     {
         private int currentIndex = 0;
         private int currentLine = 0;
@@ -38,7 +38,7 @@ namespace SpaWpfApp.ParserNew
             }
         }
 
-        public void Parse(string code)
+        public string Parse(string code)
         {
             procCalls = new List<string>();
             pkb = new Pkb();
@@ -74,10 +74,10 @@ namespace SpaWpfApp.ParserNew
             Trace.WriteLine("CALLS TABLE:");
             pkb.PrintCallsTable();
 
-            return;
+            return GetParsedSouceCode();
         }
 
-        public Tuple<string, string> GetParsedFormattedSourceCode()
+        public (string lineNumbers, string parsedSourceCode) GetParsedFormattedSourceCode()
         {
             int level = 0;
             string parsed = "";
@@ -141,7 +141,7 @@ namespace SpaWpfApp.ParserNew
                 }
 
             }
-            return Tuple.Create(parsed, lines);
+            return (lines, parsed);
         }
 
         public string GetParsedSouceCode()
@@ -202,7 +202,7 @@ namespace SpaWpfApp.ParserNew
         {
             if (wordsInCode[currentIndex] != "procedure")
             {
-                throw new WrongCodeException("'procedure' keyword not found");
+                throw new SourceCodeException("'procedure' keyword not found");
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
@@ -219,7 +219,7 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             if (wordsInCode[currentIndex] != "{")
             {
-                throw new WrongCodeException("'{' not found after '" + lastParent + "' in line: " + currentLine);
+                throw new SourceCodeException("'{' not found after '" + lastParent + "' in line: " + currentLine);
             }
 
             int localLevel = currentLevel;
@@ -252,7 +252,7 @@ namespace SpaWpfApp.ParserNew
                     {
                         message += ". You probably forgot about '}' in line: " + (currentLine - 1);
                     }
-                    throw new WrongCodeException(message);
+                    throw new SourceCodeException(message);
                 }
             }
             currentIndex++;
@@ -266,7 +266,7 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             if (wordsInCode[currentIndex] != "then")
             {
-                throw new WrongCodeException("'then' not found after 'if " + varName + "' in line: " + currentLine);
+                throw new SourceCodeException("'then' not found after 'if " + varName + "' in line: " + currentLine);
             }
             lastParent = "if " + varName;
 
@@ -279,7 +279,7 @@ namespace SpaWpfApp.ParserNew
             ParseBody();
             if (currentIndex < wordsInCode.Length && wordsInCode[currentIndex] != "else")
             {
-                throw new WrongCodeException("'else' not found after 'if " + varName + " then { ... }' in line: " + currentLine);
+                throw new SourceCodeException("'else' not found after 'if " + varName + " then { ... }' in line: " + currentLine);
             }
             lastParent = "if " + varName + " { ... } else";
             ParseBody();
@@ -311,7 +311,7 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             if (wordsInCode[currentIndex] != ";")
             {
-                throw new WrongCodeException("; expected after 'call " + procName + "' in line: " + currentLine);
+                throw new SourceCodeException("; expected after 'call " + procName + "' in line: " + currentLine);
             }
             pkb.SetCalls(currentProcedure, procName, currentLine);
             currentIndex++;
@@ -332,7 +332,7 @@ namespace SpaWpfApp.ParserNew
             i++;
             if (wordsInCode[currentIndex + i] != "=")
             {
-                throw new WrongCodeException("= expected after '" + varModified + "' in line: " + currentLine);
+                throw new SourceCodeException("= expected after '" + varModified + "' in line: " + currentLine);
             }
 
             i++;
@@ -374,11 +374,11 @@ namespace SpaWpfApp.ParserNew
             }
             if (i < 3)
             {
-                throw new WrongCodeException("Assign '" + varModified + " = ...' is too short in line: " + currentLine);
+                throw new SourceCodeException("Assign '" + varModified + " = ...' is too short in line: " + currentLine);
             }
             else if (i % 2 == 0)
             {
-                throw new WrongCodeException("Assign '" + varModified + " = ...' is ending with wrong char in line: " + currentLine);
+                throw new SourceCodeException("Assign '" + varModified + " = ...' is ending with wrong char in line: " + currentLine);
             }
             currentIndex = currentIndex + i + 1;
         }
@@ -463,15 +463,15 @@ namespace SpaWpfApp.ParserNew
             //throw new WrongCodeException("; expected after assign in line: " + currentLine);
             if (keywords.Contains(toCheck) || int.TryParse(toCheck, out int r) || Regex.IsMatch(toCheck, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
-                throw new WrongCodeException("; expected after assign in line: " + currentLine);
+                throw new SourceCodeException("; expected after assign in line: " + currentLine);
             }
             else if (toCheck == ";")
             {
-                throw new WrongCodeException(") expected before ; in assign in line: " + currentLine);
+                throw new SourceCodeException(") expected before ; in assign in line: " + currentLine);
             }
             else
             {
-                throw new WrongCodeException("Invalid assign in line: " + currentLine);
+                throw new SourceCodeException("Invalid assign in line: " + currentLine);
             }
 
         }
@@ -480,7 +480,7 @@ namespace SpaWpfApp.ParserNew
         {
             if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
-                throw new WrongCodeException("Wrong synonym format: '" + synonym + "' in line: " + currentLine);
+                throw new SourceCodeException("Wrong synonym format: '" + synonym + "' in line: " + currentLine);
             }
         }
 

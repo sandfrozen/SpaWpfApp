@@ -68,8 +68,7 @@
     <Compile Include="Enums\SignEnum.cs" />
     <Compile Include="Exceptions\NoResultsException.cs" />
     <Compile Include="Exceptions\QueryException.cs" />
-    <Compile Include="Exceptions\WrongCodeException.cs" />
-    <Compile Include="Exceptions\WrongQueryFromatException.cs" />
+    <Compile Include="Exceptions\SourceCodeException.cs" />
     <Compile Include="PkbNew\ListContainer.cs" />
     <Compile Include="ParserNew\ParserByTombs.cs" />
     <Compile Include="PkbNew\Pkb.cs" />
