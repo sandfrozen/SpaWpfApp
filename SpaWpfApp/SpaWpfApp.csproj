@@ -70,13 +70,8 @@
     <Compile Include="Exceptions\QueryException.cs" />
     <Compile Include="Exceptions\WrongCodeException.cs" />
     <Compile Include="Exceptions\WrongQueryFromatException.cs" />
-    <Compile Include="PkbOld\Pkb.cs" />
-    <Compile Include="PkbOld\PkbAPI.cs" />
     <Compile Include="PkbNew\ListContainer.cs" />
     <Compile Include="ParserNew\ParserByTombs.cs" />
-    <Compile Include="ParserOld\ParserInside.cs" />
-    <Compile Include="ParserOld\ParserHelpers.cs" />
-    <Compile Include="ParserOld\ParserMain.cs" />
     <Compile Include="PkbNew\Pkb.cs" />
     <Compile Include="PkbNew\PkbAPI.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryEvaluator.cs" />
