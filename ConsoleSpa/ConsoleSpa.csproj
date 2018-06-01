@@ -43,5 +43,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpaWpfApp\SpaWpfApp.csproj">
+      <Project>{753475e0-aa8c-4a4c-bbec-e0639a0c15c8}</Project>
+      <Name>SpaWpfApp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
