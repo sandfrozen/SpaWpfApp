@@ -571,6 +571,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void CheckWith(string with)
         {
+            // With
             if (Regex.IsMatch(with, @"^[^= ]+[=][^= ]+$"))
             {
                 string left = with.Substring(0, with.IndexOf('='));
