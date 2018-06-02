@@ -156,8 +156,8 @@ namespace SpaWpfApp
 
             try
             {
-                List<Relation> relationList = QueryPreProcessor.GetInstance().relationsList;
-                QueryEvaluator.GetInstance().Evaluate(relationList);
+                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
+                QueryEvaluator.GetInstance().Evaluate(conditionsList);
             }
             catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
             finally

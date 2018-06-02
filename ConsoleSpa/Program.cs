@@ -59,7 +59,7 @@ namespace ConsoleSpa
                 try
                 {
                     query = SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().Parse(query);
-                    SpaWpfApp.QueryProcessingSusbsytem.QueryEvaluator.GetInstance().Evaluate(SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().relationsList);
+                    SpaWpfApp.QueryProcessingSusbsytem.QueryEvaluator.GetInstance().Evaluate(SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().conditionsList);
                     
                     Console.WriteLine(SpaWpfApp.QueryProcessingSusbsytem.QueryResult.GetInstance().resultIsBoolean.ToString().ToLower());
                 }

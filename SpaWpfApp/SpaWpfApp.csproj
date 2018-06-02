@@ -73,11 +73,14 @@
     <Compile Include="ParserNew\ParserByTombs.cs" />
     <Compile Include="PkbNew\Pkb.cs" />
     <Compile Include="PkbNew\PkbAPI.cs" />
+    <Compile Include="QueryProcessingSusbsytem\Condition.cs" />
+    <Compile Include="QueryProcessingSusbsytem\Pattern.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryEvaluator.cs" />
     <Compile Include="QueryProcessingSusbsytem\Entity.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
     <Compile Include="QueryProcessingSusbsytem\Relation.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryResult.cs" />
+    <Compile Include="QueryProcessingSusbsytem\With.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

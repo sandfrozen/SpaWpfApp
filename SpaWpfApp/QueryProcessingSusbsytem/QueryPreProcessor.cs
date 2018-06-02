@@ -19,7 +19,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> relationsReference;
         public Dictionary<string, string> declarationsList { get; set; }
         public Dictionary<string, string> returnList { get; set; }
-        public List<Relation> relationsList { get; set; }
+        public List<Condition> conditionsList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -38,7 +38,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
-            relationsList = new List<Relation>();
+            conditionsList = new List<Condition>();
             relationsReference = new Dictionary<string, Action> {
                 { Relation.Modifies, CheckModifies},
                 { Relation.ModifiesX, CheckModifies},
@@ -93,7 +93,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
-            relationsList = new List<Relation>();
+            conditionsList = new List<Condition>();
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
@@ -196,7 +196,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 Trace.WriteLine(v.Value + " " + v.Key);
             }
             Trace.WriteLine("Relations List:");
-            foreach (var r in relationsList)
+            foreach (var r in conditionsList)
             {
                 Trace.WriteLine(r.ToString());
             }
@@ -543,7 +543,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         break;
                 }
 
-                relationsList.Add(new Relation(relRef, arg1, arg1type, arg2, arg2type));
+                conditionsList.Add(new Relation(relRef, arg1, arg1type, arg2, arg2type));
             }
             else
             {
@@ -578,6 +578,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 with = with.Substring(with.IndexOf('=') + 1);
                 string rightRef = with.Substring(0);
+
+
             }
             else
             {
