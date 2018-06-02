@@ -13,6 +13,7 @@ namespace SpaWpfApp.Ast
         public int? programLine { get; set; }
 
         public int? value { get; set; }
+        public string info { get; set; }
 
         public TNode up { get; set; }
         public TNode firstChild { get; set; }
