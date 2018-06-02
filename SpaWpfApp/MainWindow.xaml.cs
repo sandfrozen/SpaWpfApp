@@ -36,21 +36,22 @@ namespace SpaWpfApp
             logsRichTextBox.Document.Blocks.Clear();
             try
             {
-                ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
-                var formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
-                // formatted - ONLY FOR "MAIN WINDOW"
                 // parsed    - FOR AST AND CFG
-                parsed = ParserByTombs.Instance.GetParsedSouceCode();
+                parsed = ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
 
-                procedureRichTextBox.Document.Blocks.Clear();
-                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.Item1)));
+                // formatted - ONLY FOR "MAIN WINDOW"
+                var formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
 
                 linesRichTextBox.Document.Blocks.Clear();
-                linesRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.Item2)));
+                linesRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.lineNumbers)));
+
+                procedureRichTextBox.Document.Blocks.Clear();
+                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.parsedSourceCode)));
+                
                 addLog("Source Code Parser: Ok");
                 return;
             }
-            catch (WrongCodeException wce)
+            catch (SourceCodeException wce)
             {
                 addLog("Error while parsing Source Code:\n" + wce.Message);
                 return;
@@ -142,11 +143,6 @@ namespace SpaWpfApp
                 addLog("PQL Parser: QueryException:\n" + ex.Message);
                 //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (WrongQueryFromatException ex)
-            {
-                addLog("PQL Parser: WrongQueryFromatException:\n" + ex.Message);
-                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
             catch (Exception ex)
             {
                 addLog("PQL Parser: Error:\n" + ex.Message);
@@ -160,8 +156,8 @@ namespace SpaWpfApp
 
             try
             {
-                List<Relation> relationList = QueryPreProcessor.GetInstance().relationsList;
-                QueryEvaluator.GetInstance().Evaluate(relationList);
+                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
+                QueryEvaluator.GetInstance().Evaluate(conditionsList);
             }
             catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
             finally

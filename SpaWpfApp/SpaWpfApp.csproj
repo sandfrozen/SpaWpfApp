@@ -68,22 +68,19 @@
     <Compile Include="Enums\SignEnum.cs" />
     <Compile Include="Exceptions\NoResultsException.cs" />
     <Compile Include="Exceptions\QueryException.cs" />
-    <Compile Include="Exceptions\WrongCodeException.cs" />
-    <Compile Include="Exceptions\WrongQueryFromatException.cs" />
-    <Compile Include="PkbOld\Pkb.cs" />
-    <Compile Include="PkbOld\PkbAPI.cs" />
+    <Compile Include="Exceptions\SourceCodeException.cs" />
     <Compile Include="PkbNew\ListContainer.cs" />
     <Compile Include="ParserNew\ParserByTombs.cs" />
-    <Compile Include="ParserOld\ParserInside.cs" />
-    <Compile Include="ParserOld\ParserHelpers.cs" />
-    <Compile Include="ParserOld\ParserMain.cs" />
     <Compile Include="PkbNew\Pkb.cs" />
     <Compile Include="PkbNew\PkbAPI.cs" />
+    <Compile Include="QueryProcessingSusbsytem\Condition.cs" />
+    <Compile Include="QueryProcessingSusbsytem\Pattern.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryEvaluator.cs" />
     <Compile Include="QueryProcessingSusbsytem\Entity.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryPreProcessor.cs" />
     <Compile Include="QueryProcessingSusbsytem\Relation.cs" />
     <Compile Include="QueryProcessingSusbsytem\QueryResult.cs" />
+    <Compile Include="QueryProcessingSusbsytem\With.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

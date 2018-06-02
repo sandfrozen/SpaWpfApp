@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
-    public class Relation
+    public class Relation : Condition
     {
         // Object
         public string type { get; set; }

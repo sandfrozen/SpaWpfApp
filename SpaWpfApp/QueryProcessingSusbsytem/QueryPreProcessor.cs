@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
-    class QueryPreProcessor
+    public class QueryPreProcessor
     {
         private string parsedQuery;
 
@@ -19,7 +19,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> relationsReference;
         public Dictionary<string, string> declarationsList { get; set; }
         public Dictionary<string, string> returnList { get; set; }
-        public List<Relation> relationsList { get; set; }
+        public List<Condition> conditionsList { get; set; }
 
         private Dictionary<string, string[]> entityAttributeValue;
         private Dictionary<string, Action> declarationActions;
@@ -38,7 +38,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
-            relationsList = new List<Relation>();
+            conditionsList = new List<Condition>();
             relationsReference = new Dictionary<string, Action> {
                 { Relation.Modifies, CheckModifies},
                 { Relation.ModifiesX, CheckModifies},
@@ -93,11 +93,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             declarationsList = new Dictionary<string, string>();
             returnList = new Dictionary<string, string>();
-            relationsList = new List<Relation>();
+            conditionsList = new List<Condition>();
             parsedQuery = "";
             if (!query.Contains("Select"))
             {
-                throw new WrongQueryFromatException("Select is missing.");
+                throw new QueryException("Select is missing.");
             }
             wordsInQuery = GetWordsInCode(query);
             currentIndex = 0;
@@ -116,13 +116,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        throw new WrongQueryFromatException("Invalid word or character in declaration: " + wordsInQuery[currentIndex]);
+                        throw new QueryException("Invalid word or character in declaration: " + wordsInQuery[currentIndex]);
                     }
                 }
             }
             if (wordsInQuery[currentIndex] != "Select")
             {
-                throw new WrongQueryFromatException("Select not found: " + wordsInQuery[currentIndex]);
+                throw new QueryException("Select not found: " + wordsInQuery[currentIndex]);
             }
             parsedQuery += wordsInQuery[currentIndex++];
             ParseTouple();
@@ -137,7 +137,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        throw new WrongQueryFromatException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
+                        throw new QueryException("\"that\" after \"such\" not found: " + wordsInQuery[currentIndex]);
                     }
                     do
                     {
@@ -180,9 +180,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 else
                 {
-                    throw new WrongQueryFromatException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
+                    throw new QueryException("(such that|with|pattern) not found: " + wordsInQuery[currentIndex]);
                 }
-            }            
+            }
 
 
             Trace.WriteLine("Declarations:");
@@ -196,7 +196,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 Trace.WriteLine(v.Value + " " + v.Key);
             }
             Trace.WriteLine("Relations List:");
-            foreach (var r in relationsList)
+            foreach (var r in conditionsList)
             {
                 Trace.WriteLine(r.ToString());
             }
@@ -300,7 +300,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             if (!Regex.IsMatch(synonym, @"^([a-zA-Z]){1}([a-zA-Z]|[0-9]|[#])*$"))
             {
-                throw new WrongQueryFromatException("Invalid synonym: " + synonym);
+                throw new QueryException("Invalid synonym: " + synonym);
             }
         }
 
@@ -543,7 +543,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         break;
                 }
 
-                relationsList.Add(new Relation(relRef, arg1, arg1type, arg2, arg2type));
+                conditionsList.Add(new Relation(relRef, arg1, arg1type, arg2, arg2type));
             }
             else
             {
@@ -571,13 +571,97 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void CheckWith(string with)
         {
+            // With
             if (Regex.IsMatch(with, @"^[^= ]+[=][^= ]+$"))
             {
-                string leftRef = with.Substring(0, with.IndexOf('='));
-                CheckTuple(leftRef);
+                string left = with.Substring(0, with.IndexOf('='));
+                string leftType = "";
+
+                if (int.TryParse(left, out int result1))
+                {
+                    leftType = Entity._int;
+                }
+                else if (left == Entity._)
+                {
+                    leftType = Entity._;
+                }
+                else if (left.First() == '"' && left.Last() == '"')
+                {
+                    IsSynonym(left.Trim('"'));
+                    leftType = Entity._string;
+                }
+                else if(left.Contains("."))
+                {
+                    string synonym = left.Substring(0, left.IndexOf('.'));
+                    if (declarationsList.ContainsKey(synonym))
+                    {
+                        leftType = declarationsList[synonym];
+                        string attrName = left.Substring(left.IndexOf('.') + 1);
+                        if( entityAttributeValue[leftType].Contains(attrName) )
+                        {
+                            leftType += "." + attrName;
+                        }
+                        else
+                        {
+                            throw new QueryException("Left argument in with is invalid: " + left);
+                        }
+                    }
+                    else
+                    {
+                        throw new QueryException("Left argument in with is invalid: " + left);
+                    }
+
+                }
+                else
+                {
+                    throw new QueryException("Left argument in with is invalid: " + left);
+                }
 
                 with = with.Substring(with.IndexOf('=') + 1);
-                string rightRef = with.Substring(0);
+                string right = with.Substring(0);
+                string rightType = "";
+
+                if (int.TryParse(right, out int result2))
+                {
+                    rightType = Entity._int;
+                }
+                else if(right == Entity._)
+                {
+                    rightType = Entity._;
+                }
+                else if (right.First() == '"' && right.Last() == '"')
+                {
+                    IsSynonym(right.Trim('"'));
+                    rightType = Entity._string;
+                }
+                else if (right.Contains("."))
+                {
+                    string synonym = right.Substring(0, right.IndexOf('.'));
+                    if (declarationsList.ContainsKey(synonym))
+                    {
+                        rightType = declarationsList[synonym];
+                        string attrName = right.Substring(right.IndexOf('.') + 1);
+                        if (entityAttributeValue[rightType].Contains(attrName))
+                        {
+                            rightType += "." + attrName;
+                        }
+                        else
+                        {
+                            throw new QueryException("Right argument in with is invalid: " + right);
+                        }
+                    }
+                    else
+                    {
+                        throw new QueryException("Right argument in with is invalid: " + right);
+                    }
+
+                }
+                else
+                {
+                    throw new QueryException("Right argument in with is invalid: " + right);
+                }
+
+                conditionsList.Add(new With(left, leftType, right, rightType));
             }
             else
             {

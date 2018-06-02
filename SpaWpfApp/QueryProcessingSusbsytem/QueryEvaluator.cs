@@ -15,7 +15,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private CfgManager cfgManager;
         public QueryResult queryResult { get; }
         private QueryPreProcessor queryPreProcessor;
-        private Relation actualRelation;
+        private Condition actualRelation;
 
         public static QueryEvaluator GetInstance()
         {
@@ -35,34 +35,47 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
 
 
-        public void Evaluate(List<Relation> relationList)
+        public void Evaluate(List<Condition> conditionsList)
         {
             queryResult.Init();
 
-            foreach (var relation in relationList)
+            foreach (var condition in conditionsList)
             {
-                switch (relation.type)
+                if (condition is Relation)
                 {
-                    case Relation.Parent:
-                        Parent(relation);
-                        break;
+                    var relation = (Relation)condition;
+                    switch (relation.type)
+                    {
+                        case Relation.Parent:
+                            Parent(relation);
+                            break;
 
-                    case Relation.ParentX:
-                        ParentX(relation);
-                        break;
+                        case Relation.ParentX:
+                            ParentX(relation);
+                            break;
 
-                    case Relation.Follows:
-                        Follows(relation);
-                        break;
-                    case Relation.FollowsX:
-                        FolowsX(relation);
-                        break;
-                    case Relation.Next:
-                        Next(relation);
-                        break;
-                    case Relation.NextX:
-                        NextX(relation);
-                        break;
+                        case Relation.Follows:
+                            Follows(relation);
+                            break;
+                        case Relation.FollowsX:
+                            FolowsX(relation);
+                            break;
+                        case Relation.Next:
+                            Next(relation);
+                            break;
+                        case Relation.NextX:
+                            NextX(relation);
+                            break;
+                    }
+                } else if (condition is Pattern)
+                {
+                    var pattern = (Pattern)condition; // dalej obsluga pattern
+                    
+
+                } else if( condition is With)
+                {
+                    var with = (With)condition; // dalej obsluga with
+
                 }
                 QueryResult r = queryResult; // do testów, potem do usunięcia ta linia
             }
