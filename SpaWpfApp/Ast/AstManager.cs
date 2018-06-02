@@ -133,7 +133,8 @@ namespace SpaWpfApp.Ast
         {
             TNode newNode = null, leftSideOfAssignNode = null;
             newNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null);
-            newNode.info = string.Join("", lineWords).Substring(2).Trim();
+            string left = string.Join("", lineWords);
+            newNode.info = left.Substring(2, left.IndexOf(';') - 2).Trim();
             if (actualNode.type == TNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w stmtLst
             {
                 currentUpNode = actualNode;

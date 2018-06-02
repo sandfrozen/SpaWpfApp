@@ -49,7 +49,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.Parent:
                             Parent(relation);
                             break;
-
                         case Relation.ParentX:
                             ParentX(relation);
                             break;
@@ -60,11 +59,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.FollowsX:
                             FolowsX(relation);
                             break;
+
                         case Relation.Next:
                             Next(relation);
                             break;
                         case Relation.NextX:
                             NextX(relation);
+                            break;
+
+                        case Relation.Modifies:
+                            Modifies(relation);
                             break;
                     }
                 } else if (condition is Pattern)
@@ -82,6 +86,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             HandleBooleanReturn();
         }
+
+        private void Modifies(Relation relation)
+        {
+            throw new NotImplementedException();
+        }
+
 
         private void NextX(Relation relation)
         {
@@ -354,7 +364,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #endregion
             }
         }
-
 
         private void Next(Relation relation)
         {
@@ -901,7 +910,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #endregion
             }
         }
-
 
         private void Follows(Relation relation)
         {
