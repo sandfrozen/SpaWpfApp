@@ -590,14 +590,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     IsSynonym(left.Trim('"'));
                     leftType = Entity._string;
                 }
-                else if(left.Contains("."))
+                else if (left.Contains("."))
                 {
                     string synonym = left.Substring(0, left.IndexOf('.'));
                     if (declarationsList.ContainsKey(synonym))
                     {
                         leftType = declarationsList[synonym];
                         string attrName = left.Substring(left.IndexOf('.') + 1);
-                        if( entityAttributeValue[leftType].Contains(attrName) )
+                        if (entityAttributeValue[leftType].Contains(attrName))
                         {
                             leftType += "." + attrName;
                         }
@@ -625,7 +625,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     rightType = Entity._int;
                 }
-                else if(right == Entity._)
+                else if (right == Entity._)
                 {
                     rightType = Entity._;
                 }
@@ -691,27 +691,143 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     throw new QueryException("Synonym used in pattern is not declared: " + synonym + "\nCheck pattern: " + pattern);
                 }
-                string assignWhileIf = declarationsList[synonym];
+                string synonymType = declarationsList[synonym];
+
                 string args = pattern.Substring(pattern.IndexOf('(') + 1);
-                switch (assignWhileIf)
+                args = args.Remove(args.Length - 1);
+                switch (synonymType)
                 {
                     case "assign":
-                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][^(,) ]+[)]$"))
-                            CheckAssignPattern(args);
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][^(,) ]+$"))
+                        {
+                            string arg1 = args.Substring(0, args.IndexOf(','));
+                            string arg1type = "";
+                            if (arg1 == Entity._)
+                            {
+                                arg1type = Entity._;
+                            }
+                            else if (arg1.First() == '"' && arg1.Last() == '"')
+                            {
+                                IsSynonym(arg1.Trim('"'));
+                                arg1type = Entity._string;
+                            }
+                            else if (declarationsList.ContainsKey(arg1))
+                            {
+                                arg1type = declarationsList[arg1];
+                            }
+                            else
+                            {
+                                throw new QueryException("Pattern is invalid: " + pattern);
+                            }
+                            string arg2 = args.Substring(args.IndexOf(',') + 1);
+                            string arg2type = "";
+                            if (arg2 == Entity._)
+                            {
+                                arg2type = Entity._;
+                            }
+                            else
+                            {
+                                IsSynonym(arg1.Trim('"'));
+                                arg2type = Entity._string;
+                            }
+                            conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
+                        }
+                        //CheckAssignPattern(args);
                         else
+                        {
                             throw new QueryException("Wrong pattern for assign: " + pattern);
+                        }
                         break;
                     case "while":
-                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_][)]$"))
-                            CheckWhilePattern(args);
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_]$"))
+                        {
+                            string arg1 = args.Substring(0, args.IndexOf(','));
+                            string arg1type = "";
+                            if (arg1 == Entity._)
+                            {
+                                arg1type = Entity._;
+                            }
+                            else if (arg1.First() == '"' && arg1.Last() == '"')
+                            {
+                                IsSynonym(arg1.Trim('"'));
+                                arg1type = Entity._string;
+                            }
+                            else if (declarationsList.ContainsKey(arg1))
+                            {
+                                arg1type = declarationsList[arg1];
+                            }
+                            else
+                            {
+                                throw new QueryException("Pattern is invalid: " + pattern);
+                            }
+                            string arg2 = args.Substring(args.IndexOf(',') + 1);
+                            string arg2type = "";
+                            if (arg2 == Entity._)
+                            {
+                                arg2type = Entity._;
+                            }
+                            else
+                            {
+                                throw new QueryException("Pattern for while as second paremeter must have: '_', but founded " + arg2);
+                            }
+                            conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
+                        }
+                        //CheckWhilePattern(args);
                         else
+                        {
                             throw new QueryException("Wrong pattern for while: " + pattern);
+                        }
                         break;
                     case "if":
-                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_][,][_][)]$"))
-                            CheckIfPattern(args);
+                        if (Regex.IsMatch(args, @"^[^(,) ]+[,][_][,][_]$"))
+                        {
+                            string arg1 = args.Substring(0, args.IndexOf(','));
+                            string arg1type = "";
+                            if (arg1 == Entity._)
+                            {
+                                arg1type = Entity._;
+                            }
+                            else if (arg1.First() == '"' && arg1.Last() == '"')
+                            {
+                                IsSynonym(arg1.Trim('"'));
+                                arg1type = Entity._string;
+                            }
+                            else if (declarationsList.ContainsKey(arg1))
+                            {
+                                arg1type = declarationsList[arg1];
+                            }
+                            else
+                            {
+                                throw new QueryException("Pattern is invalid: " + pattern);
+                            }
+                            args = args.Substring(args.IndexOf(',') + 1);
+
+                            string arg2 = args.Substring(0, args.IndexOf(','));
+                            string arg2type = "";
+                            if (arg2 == Entity._)
+                            {
+                                arg2type = Entity._;
+                            }
+                            else
+                            {
+                                throw new QueryException("Worng pattern: " + pattern + ". 'if' as second paremeter must have: '_', but founded " + arg2);
+                            }
+                            string arg3 = args.Substring(args.IndexOf(',') + 1);
+                            if (arg3 == Entity._)
+                            {
+                                // ok
+                            }
+                            else
+                            {
+                                throw new QueryException("Worng pattern: " + pattern + ". 'if' as third paremeter must have: '_', but founded " + arg3);
+                            }
+                            conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
+                        }
+                        //CheckIfPattern(args);
                         else
+                        {
                             throw new QueryException("Wrong pattern for if: " + pattern);
+                        }
                         break;
                 }
 
