@@ -95,7 +95,10 @@
 
             <FlowDocument>
                 <Paragraph>
-                    <Run Text="Select BOOLEAN such that Parent(6,7)"/>
+                    <Run Text="assign a; while w; if i;"/>
+                </Paragraph>
+                <Paragraph>
+                    <Run Text="Select &lt; a , w , i &gt; pattern a(&quot;x&quot; , &quot;2&quot;) and w(&quot;i&quot; , _ ) and i(&quot;x&quot; , _ , _ )"/>
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
