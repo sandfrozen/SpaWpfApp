@@ -36,6 +36,8 @@ namespace SpaWpfApp
             logsRichTextBox.Document.Blocks.Clear();
             try
             {
+                ParserByTombs.SetNewInstance();
+
                 // parsed    - FOR AST AND CFG
                 parsed = ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
 
@@ -51,9 +53,9 @@ namespace SpaWpfApp
                 addLog("Source Code Parser: Ok");
                 return;
             }
-            catch (SourceCodeException wce)
+            catch (SourceCodeException ex)
             {
-                addLog("Error while parsing Source Code:\n" + wce.Message);
+                addLog("Error while parsing Source Code:\n" + ex.Message);
                 return;
             }
         }

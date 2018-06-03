@@ -17,7 +17,9 @@ namespace SpaWpfApp.ParserNew
         private string[] wordsInCode;
         private string lastParent;
         private string currentProcedure;
-        private List<string> procCalls;
+        private List<string> calledProcedures;
+        private List<string> declaredProcedures;
+        private List<int> firstLineOfProcedures;
 
         public PkbAPI pkb { get; set; }
 
@@ -38,9 +40,16 @@ namespace SpaWpfApp.ParserNew
             }
         }
 
+        public static void SetNewInstance()
+        {
+            instance = new ParserByTombs();
+        }
+
         public string Parse(string code)
         {
-            procCalls = new List<string>();
+            calledProcedures = new List<string>();
+            declaredProcedures = new List<string>();
+            firstLineOfProcedures = new List<int>();
             pkb = new Pkb();
             lastParent = "";
             currentProcedure = "";
@@ -55,10 +64,34 @@ namespace SpaWpfApp.ParserNew
                 ParseProcedure();
             }
 
+            foreach(string p in calledProcedures)
+            {
+                if (!declaredProcedures.Contains(p))
+                {
+                    throw new SourceCodeException("Procedure: " + p + " is called but not delcared");
+                }
+            }
+
+            for(int i=0; i<pkb.GetNumberOfProcs(); i++)
+            {
+                string procedure = pkb.GetProcName(i);
+                int lineFirst = firstLineOfProcedures[i];
+                if( i < pkb.GetNumberOfProcs()-1 )
+                {
+                    int lineLast = firstLineOfProcedures[i + 1] - 1;
+                } else
+                {
+                    int lineLast = currentLine;
+                }
+                
+
+            }
+
+
             Trace.WriteLine("PROC TABLE:");
             for (int i = 0; i < pkb.GetNumberOfProcs(); i++)
             {
-                Trace.WriteLine(pkb.GetProcName(i));
+                Trace.WriteLine(firstLineOfProcedures[i] + " " + pkb.GetProcName(i));
             }
             Trace.WriteLine("VAR TABLE:");
             for (int i = 0; i < pkb.GetNumberOfVars(); i++)
@@ -207,7 +240,9 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             string procName = wordsInCode[currentIndex];
             pkb.InsertProc(procName);
+            addToDeclaredProcedures(procName);
             currentProcedure = procName;
+            firstLineOfProcedures.Add(currentLine+1);
 
             lastParent = "procedure " + procName;
             ParseBody();
@@ -307,7 +342,7 @@ namespace SpaWpfApp.ParserNew
             currentIndex++;
             string procName = wordsInCode[currentIndex];
             pkb.InsertProc(procName);
-            addProcCall(procName);
+            addToCalledProcedures(procName);
             currentIndex++;
             if (wordsInCode[currentIndex] != ";")
             {
@@ -484,9 +519,14 @@ namespace SpaWpfApp.ParserNew
             }
         }
 
-        private void addProcCall(string proc)
+        private void addToCalledProcedures(string proc)
         {
-            if (!procCalls.Contains(proc)) procCalls.Add(proc);
+            if (!calledProcedures.Contains(proc)) calledProcedures.Add(proc);
+        }
+
+        private void addToDeclaredProcedures(string proc)
+        {
+            if (!declaredProcedures.Contains(proc)) declaredProcedures.Add(proc);
         }
     }
 }
