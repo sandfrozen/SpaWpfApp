@@ -21,7 +21,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public Dictionary<string, string> returnList { get; set; }
         public List<Condition> conditionsList { get; set; }
 
-        private Dictionary<string, string[]> entityAttributeValue;
+        //private Dictionary<string, string[]> entityAttributeValue;
+        private Dictionary<string, string> entityAttributeType;
         private Dictionary<string, Action> declarationActions;
 
         private static QueryPreProcessor instance;
@@ -60,16 +61,37 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 "such", "pattern", "with", "and"
             };
 
-            entityAttributeValue = new Dictionary<string, string[]>
+            //entityAttributeValue = new Dictionary<string, string[]>
+            //{
+            //    {"procedure", new string[] { "procName", "string" } },
+            //    {"stmt", new string[] { "stmt#", "int" } },
+            //    {"assign", new string[] { "stmt#", "int" } },
+            //    {"call", new string[] { "procName", "string" } },
+            //    {"variable", new string[] { "varName", "string" } },
+            //    {"constatnt", new string[] { "value", "int" } },
+            //};
+
+            entityAttributeType = new Dictionary<string, string>
             {
-                {"procedure", new string[] { "procName", "string" } },
-                {"stmt", new string[] { "stmt#", "int" } },
-                {"if", new string[] { "stmt#", "int" } },
-                {"while", new string[] { "stmt#", "int" } },
-                {"assign", new string[] { "stmt#", "int" } },
-                {"call", new string[] { "procName", "string" } },
-                {"variable", new string[] { "varName", "string" } },
-                {"constant", new string[] { "value", "int" } },
+                {"string", "string" },
+                {"int", "int" },
+                {"procedure", "string" },
+                {"procedure.procName", "string" },
+                {"stmt", "int" },
+                {"stmt.stmt#", "int" },
+                {"assign", "int" },
+                {"assign.stmt#", "int" },
+                {"call", "int" },
+                {"call.procName", "string" },
+                {"variable", "string" },
+                {"variable.varName", "string"},
+                {"constant", "int" },
+                {"constant.value", "int" },
+                {"if", "int" },
+                {"if.stmt#", "int" },
+                {"while", "int" },
+                {"while.stmt#", "int" },
+
             };
 
             declarationActions = new Dictionary<string, Action>{
@@ -452,7 +474,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else if (arg2.First() == '"' && arg2.Last() == '"')
                 {
-                    IsSynonym(arg1.Trim('"'));
+                    IsSynonym(arg2.Trim('"'));
                     arg2type = Entity._string;
                 }
                 else if (declarationsList.ContainsKey(arg2))
@@ -583,25 +605,25 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     leftType = Entity._int;
                 }
-                else if (left == Entity._)
-                {
-                    leftType = Entity._;
-                }
                 else if (left.First() == '"' && left.Last() == '"')
                 {
                     IsSynonym(left.Trim('"'));
                     leftType = Entity._string;
                 }
+                else if (declarationsList.ContainsKey(left))
+                {
+                    leftType = declarationsList[left];
+                }
                 else if (left.Contains("."))
                 {
                     string synonym = left.Substring(0, left.IndexOf('.'));
+                    string attrRef = left.Substring(left.IndexOf('.'));
                     if (declarationsList.ContainsKey(synonym))
                     {
-                        leftType = declarationsList[synonym];
-                        string attrName = left.Substring(left.IndexOf('.') + 1);
-                        if (entityAttributeValue[leftType][0].Equals(attrName))
+                        string synonymType = declarationsList[synonym];
+                        if ( entityAttributeType.Keys.Contains(synonymType + attrRef) )
                         {
-                            leftType += "." + entityAttributeValue[leftType][1];
+                            leftType = synonymType + attrRef;
                         }
                         else
                         {
@@ -625,31 +647,39 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (int.TryParse(right, out int result2))
                 {
+                    if ( int.TryParse(left, out int result22) )
+                    {
+                        throw new QueryException("Left and right argument in with cannot be <int>: " + left + " = " + right);
+                    }
                     rightType = Entity._int;
-                }
-                else if (right == Entity._)
-                {
-                    rightType = Entity._;
                 }
                 else if (right.First() == '"' && right.Last() == '"')
                 {
+                    if (left.First() == '"' && left.Last() == '"')
+                    {
+                        throw new QueryException("Left and right argument in with cannot be <string>: " + left + " = " + right);
+                    }
                     IsSynonym(right.Trim('"'));
                     rightType = Entity._string;
+                }
+                else if (declarationsList.ContainsKey(right))
+                {
+                    rightType = declarationsList[right];
                 }
                 else if (right.Contains("."))
                 {
                     string synonym = right.Substring(0, right.IndexOf('.'));
+                    string attrRef = right.Substring(right.IndexOf('.'));
                     if (declarationsList.ContainsKey(synonym))
                     {
-                        rightType = declarationsList[synonym];
-                        string attrName = right.Substring(right.IndexOf('.') + 1);
-                        if (entityAttributeValue[rightType][0].Equals(attrName))
+                        string synonymType = declarationsList[synonym];
+                        if (entityAttributeType.ContainsKey(synonymType + attrRef))
                         {
-                            rightType += "." + entityAttributeValue[rightType][1];
+                            rightType = synonymType + attrRef;
                         }
                         else
                         {
-                            throw new QueryException("Right argument in with have wrong attribute name after dot: " + right);
+                            throw new QueryException("Right argument in with have wrong attribute name after dot: " + left);
                         }
                     }
                     else
@@ -663,6 +693,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     throw new QueryException("Right argument in with is invalid: " + right);
                 }
 
+
+                //checking left and right argument types
+                string leftTypeTest = entityAttributeType[leftType];
+                string rightTypeTest = entityAttributeType[rightType];
+                if ( !leftTypeTest.Equals(rightTypeTest) )
+                {
+                    throw new QueryException("Arguments in with have different types: " + left + " (" + leftTypeTest + ") = " + right + " (" + rightTypeTest + ")");
+                }
                 conditionsList.Add(new With(left, leftType, right, rightType));
             }
             else
