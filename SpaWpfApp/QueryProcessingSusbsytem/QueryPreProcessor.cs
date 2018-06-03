@@ -474,7 +474,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else if (arg2.First() == '"' && arg2.Last() == '"')
                 {
-                    IsSynonym(arg1.Trim('"'));
+                    IsSynonym(arg2.Trim('"'));
                     arg2type = Entity._string;
                 }
                 else if (declarationsList.ContainsKey(arg2))
