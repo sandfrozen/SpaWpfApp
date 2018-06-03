@@ -65,6 +65,7 @@ namespace SpaWpfApp
             try
             {
                 pkb = ParserByTombs.Instance.pkb;
+                QueryEvaluator.GetInstance().pkb = pkb;
                 addLog("PKB Created: Ok");
                 //pkb.PrintProcTable();
                 //pkb.PrintVarTable();
@@ -91,6 +92,7 @@ namespace SpaWpfApp
             try
             {
                 AstManager.GetInstance().GenerateStructures(parsed, pkb);
+                var astManager = AstManager.GetInstance();
                 //List<int> result = astManager.GetChildren(6);
                 //result = astManager.GetChildrenS(6);
                 //result = astManager.GetParentS(6);

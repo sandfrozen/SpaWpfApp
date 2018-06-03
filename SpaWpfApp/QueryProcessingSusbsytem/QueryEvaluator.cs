@@ -1,6 +1,7 @@
 ﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
+using SpaWpfApp.PkbNew;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private CfgManager cfgManager;
         public QueryResult queryResult { get; }
         private QueryPreProcessor queryPreProcessor;
-        private Condition actualRelation;
+        private Condition actualCondition;
+        public PkbAPI pkb { get; set; }
 
         public static QueryEvaluator GetInstance()
         {
@@ -41,6 +43,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             foreach (var condition in conditionsList)
             {
+                actualCondition = condition;
                 if (condition is Relation)
                 {
                     var relation = (Relation)condition;
@@ -49,7 +52,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.Parent:
                             Parent(relation);
                             break;
-
                         case Relation.ParentX:
                             ParentX(relation);
                             break;
@@ -60,19 +62,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.FollowsX:
                             FolowsX(relation);
                             break;
+
                         case Relation.Next:
                             Next(relation);
                             break;
                         case Relation.NextX:
                             NextX(relation);
                             break;
+
+                        case Relation.Modifies:
+                            Modifies(relation);
+                            break;
                     }
-                } else if (condition is Pattern)
+                }
+                else if (condition is Pattern)
                 {
                     var pattern = (Pattern)condition; // dalej obsluga pattern
-                    
+                    DoPattern(pattern);
 
-                } else if( condition is With)
+                }
+                else if (condition is With)
                 {
                     var with = (With)condition; // dalej obsluga with
 
@@ -83,11 +92,199 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             HandleBooleanReturn();
         }
 
+        private void DoPattern(Pattern pattern)
+        {
+            List<TNode> result = new List<TNode>();
+
+            switch (pattern.synonymType)
+            {
+                case Entity.assign:
+                    {
+                        List<TNode> listA;
+                        #region set listA
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listA = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listA = astManager.GetAllAssigns();
+                        }
+
+                        if (pattern.arg1type == Entity._string)
+                        {
+                            List<TNode> copyListA = DeepCopy(listA);
+                            foreach (var assign in copyListA)
+                            {
+                                if (assign.firstChild.indexOfName != pkb.GetVarIndex(pattern.arg1.Substring(1, pattern.arg1.Length - 2)))
+                                {
+                                    listA.Remove(assign);
+                                }
+                            }
+                        }
+                        #endregion
+
+                        if (pattern.arg2type == Entity._)
+                        {
+                            result = listA;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+                        else
+                        {
+                            if (listA != null)
+                            {
+                                foreach (var assign in listA)
+                                {
+                                    if (AssignRightContainsPatter(assign, pattern.arg2))
+                                    {
+                                        result.Add(assign);
+                                    }
+                                }
+                            }
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+
+                    }
+                    break;
+
+                case Entity._while:
+                    {
+                        List<TNode> listW;
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listW = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listW = astManager.GetAllWhile();
+                        }
+
+                        if (listW is null)
+                        {
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        if(pattern.arg1type == Entity._)
+                        {
+                            result = listW;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        foreach(var w in listW)
+                        {
+                            if(w.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", "")) 
+                                && !result.Contains(w))
+                            {
+                                result.Add(w);
+                            }
+                        }
+
+                        UpdateResultTable(result, pattern.synonym);
+                        return;
+
+                    }
+                    break;
+
+                case Entity._if:
+                    {
+                        List<TNode> listIf;
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listIf = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listIf = astManager.GetAllIf();
+                        }
+
+                        if (listIf is null)
+                        {
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        if (pattern.arg1type == Entity._)
+                        {
+                            result = listIf;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        foreach (var i in listIf)
+                        {
+                            if (i.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", ""))
+                                && !result.Contains(i))
+                            {
+                                result.Add(i);
+                            }
+                        }
+
+                        UpdateResultTable(result, pattern.synonym);
+                        return;
+
+                    }
+                    break;
+            }
+        }
+
+        private void UpdateListW(ref List<TNode> listW, List<TNode> listA)
+        {
+            listW.Clear();
+            foreach(var a in listA)
+            {
+                if (!listW.Contains(a)) { listW.Add(a); }
+            }
+        }
+
+        private List<TNode> DeepCopy(List<TNode> listA)
+        {
+            List<TNode> copy = new List<TNode>();
+            foreach (var assign in listA)
+            {
+                copy.Add(assign);
+            }
+
+            return copy;
+        }
+
+        private bool AssignRightContainsPatter(TNode assign, string arg2)
+        {
+            string pattern = arg2.Replace("\"", "").Trim();
+            string rightSide = assign.info.Trim();
+
+            if (pattern.StartsWith("_") && pattern.EndsWith("_"))
+            {
+                return rightSide.Contains(pattern.Replace("_", ""));
+            }
+            else if (pattern.StartsWith("_"))
+            {
+                return rightSide.EndsWith(pattern.Replace("_", ""));
+            }
+            else if (pattern.EndsWith("_"))
+            {
+                return rightSide.StartsWith(pattern.Replace("_", ""));
+            }
+            else
+            {
+                return rightSide == pattern;
+            }
+        }
+
+        private void Modifies(Relation relation)
+        {
+            throw new NotImplementedException();
+        }
+
+
         private void NextX(Relation relation)
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region NextX(int, int), NextX(_, _)
@@ -355,12 +552,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-
         private void Next(Relation relation)
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Next(int, int), Next(_, _)
@@ -614,7 +809,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         List<TNode> tmp = cfgManager.Next(from, relation.arg2);
                         if (tmp != null)
                         {
-                            foreach(var to in tmp)
+                            foreach (var to in tmp)
                             {
                                 resultListTuple.Add((from, to));
                             }
@@ -628,13 +823,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-      
+
 
         private void FolowsX(Relation relation)
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region FollowsX(int, int), FollowsX(_, _)
@@ -902,12 +1096,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-
         private void Follows(Relation relation)
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Follows(int, int), Follows(_, _)
@@ -1177,7 +1369,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForChildren, candidateForFather;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Parent(int, int), Parent(_, _)
@@ -1475,7 +1666,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForChildren, candidateForFather;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region ParentX(int, int), ParentX(_, _)
@@ -1864,9 +2054,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             if (queryResult.resultIsBoolean)
             {
                 queryResult.resultBoolean = p_result;
-            } 
+            }
 
-            if(p_result is false)
+            if (p_result is false)
             {
                 queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
@@ -1879,7 +2069,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 queryResult.resultBoolean = queryResult.resultTableList.Count > 0 ? true : false;
             }
-            throw new NoResultsException("Relation " + actualRelation.ToString() + " has no results.");
+            throw new NoResultsException("Condition " + actualCondition.ToString() + " has no results.");
         }
 
         private void HandleBooleanReturn()

@@ -133,6 +133,8 @@ namespace SpaWpfApp.Ast
         {
             TNode newNode = null, leftSideOfAssignNode = null;
             newNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null);
+            string left = string.Join("", lineWords);
+            newNode.info = left.Substring(2, left.IndexOf(';') - 2).Trim();
             if (actualNode.type == TNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w stmtLst
             {
                 currentUpNode = actualNode;
@@ -1033,6 +1035,10 @@ namespace SpaWpfApp.Ast
             return IfList.Count() > 0 ? IfList : null;
         }
 
+        internal List<TNode> GetAllAssigns()
+        {
+            return AssignList.Count() > 0 ? AssignList : null;
+        }
 
         private bool OutOfRange(int lineNumber)
         {
