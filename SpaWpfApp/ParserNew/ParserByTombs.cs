@@ -76,12 +76,13 @@ namespace SpaWpfApp.ParserNew
             {
                 string procedure = pkb.GetProcName(i);
                 int lineFirst = firstLineOfProcedures[i];
-                if( i < pkb.GetNumberOfProcs()-1 )
+                int lineLast;
+                if ( i < pkb.GetNumberOfProcs()-1 )
                 {
-                    int lineLast = firstLineOfProcedures[i + 1] - 1;
+                    lineLast = firstLineOfProcedures[i + 1] - 1;
                 } else
                 {
-                    int lineLast = currentLine;
+                    lineLast = currentLine;
                 }
                 
 
