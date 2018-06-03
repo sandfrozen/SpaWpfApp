@@ -643,7 +643,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         string attrName = right.Substring(right.IndexOf('.') + 1);
                         if (entityAttributeValue[rightType][0].Equals(attrName))
                         {
-                            rightType += "." + entityAttributeValue[leftType][1];
+                            rightType += "." + entityAttributeValue[rightType][1];
                         }
                         else
                         {
