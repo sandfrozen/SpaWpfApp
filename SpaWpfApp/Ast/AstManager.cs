@@ -1035,6 +1035,10 @@ namespace SpaWpfApp.Ast
             return IfList.Count() > 0 ? IfList : null;
         }
 
+        internal List<TNode> GetAllAssigns()
+        {
+            return AssignList.Count() > 0 ? AssignList : null;
+        }
 
         private bool OutOfRange(int lineNumber)
         {

@@ -1,6 +1,7 @@
 ﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
 using SpaWpfApp.Exceptions;
+using SpaWpfApp.PkbNew;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public QueryResult queryResult { get; }
         private QueryPreProcessor queryPreProcessor;
         private Condition actualRelation;
+        public PkbAPI pkb { get; set; }
 
         public static QueryEvaluator GetInstance()
         {
@@ -71,12 +73,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             Modifies(relation);
                             break;
                     }
-                } else if (condition is Pattern)
+                }
+                else if (condition is Pattern)
                 {
                     var pattern = (Pattern)condition; // dalej obsluga pattern
-                    
+                    DoPattern(pattern);
 
-                } else if( condition is With)
+                }
+                else if (condition is With)
                 {
                     var with = (With)condition; // dalej obsluga with
 
@@ -85,6 +89,193 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             HandleBooleanReturn();
+        }
+
+        private void DoPattern(Pattern pattern)
+        {
+            List<TNode> result = new List<TNode>();
+
+            switch (pattern.synonymType)
+            {
+                case Entity.assign:
+                    {
+                        List<TNode> listA;
+                        #region set listA
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listA = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listA = astManager.GetAllAssigns();
+                        }
+
+                        if (pattern.arg1type == Entity._string)
+                        {
+                            List<TNode> copyListA = DeepCopy(listA);
+                            foreach (var assign in copyListA)
+                            {
+                                if (assign.firstChild.indexOfName != pkb.GetVarIndex(pattern.arg1.Substring(1, pattern.arg1.Length - 2)))
+                                {
+                                    listA.Remove(assign);
+                                }
+                            }
+                        }
+                        #endregion
+
+                        if (pattern.arg2type == Entity._)
+                        {
+                            result = listA;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+                        else
+                        {
+                            if (listA != null)
+                            {
+                                foreach (var assign in listA)
+                                {
+                                    if (AssignRightContainsPatter(assign, pattern.arg2))
+                                    {
+                                        result.Add(assign);
+                                    }
+                                }
+                            }
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+
+                    }
+                    break;
+
+                case Entity._while:
+                    {
+                        List<TNode> listA;
+                        List<TNode> listW;
+                        #region set listA
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listW = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listW = astManager.GetAllWhile();
+                        }
+
+                        if (listW is null)
+                        {
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        listA = new List<TNode>();
+                        foreach (var w in listW)
+                        {
+                            var listAW = astManager.GetChildrenX(w, Entity.assign);
+                            foreach (var aw in listAW)
+                            {
+                                if (!listA.Contains(aw)) { listA.Add(aw); }
+                            }
+                        }
+
+                        if (pattern.arg1type == Entity._string)
+                        {
+                            List<TNode> copyListA = DeepCopy(listA);
+                            foreach (var assign in copyListA)
+                            {
+                                if (assign.firstChild.indexOfName != pkb.GetVarIndex(pattern.arg1.Substring(1, pattern.arg1.Length - 2)))
+                                {
+                                    listA.Remove(assign);
+                                }
+                            }
+
+                            UpdateListW(ref listW, listA);
+
+                            if(listW is null || !listW.Any())
+                            {
+                                UpdateResultTable(listW, pattern.synonym);
+                                return;
+                            }
+                        }
+                        #endregion
+
+                        if (pattern.arg2type == Entity._)
+                        {
+                            result = listW;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+                        else
+                        {
+                            if (listA != null)
+                            {
+                                List<TNode> copyListA = DeepCopy(listA);
+                                listA.Clear();
+                                foreach (var assign in copyListA)
+                                {
+                                    if (AssignRightContainsPatter(assign, pattern.arg2))
+                                    {
+                                        listA.Add(assign);
+                                    }
+                                }
+
+                                UpdateListW(ref listW, listA);
+                                result = listW;
+                            }
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                    }
+                    break;
+
+                case Entity._if:
+                    break;
+            }
+        }
+
+        private void UpdateListW(ref List<TNode> listW, List<TNode> listA)
+        {
+            listW.Clear();
+            foreach(var a in listA)
+            {
+                if (!listW.Contains(a)) { listW.Add(a); }
+            }
+        }
+
+        private List<TNode> DeepCopy(List<TNode> listA)
+        {
+            List<TNode> copy = new List<TNode>();
+            foreach (var assign in listA)
+            {
+                copy.Add(assign);
+            }
+
+            return copy;
+        }
+
+        private bool AssignRightContainsPatter(TNode assign, string arg2)
+        {
+            string pattern = arg2.Replace("\"", "").Trim();
+            string rightSide = assign.info.Trim();
+
+            if (pattern.StartsWith("_") && pattern.EndsWith("_"))
+            {
+                return rightSide.Contains(pattern.Replace("_", ""));
+            }
+            else if (pattern.StartsWith("_"))
+            {
+                return rightSide.EndsWith(pattern.Replace("_", ""));
+            }
+            else if (pattern.EndsWith("_"))
+            {
+                return rightSide.StartsWith(pattern.Replace("_", ""));
+            }
+            else
+            {
+                return rightSide == pattern;
+            }
         }
 
         private void Modifies(Relation relation)
@@ -623,7 +814,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         List<TNode> tmp = cfgManager.Next(from, relation.arg2);
                         if (tmp != null)
                         {
-                            foreach(var to in tmp)
+                            foreach (var to in tmp)
                             {
                                 resultListTuple.Add((from, to));
                             }
@@ -637,7 +828,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-      
+
 
         private void FolowsX(Relation relation)
         {
@@ -1872,9 +2063,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             if (queryResult.resultIsBoolean)
             {
                 queryResult.resultBoolean = p_result;
-            } 
+            }
 
-            if(p_result is false)
+            if (p_result is false)
             {
                 queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
