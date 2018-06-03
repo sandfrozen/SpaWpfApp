@@ -597,18 +597,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         leftType = declarationsList[synonym];
                         string attrName = left.Substring(left.IndexOf('.') + 1);
-                        if (entityAttributeValue[leftType].Contains(attrName))
+                        if (entityAttributeValue[leftType][0].Equals(attrName))
                         {
-                            leftType += "." + attrName;
+                            leftType += "." + entityAttributeValue[leftType][1];
                         }
                         else
                         {
-                            throw new QueryException("Left argument in with is invalid: " + left);
+                            throw new QueryException("Left argument in with have wrong attribute name after dot: " + left);
                         }
                     }
                     else
                     {
-                        throw new QueryException("Left argument in with is invalid: " + left);
+                        throw new QueryException("Synonym on the left side of with is not declared: " + synonym);
                     }
 
                 }
@@ -641,18 +641,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         rightType = declarationsList[synonym];
                         string attrName = right.Substring(right.IndexOf('.') + 1);
-                        if (entityAttributeValue[rightType].Contains(attrName))
+                        if (entityAttributeValue[rightType][0].Equals(attrName))
                         {
-                            rightType += "." + attrName;
+                            rightType += "." + entityAttributeValue[leftType][1];
                         }
                         else
                         {
-                            throw new QueryException("Right argument in with is invalid: " + right);
+                            throw new QueryException("Right argument in with have wrong attribute name after dot: " + right);
                         }
                     }
                     else
                     {
-                        throw new QueryException("Right argument in with is invalid: " + right);
+                        throw new QueryException("Synonym on the right side of with is not declared: " + synonym);
                     }
 
                 }
@@ -840,25 +840,25 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void CheckAssignPattern(string pattern)
         {
-            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
-            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
-            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
+            string arg2 = pattern.Substring(pattern.IndexOf(',') + 1);
             //check arguments
 
         }
         private void CheckWhilePattern(string pattern)
         {
-            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
-            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
-            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
+            string arg2 = pattern.Substring(pattern.IndexOf(',') + 1);
             //check arguments
 
         }
         private void CheckIfPattern(string pattern)
         {
-            string firstArg = pattern.Substring(0, pattern.IndexOf(','));
+            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
             pattern = pattern.Substring(pattern.IndexOf(',') + 1);
-            string secArg = pattern.Substring(0, pattern.IndexOf(')'));
+            string arg2 = pattern.Substring(0, pattern.IndexOf(','));
+            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
+            string arg3 = pattern;
             //check arguments
 
         }
