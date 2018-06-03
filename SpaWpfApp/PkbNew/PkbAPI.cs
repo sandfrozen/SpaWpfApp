@@ -99,7 +99,7 @@ namespace SpaWpfApp.PkbNew
         /// <param name="proc1">procedure name which calls proc2</param>
         /// <param name="proc2">procedure name which is called by proc1</param>
         /// <returns>true if proc1 calls proc2</returns>
-        Boolean IsCalls(String proc1, String proc2);
+        int IsCalls(String proc1, String proc2);
         #endregion
 
         #region ModifiesTable

@@ -225,15 +225,15 @@ namespace SpaWpfApp.PkbNew
             return calls;
         }
 
-        public bool IsCalls(string proc1, string proc2)
+        public int IsCalls(string proc1, string proc2)
         {
             int proc1Index = GetProcIndex(proc1);
             int proc2Index = GetProcIndex(proc2);
             if (proc1Index > -1 && proc2Index > -1)
             {
-                return CallsTable.ElementAt(proc1Index).ElementAt(proc2Index) != -1;
+                return CallsTable.ElementAt(proc1Index).ElementAt(proc2Index);
             }
-            return false;
+            return -1;
         }
         #endregion
 
