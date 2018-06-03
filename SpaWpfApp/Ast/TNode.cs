@@ -19,11 +19,12 @@ namespace SpaWpfApp.Ast
         public TNode firstChild { get; set; }
         public TNode rightSibling { get; set; }
 
-        public TNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName)
+        public TNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName, int? p_value)
         {
             this.type = p_type;
             this.programLine = p_programLine;
             this.indexOfName = p_indexOfName;
+            this.value = p_value;
         }
     }
 }

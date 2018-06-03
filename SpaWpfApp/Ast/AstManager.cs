@@ -25,7 +25,7 @@ namespace SpaWpfApp.Ast
     {
         public List<TNode> NodeList { get; set; }
         public List<TNode> NodeWithLineNumberList { get; set; }
-        private List<TNode> WhileList, IfList, AssignList, CallList;
+        private List<TNode> WhileList, IfList, AssignList, CallList, ProcedureList, ConstantList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
         private PkbAPI Pkb;
@@ -54,6 +54,8 @@ namespace SpaWpfApp.Ast
             this.IfList = new List<TNode>();
             this.AssignList = new List<TNode>();
             this.CallList = new List<TNode>();
+            this.ProcedureList = new List<TNode>();
+            this.ConstantList = new List<TNode>();
             this.FollowsTable = new TNode[Pkb.GetNumberOfLines()];
             this.ParentTable = new TNode[Pkb.GetNumberOfLines()];
             this.rootNode = null;
@@ -101,17 +103,17 @@ namespace SpaWpfApp.Ast
 
                     case "procedure":
                         {
-                            actualNode = CreateTNode(TNodeTypeEnum.Procedure, null, Pkb.GetProcIndex(lineWords[1]));
+                            actualNode = CreateTNode(TNodeTypeEnum.Procedure, null, Pkb.GetProcIndex(lineWords[1]), null);
                             if (rootNode is null)
                             {
-                                rootNode = CreateTNode(TNodeTypeEnum.Program, null, Pkb.GetProcIndex(lineWords[1]));
+                                rootNode = CreateTNode(TNodeTypeEnum.Program, null, Pkb.GetProcIndex(lineWords[1]), null);
                             }
                             CreateLink(TLinkTypeEnum.Up, actualNode, rootNode);
                             CreateFirstChildOrRightSiblingLink(rootNode, actualNode);
                             currentUpNode = actualNode;
 
                             //create stmtLstNode under procedure node
-                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null, null);
                             CreateLink(TLinkTypeEnum.Up, actualNode, currentUpNode);
                             CreateFirstChildOrRightSiblingLink(currentUpNode, actualNode);
                         }
@@ -132,7 +134,7 @@ namespace SpaWpfApp.Ast
         private void BuildAssign(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
         {
             TNode newNode = null, leftSideOfAssignNode = null;
-            newNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null);
+            newNode = CreateTNode(TNodeTypeEnum.Assign, ++programLineNumber, null, null);
             string left = string.Join("", lineWords);
             newNode.info = left.Substring(2, left.IndexOf(';') - 2).Trim();
             if (actualNode.type == TNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w stmtLst
@@ -148,7 +150,7 @@ namespace SpaWpfApp.Ast
             actualNode = newNode;
 
             //node forVariable
-            leftSideOfAssignNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[0]));
+            leftSideOfAssignNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[0]), null);
             CreateLink(TLinkTypeEnum.FirstChild, actualNode, leftSideOfAssignNode);
             CreateLink(TLinkTypeEnum.Up, leftSideOfAssignNode, actualNode);
 
@@ -163,18 +165,17 @@ namespace SpaWpfApp.Ast
                     tmpRightNode = null;
                     while (i < lineWords.Length - 1 && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                     {
-                        tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null);
+                        tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null, null);
                         //create L
                         if (tmpRightNode is null)
                         {
                             if (WordIsConstant(lineWords[i]))
                             {
-                                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                                tmpActualNode.value = Int32.Parse(lineWords[i]);
+                                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]));
                             }
                             else
                             {
-                                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
+                                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null);
                             }
                             tmpRightNode = tmpActualNode;
                         }
@@ -184,12 +185,11 @@ namespace SpaWpfApp.Ast
                         //create P
                         if (WordIsConstant(lineWords[i + 2]))
                         {
-                            tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                            tmpActualNode.value = Int32.Parse(lineWords[i + 2]);
+                            tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i + 2]));
                         }
                         else
                         {
-                            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]));
+                            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]), null);
                         }
                         CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
                         CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
@@ -205,12 +205,11 @@ namespace SpaWpfApp.Ast
                 {
                     if (WordIsConstant(lineWords[i]))
                     {
-                        tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null);
-                        tmpActualNode.value = Int32.Parse(lineWords[i]);
+                        tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]));
                     }
                     else
                     {
-                        tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]));
+                        tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null);
                     }
                     ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
                 }
@@ -223,7 +222,7 @@ namespace SpaWpfApp.Ast
                 {
                     if (ListExpr[i].sign != SignEnum.Semicolon)
                     {
-                        tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null);
+                        tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null, null);
                         CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
                         CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
                         CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
@@ -241,7 +240,7 @@ namespace SpaWpfApp.Ast
         }
         private void BuildCall(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
         {
-            TNode newNode = CreateTNode(TNodeTypeEnum.Call, ++programLineNumber, Pkb.GetProcIndex(lineWords[1]));
+            TNode newNode = CreateTNode(TNodeTypeEnum.Call, ++programLineNumber, Pkb.GetProcIndex(lineWords[1]), null);
 
             if (actualNode.type == TNodeTypeEnum.StmtLst)
             {
@@ -263,7 +262,7 @@ namespace SpaWpfApp.Ast
 
             #region create node for if, variableIf, stmtLst and remember node if
             //zapamietaj
-            ifNodeMain = CreateTNode(TNodeTypeEnum.If, ++programLineNumber, null);
+            ifNodeMain = CreateTNode(TNodeTypeEnum.If, ++programLineNumber, null, null);
 
             if (actualNode.type == TNodeTypeEnum.StmtLst)
             {
@@ -276,11 +275,11 @@ namespace SpaWpfApp.Ast
             }
             CreateLink(TLinkTypeEnum.Up, ifNodeMain, currentUpNode);
 
-            variableIfNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
+            variableIfNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]), null);
             CreateLink(TLinkTypeEnum.Up, variableIfNode, ifNodeMain);
             CreateLink(TLinkTypeEnum.FirstChild, ifNodeMain, variableIfNode);
 
-            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null, null);
             CreateLink(TLinkTypeEnum.Up, actualNode, ifNodeMain);
             CreateLink(TLinkTypeEnum.RightSibling, variableIfNode, actualNode);
 
@@ -295,7 +294,7 @@ namespace SpaWpfApp.Ast
                 {
                     case "else":
                         {
-                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+                            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null, null);
                             CreateLink(TLinkTypeEnum.Up, actualNode, ifNodeMain);
                             CreateLink(TLinkTypeEnum.RightSibling, variableIfNode.rightSibling, actualNode);
                             currentUpNode = actualNode.up;
@@ -414,7 +413,7 @@ namespace SpaWpfApp.Ast
 
             #region create node for while and remember it
             //zapamietaj
-            whileNodeMain = CreateTNode(TNodeTypeEnum.While, ++programLineNumber, null);
+            whileNodeMain = CreateTNode(TNodeTypeEnum.While, ++programLineNumber, null, null);
 
             if (actualNode.type == TNodeTypeEnum.StmtLst)
             {
@@ -427,11 +426,11 @@ namespace SpaWpfApp.Ast
             }
             CreateLink(TLinkTypeEnum.Up, whileNodeMain, currentUpNode);
 
-            variableWhileNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]));
+            variableWhileNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[1]), null);
             CreateLink(TLinkTypeEnum.FirstChild, whileNodeMain, variableWhileNode);
             CreateLink(TLinkTypeEnum.Up, variableWhileNode, whileNodeMain);
 
-            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null);
+            actualNode = CreateTNode(TNodeTypeEnum.StmtLst, null, null, null);
             CreateLink(TLinkTypeEnum.RightSibling, variableWhileNode, actualNode);
             CreateLink(TLinkTypeEnum.Up, actualNode, whileNodeMain);
 
@@ -502,9 +501,9 @@ namespace SpaWpfApp.Ast
 
 
 
-        private TNode CreateTNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName)
+        private TNode CreateTNode(TNodeTypeEnum p_type, int? p_programLine, int? p_indexOfName, int? p_value)
         {
-            TNode tmp = new TNode(p_type, p_programLine, p_indexOfName);
+            TNode tmp = new TNode(p_type, p_programLine, p_indexOfName, p_value);
             NodeList.Add(tmp);
 
             switch (p_type)
@@ -524,6 +523,14 @@ namespace SpaWpfApp.Ast
                 case TNodeTypeEnum.If:
                     IfList.Add(tmp);
                     NodeWithLineNumberList.Add(tmp);
+                    break;
+                case TNodeTypeEnum.Procedure:
+                    ProcedureList.Add(tmp);
+                    break;
+
+                case TNodeTypeEnum.Constant:
+                    var dfv = ConstantList.Where(x => x.value == tmp.value).ToList();
+                    if (!ConstantList.Where(x => x.value == tmp.value).Any()) { ConstantList.Add(tmp); }
                     break;
             }
 
@@ -1043,6 +1050,32 @@ namespace SpaWpfApp.Ast
         private bool OutOfRange(int lineNumber)
         {
             return (lineNumber < 1 || lineNumber > lastProgramLineNumber) ? true : false;
+        }
+
+        public List<TNode> GetNodes(string nodesType)
+        {
+            switch (nodesType)
+            {
+                case Entity._if:
+                    return IfList;
+
+                case Entity._while:
+                    return WhileList;
+
+                case Entity.assign:
+                    return AssignList;
+
+                case Entity.stmt:
+                    return this.GetAllParents();
+
+                case Entity.procedure:
+                    return ProcedureList;
+
+                case Entity.constant:
+                    return ConstantList;
+            }
+
+            return null;
         }
     }
 }

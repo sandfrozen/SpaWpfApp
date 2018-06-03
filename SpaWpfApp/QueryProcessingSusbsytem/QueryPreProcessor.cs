@@ -64,10 +64,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 {"procedure", new string[] { "procName", "string" } },
                 {"stmt", new string[] { "stmt#", "int" } },
+                {"if", new string[] { "stmt#", "int" } },
+                {"while", new string[] { "stmt#", "int" } },
                 {"assign", new string[] { "stmt#", "int" } },
                 {"call", new string[] { "procName", "string" } },
                 {"variable", new string[] { "varName", "string" } },
-                {"constatnt", new string[] { "value", "int" } },
+                {"constant", new string[] { "value", "int" } },
             };
 
             declarationActions = new Dictionary<string, Action>{
@@ -255,7 +257,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     switch (attrName)
                     {
                         case "stmt#":
-                            if (designEntity != "assign" && designEntity != "stmt")
+                            if (designEntity != "assign" && designEntity != "stmt" && designEntity != "while" && designEntity != "if")
                                 throw new QueryException("Synonym: " + synonym + " can't be used with: " + attrName);
                             break;
                         case "procName":

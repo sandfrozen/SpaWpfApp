@@ -79,18 +79,174 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     var pattern = (Pattern)condition; // dalej obsluga pattern
                     DoPattern(pattern);
-
                 }
                 else if (condition is With)
                 {
                     var with = (With)condition; // dalej obsluga with
-
+                    DoWith(with);
                 }
                 QueryResult r = queryResult; // do testów, potem do usunięcia ta linia
             }
 
             HandleBooleanReturn();
         }
+
+        private void DoWith(With with)
+        {
+            if (with.leftType.Contains('.'))
+            {
+                string leftType = with.leftType.Substring(0, with.leftType.IndexOf('.'));
+                string leftSynonym = with.left.Substring(0, with.left.IndexOf('.'));
+                string leftAttrName = with.left.Substring(with.left.IndexOf('.'));
+
+                List<TNode> candidates;
+                List<TNode> resultList = new List<TNode>();
+
+                if (leftType == Entity.assign || leftType == Entity.stmt || leftType == Entity._if || leftType == Entity._while)
+                {
+                    int rightValue = Int32.Parse(with.right);
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = astManager.GetNodes(leftType);
+                    }
+
+                    if (candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach(var c in candidates)
+                    {
+                        if(c.programLine == rightValue)
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                    return;
+                }
+
+                if(leftType == Entity.procedure)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = astManager.GetNodes(leftType);
+                    }
+
+                    if(candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach(var c in candidates)
+                    {
+                        if(c.indexOfName == pkb.GetProcIndex(with.right))
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                }
+
+                if(leftType == Entity.call)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = astManager.GetNodes(leftType);
+                    }
+
+                    if (candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach (var c in candidates)
+                    {
+                        if (c.indexOfName == pkb.GetProcIndex(with.right))
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                }
+
+                if(leftType == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = new List<TNode>();
+                        for(int i=0; i<pkb.GetNumberOfVars(); i++)
+                        {
+                            candidates.Add(new TNode(Enums.TNodeTypeEnum.Variable, null, i, null));
+                        }
+                    }
+
+                    if (candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach (var c in candidates)
+                    {
+                        if (c.indexOfName == pkb.GetProcIndex(with.right))
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                }
+
+                if (leftType == Entity.constant)
+                {
+                    int rightValue = Int32.Parse(with.right);
+
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = astManager.GetNodes(leftType);
+                    }
+
+                    if (candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach (var c in candidates)
+                    {
+                        if (c.value == rightValue)
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                }
+            }
+        }
+
 
         private void DoPattern(Pattern pattern)
         {
@@ -168,16 +324,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             return;
                         }
 
-                        if(pattern.arg1type == Entity._)
+                        if (pattern.arg1type == Entity._)
                         {
                             result = listW;
                             UpdateResultTable(result, pattern.synonym);
                             return;
                         }
 
-                        foreach(var w in listW)
+                        foreach (var w in listW)
                         {
-                            if(w.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", "")) 
+                            if (w.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", ""))
                                 && !result.Contains(w))
                             {
                                 result.Add(w);
@@ -235,7 +391,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private void UpdateListW(ref List<TNode> listW, List<TNode> listA)
         {
             listW.Clear();
-            foreach(var a in listA)
+            foreach (var a in listA)
             {
                 if (!listW.Contains(a)) { listW.Add(a); }
             }
