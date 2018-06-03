@@ -38,7 +38,7 @@ namespace ConsoleSpa
                 SpaWpfApp.Ast.AstManager.GetInstance().GenerateStructures(SourceCode, pkb);
                 Console.WriteLine("AST ok");
 
-                SpaWpfApp.Cfg.CfgManager.GetInstance().GenerateStructure(SourceCode);
+                SpaWpfApp.Cfg.CfgManager.GetInstance().GenerateStructure(SourceCode, pkb);
                 Console.WriteLine("CFG ok");
 
             }

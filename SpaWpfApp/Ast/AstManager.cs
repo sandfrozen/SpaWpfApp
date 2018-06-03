@@ -1,4 +1,5 @@
-﻿using SpaWpfApp.Enums;
+﻿using SpaWpfApp.Cfg;
+using SpaWpfApp.Enums;
 using SpaWpfApp.PkbNew;
 using SpaWpfApp.QueryProcessingSusbsytem;
 //using SpaWpfApp.PkbOld;
@@ -25,7 +26,7 @@ namespace SpaWpfApp.Ast
     {
         public List<TNode> NodeList { get; set; }
         public List<TNode> NodeWithLineNumberList { get; set; }
-        private List<TNode> WhileList, IfList, AssignList, CallList, ProcedureList, ConstantList;
+        private List<TNode> WhileList, IfList, AssignList, CallList, ProcedureList, ConstantList, VariableList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
         private PkbAPI Pkb;
@@ -56,6 +57,11 @@ namespace SpaWpfApp.Ast
             this.CallList = new List<TNode>();
             this.ProcedureList = new List<TNode>();
             this.ConstantList = new List<TNode>();
+            this.VariableList = new List<TNode>();
+            for (int i = 0; i < Pkb.GetNumberOfVars(); i++)
+            {
+                VariableList.Add(new TNode(Enums.TNodeTypeEnum.Variable, null, i, null));
+            }
             this.FollowsTable = new TNode[Pkb.GetNumberOfLines()];
             this.ParentTable = new TNode[Pkb.GetNumberOfLines()];
             this.rootNode = null;
@@ -406,6 +412,162 @@ namespace SpaWpfApp.Ast
                 }
             }
         }
+
+        internal List<TNode> GetAllAssignUnder(TNode UpNodeX, string candidatesType)
+        {
+            List<TNode> resultList = new List<TNode>();
+            List<TNode> tmpAssigns = new List<TNode>();
+            switch (candidatesType.ToLower())
+            {
+                case Entity._if:
+                case Entity._while:
+                case Entity.stmt:
+                    {
+                        tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
+                        if (tmpAssigns != null)
+                        {
+                            foreach (var ta in tmpAssigns)
+                            {
+                                if (!resultList.Contains(ta)) { resultList.Add(ta); }
+                            }
+                        }
+
+                        var tmpCalls = GetChildrenXOfType(UpNodeX, Entity.call);
+                        if (tmpCalls != null)
+                        {
+                            var allAssigns = GetAllAssigns();
+                            foreach (var tc in tmpCalls)
+                            {
+                                AddAssignUnderCall(ref resultList, Pkb.GetProcName((int)tc.indexOfName), allAssigns);
+                            }
+                        }
+
+
+                        return resultList;
+                    }
+                    break;
+
+                case Entity.procedure:
+                    {
+                        var allAssigns = GetAllAssigns();
+                        var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == UpNodeX.indexOfName).First();
+                        int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
+                        int lineNumberLast = cfgProcedure.lastProgramLineNumber;
+
+                        foreach (var a in allAssigns)
+                        {
+                            if (a.programLine >= lineNumberFirst && a.programLine <= lineNumberLast && !resultList.Contains(a))
+                            {
+                                resultList.Add(a);
+                            }
+
+                        }
+
+                        return resultList;
+                    }
+                    break;
+
+                case Entity.call:
+                    {
+                        var allAssigns = GetAllAssigns();
+                        AddAssignUnderCall(ref resultList, Pkb.GetProcName((int)UpNodeX.indexOfName), allAssigns);
+
+                        return resultList;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        private List<TNode> GetChildrenXOfType(TNode iw, string type)
+        {
+            List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypesFromType(type);
+            List<TNode> children = new List<TNode>();
+
+            if (iw.programLine is null || (iw.type != TNodeTypeEnum.If && iw.type != TNodeTypeEnum.While))
+            {
+                return null;
+            }
+
+            FindAllChildrenS(ref children, iw, acceptableType);
+
+            return children.Count() > 0 ? children : null;
+        }
+
+        private List<TNodeTypeEnum> DetermineAcceptableTypesFromType(string type)
+        {
+            List<TNodeTypeEnum> result = new List<TNodeTypeEnum>();
+
+            switch (type.ToLower())
+            {
+                case "procedure":
+                    {
+                        result.Add(TNodeTypeEnum.Procedure);
+                    }
+                    break;
+
+                case "call":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                    }
+                    break;
+
+                case "assign":
+                    {
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+
+                case "if":
+                    {
+                        result.Add(TNodeTypeEnum.If);
+                    }
+                    break;
+
+                case "while":
+                    {
+                        result.Add(TNodeTypeEnum.While);
+                    }
+                    break;
+
+                case "stmt":
+                case "stmtLst":
+                    {
+                        result.Add(TNodeTypeEnum.Call);
+                        result.Add(TNodeTypeEnum.While);
+                        result.Add(TNodeTypeEnum.If);
+                        result.Add(TNodeTypeEnum.Assign);
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
+        private void AddAssignUnderCall(ref List<TNode> resultList, string procName, List<TNode> allAssigns)
+        {
+            var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == Pkb.GetProcIndex(procName)).First();
+            int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
+            int lineNumberLast = cfgProcedure.lastProgramLineNumber;
+
+            foreach (var a in allAssigns)
+            {
+                if (a.programLine >= lineNumberFirst && a.programLine <= lineNumberLast && !resultList.Contains(a))
+                {
+                    resultList.Add(a);
+                }
+            }
+            var called = Pkb.GetCalled(procName);
+            if (called != null && called.Any())
+            {
+                foreach (var p in called)
+                {
+                    AddAssignUnderCall(ref resultList, p, allAssigns);
+                }
+            }
+        }
+
         private void BuildWhile(string[] sourceCodeLines, ref int i, ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, ref int howManyStatementsEnd)
         {
             string[] lineWords = sourceCodeLines[i].Split(' ');
@@ -1073,6 +1235,9 @@ namespace SpaWpfApp.Ast
 
                 case Entity.constant:
                     return ConstantList;
+
+                case Entity.variable:
+                    return VariableList;
             }
 
             return null;

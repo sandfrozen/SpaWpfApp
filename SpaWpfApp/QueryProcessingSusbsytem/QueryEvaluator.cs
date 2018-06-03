@@ -119,9 +119,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         UpdateResultTable(null, leftSynonym);
                     }
 
-                    foreach(var c in candidates)
+                    foreach (var c in candidates)
                     {
-                        if(c.programLine == rightValue)
+                        if (c.programLine == rightValue)
                         {
                             resultList.Add(c);
                         }
@@ -131,34 +131,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     return;
                 }
 
-                if(leftType == Entity.procedure)
-                {
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(leftType);
-                    }
-
-                    if(candidates is null)
-                    {
-                        UpdateResultTable(null, leftSynonym);
-                    }
-
-                    foreach(var c in candidates)
-                    {
-                        if(c.indexOfName == pkb.GetProcIndex(with.right))
-                        {
-                            resultList.Add(c);
-                        }
-                    }
-
-                    UpdateResultTable(resultList, leftSynonym);
-                }
-
-                if(leftType == Entity.call)
+                if (leftType == Entity.procedure)
                 {
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
                     {
@@ -185,7 +158,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(resultList, leftSynonym);
                 }
 
-                if(leftType == Entity.variable)
+                if (leftType == Entity.call)
                 {
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
                     {
@@ -193,11 +166,34 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        candidates = new List<TNode>();
-                        for(int i=0; i<pkb.GetNumberOfVars(); i++)
+                        candidates = astManager.GetNodes(leftType);
+                    }
+
+                    if (candidates is null)
+                    {
+                        UpdateResultTable(null, leftSynonym);
+                    }
+
+                    foreach (var c in candidates)
+                    {
+                        if (c.indexOfName == pkb.GetProcIndex(with.right))
                         {
-                            candidates.Add(new TNode(Enums.TNodeTypeEnum.Variable, null, i, null));
+                            resultList.Add(c);
                         }
+                    }
+
+                    UpdateResultTable(resultList, leftSynonym);
+                }
+
+                if (leftType == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
+                    {
+                        candidates = queryResult.GetNodes(leftSynonym);
+                    }
+                    else
+                    {
+                        candidates = astManager.GetNodes(Entity.variable);
                     }
 
                     if (candidates is null)
@@ -388,14 +384,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
         }
 
-        private void UpdateListW(ref List<TNode> listW, List<TNode> listA)
-        {
-            listW.Clear();
-            foreach (var a in listA)
-            {
-                if (!listW.Contains(a)) { listW.Add(a); }
-            }
-        }
 
         private List<TNode> DeepCopy(List<TNode> listA)
         {
@@ -433,7 +421,155 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void Modifies(Relation relation)
         {
-            throw new NotImplementedException();
+            List<TNode> candidates, candidates2;
+            List<TNode> resultList = new List<TNode>();
+            List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                if (astManager.GetAllAssigns() != null) { UpdateResultTable(true); }
+                return;
+            }
+
+            if (relation.arg1type == Entity._int)
+            {
+                TNode tnode = astManager.FindNode(Int32.Parse(relation.arg1));
+                candidates = new List<TNode>();
+                candidates.Add(tnode);
+                if (tnode.type != Enums.TNodeTypeEnum.Assign)
+                {
+                    candidates = astManager.GetAllAssignUnder(tnode, Enum.GetName(typeof(Enums.TNodeTypeEnum), tnode.type));
+                }
+
+                if (candidates is null || (candidates != null && !candidates.Any())) { UpdateResultTable(false); return; }
+
+                if (relation.arg2type == Entity._)
+                {
+                    UpdateResultTable(true);
+                    return;
+                }
+
+                if (relation.arg2type == Entity._string)
+                {
+                    foreach (var a in candidates)
+                    {
+                        if (a.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"'))) { UpdateResultTable(true); return; }
+                    }
+
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    }
+                    else
+                    {
+                        candidates2 = astManager.GetNodes(Entity.variable);
+                    }
+
+                    if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+
+                    foreach (var a in candidates)
+                    {
+                        foreach (var v in candidates2)
+                        {
+                            if (v.indexOfName == a.firstChild.indexOfName && !resultList.Contains(v))
+                            {
+                                resultList.Add(v);
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+            }
+
+
+
+
+            if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
+            {
+                candidates = queryResult.GetNodes(relation.arg1);
+            }
+            else
+            {
+                candidates = astManager.GetNodes(relation.arg1type);
+            }
+            //if (candidates != null && relation.arg1type != Entity.assign) { candidates = astManager.GetAllAssignUnder(candidates, relation.arg1type); }
+
+
+            if (candidates is null) { UpdateResultTable(null, relation.arg1); return; }
+
+            if (relation.arg2type == Entity._)
+            {
+                foreach (var c in candidates)
+                {
+                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
+                    if (assignsUnder != null && assignsUnder.Any())
+                    {
+                        resultList.Add(c);
+                    }
+                }
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+
+            if (relation.arg2type == Entity._string)
+            {
+                foreach (var c in candidates)
+                {
+                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
+                    foreach (var au in assignsUnder)
+                    {
+                        if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                        {
+                            resultList.Add(c);
+                            break;
+                        }
+                    }
+                }
+
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+
+            if (relation.arg2type == Entity.variable)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidates2 = queryResult.GetNodes(relation.arg2);
+                }
+                else
+                {
+                    candidates2 = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
+
+                foreach (var c in candidates)
+                {
+                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
+                    foreach (var au in assignsUnder)
+                    {
+                        foreach (var v in candidates2)
+                        {
+                            if (au.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
+                            {
+                                resultListTuple.Add((c, v));
+                            }
+                        }
+                    }
+
+
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+            }
         }
 
 

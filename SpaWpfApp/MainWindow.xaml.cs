@@ -110,7 +110,7 @@ namespace SpaWpfApp
 
             try
             {
-                CfgManager.GetInstance().GenerateStructure(parsed);
+                CfgManager.GetInstance().GenerateStructure(parsed, pkb);
                 //bool r = cfgManager.GetInstance().IsNext(11, 13);
                 //r = cfgManager.IsNext(9, 12);
                 addLog("CFG Created: Ok");

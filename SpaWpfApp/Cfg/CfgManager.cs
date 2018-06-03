@@ -1,5 +1,6 @@
 ﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Enums;
+using SpaWpfApp.PkbNew;
 using SpaWpfApp.QueryProcessingSusbsytem;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,8 @@ namespace SpaWpfApp.Cfg
 {
     public class CfgManager : CfgAPI
     {
-        List<ProcedureCfg> CfgList;
+        public List<ProcedureCfg> CfgList { get; set; }
+        private PkbAPI pkb;
 
         private static CfgManager instance;
         public static CfgManager GetInstance()
@@ -24,9 +26,10 @@ namespace SpaWpfApp.Cfg
 
         public CfgManager() { }
 
-        public void GenerateStructure(string sourceCode)
+        public void GenerateStructure(string sourceCode, PkbAPI pkb)
         {
             this.CfgList = new List<ProcedureCfg>();
+            this.pkb = pkb;
 
             this.BuildCfgList(sourceCode);
         }
@@ -68,7 +71,7 @@ namespace SpaWpfApp.Cfg
                                 actualCfgStructure.lastProgramLineNumber = programLineNumber;
                                 CfgList.Add(actualCfgStructure);
                             }
-                            actualCfgStructure = new ProcedureCfg();
+                            actualCfgStructure = new ProcedureCfg(pkb.GetProcIndex(lineWords[1]));
                             actualNode = null;
                             currentPreviousNode = null;
                         }
