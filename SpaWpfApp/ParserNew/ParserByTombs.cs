@@ -19,7 +19,7 @@ namespace SpaWpfApp.ParserNew
         private string currentProcedure;
         private List<string> calledProcedures;
         private List<string> declaredProcedures;
-        private List<int> firstLineOfProcedures;
+        private List<int> firstLineOfProcedure;
 
         public PkbAPI pkb { get; set; }
 
@@ -49,7 +49,7 @@ namespace SpaWpfApp.ParserNew
         {
             calledProcedures = new List<string>();
             declaredProcedures = new List<string>();
-            firstLineOfProcedures = new List<int>();
+            firstLineOfProcedure = new List<int>();
             pkb = new Pkb();
             lastParent = "";
             currentProcedure = "";
@@ -64,7 +64,7 @@ namespace SpaWpfApp.ParserNew
                 ParseProcedure();
             }
 
-            foreach(string p in calledProcedures)
+            foreach (string p in calledProcedures)
             {
                 if (!declaredProcedures.Contains(p))
                 {
@@ -72,27 +72,26 @@ namespace SpaWpfApp.ParserNew
                 }
             }
 
-            for(int i=0; i<pkb.GetNumberOfProcs(); i++)
-            {
-                string procedure = pkb.GetProcName(i);
-                int lineFirst = firstLineOfProcedures[i];
-                int lineLast;
-                if ( i < pkb.GetNumberOfProcs()-1 )
-                {
-                    lineLast = firstLineOfProcedures[i + 1] - 1;
-                } else
-                {
-                    lineLast = currentLine;
-                }
-                
 
+            if (pkb.GetNumberOfProcs() > 1)
+            {
+                string firstProcedure = pkb.GetProcName(0);
+                var calledProcedures = pkb.GetCalled(firstProcedure);
+                foreach (string calledProcedure in calledProcedures)
+                {
+                    int callLine = pkb.IsCalls(firstProcedure, calledProcedure);
+                    if (callLine > 0)
+                    {
+                        SetRecursiveModifiesAndUses(callLine, calledProcedure);
+                    }
+                }
             }
 
 
             Trace.WriteLine("PROC TABLE:");
             for (int i = 0; i < pkb.GetNumberOfProcs(); i++)
             {
-                Trace.WriteLine(firstLineOfProcedures[i] + " " + pkb.GetProcName(i));
+                Trace.WriteLine(firstLineOfProcedure[i] + " " + pkb.GetProcName(i));
             }
             Trace.WriteLine("VAR TABLE:");
             for (int i = 0; i < pkb.GetNumberOfVars(); i++)
@@ -109,6 +108,44 @@ namespace SpaWpfApp.ParserNew
             pkb.PrintCallsTable();
 
             return GetParsedSouceCode();
+        }
+
+        private void SetRecursiveModifiesAndUses(int rootLine, string innerProcedure)
+        {
+            var calledProcedures = pkb.GetCalled(innerProcedure);
+            foreach (string calledProcedure in calledProcedures)
+            {
+                int callLine = pkb.IsCalls(innerProcedure, calledProcedure);
+                if (callLine > 0)
+                {
+                    SetRecursiveModifiesAndUses(callLine, calledProcedure);
+                }
+            }
+            int procIndex = pkb.GetProcIndex(innerProcedure);
+            int firstLine = firstLineOfProcedure[procIndex];
+            int lastLine;
+            if (procIndex < pkb.GetNumberOfProcs() - 1)
+            {
+                lastLine = firstLineOfProcedure[procIndex + 1];
+            }
+            else
+            {
+                lastLine = currentLine; // current line is last line where parser stopped parsing
+            }
+            //set modifies and uses for rootLine
+            for (; firstLine <= lastLine; firstLine++)
+            {
+                var modifiedVars = pkb.GetModified(firstLine);
+                foreach(string modifiedVar in modifiedVars)
+                {
+                    pkb.SetModifies(modifiedVar, rootLine);
+                }
+                var usedVars = pkb.GetUsed(firstLine);
+                foreach (string usedVar in usedVars)
+                {
+                    pkb.SetUses(usedVar, rootLine);
+                }
+            }
         }
 
         public (string lineNumbers, string parsedSourceCode) GetParsedFormattedSourceCode()
@@ -193,7 +230,7 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += Environment.NewLine;
                 }
-                else if (i < length-1 && s == ";" && wordsInCode[i + 1] == "}")
+                else if (i < length - 1 && s == ";" && wordsInCode[i + 1] == "}")
                 {
                     parsed += " ";
                 }
@@ -243,7 +280,7 @@ namespace SpaWpfApp.ParserNew
             pkb.InsertProc(procName);
             addToDeclaredProcedures(procName);
             currentProcedure = procName;
-            firstLineOfProcedures.Add(currentLine+1);
+            firstLineOfProcedure.Add(currentLine + 1);
 
             lastParent = "procedure " + procName;
             ParseBody();
@@ -261,7 +298,7 @@ namespace SpaWpfApp.ParserNew
             int localLevel = currentLevel;
             currentLevel++;
             currentIndex++;
-            while (currentLevel > localLevel && currentIndex< wordsInCode.Length && wordsInCode[currentIndex] != "}")
+            while (currentLevel > localLevel && currentIndex < wordsInCode.Length && wordsInCode[currentIndex] != "}")
             {
                 currentLine++;
                 if (wordsInCode[currentIndex] == "if")
