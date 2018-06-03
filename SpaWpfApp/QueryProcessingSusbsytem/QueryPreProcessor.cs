@@ -581,14 +581,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     leftType = Entity._int;
                 }
-                else if (left == Entity._)
-                {
-                    leftType = Entity._;
-                }
                 else if (left.First() == '"' && left.Last() == '"')
                 {
                     IsSynonym(left.Trim('"'));
                     leftType = Entity._string;
+                }
+                else if (declarationsList.ContainsKey(left))
+                {
+                    leftType = declarationsList[left];
                 }
                 else if (left.Contains("."))
                 {
@@ -623,16 +623,24 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (int.TryParse(right, out int result2))
                 {
+                    if( leftType.Equals(Entity._int))
+                    {
+                        throw new QueryException("Left and right argument in with cannot be <int>: " + left + " = " + right);
+                    }
                     rightType = Entity._int;
-                }
-                else if (right == Entity._)
-                {
-                    rightType = Entity._;
                 }
                 else if (right.First() == '"' && right.Last() == '"')
                 {
+                    if (leftType.Equals(Entity._string))
+                    {
+                        throw new QueryException("Left and right argument in with cannot be <string>: " + left + " = " + right);
+                    }
                     IsSynonym(right.Trim('"'));
                     rightType = Entity._string;
+                }
+                else if (declarationsList.ContainsKey(right))
+                {
+                    rightType = declarationsList[right];
                 }
                 else if (right.Contains("."))
                 {
