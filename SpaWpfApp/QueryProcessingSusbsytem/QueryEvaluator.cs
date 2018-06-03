@@ -16,7 +16,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private CfgManager cfgManager;
         public QueryResult queryResult { get; }
         private QueryPreProcessor queryPreProcessor;
-        private Condition actualRelation;
+        private Condition actualCondition;
         public PkbAPI pkb { get; set; }
 
         public static QueryEvaluator GetInstance()
@@ -43,6 +43,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             foreach (var condition in conditionsList)
             {
+                actualCondition = condition;
                 if (condition is Relation)
                 {
                     var relation = (Relation)condition;
@@ -151,9 +152,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 case Entity._while:
                     {
-                        List<TNode> listA;
                         List<TNode> listW;
-                        #region set listA
                         if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
                         {
                             listW = queryResult.GetNodes(pattern.synonym);
@@ -169,68 +168,66 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             return;
                         }
 
-                        listA = new List<TNode>();
-                        foreach (var w in listW)
-                        {
-                            var listAW = astManager.GetChildrenX(w, Entity.assign);
-                            foreach (var aw in listAW)
-                            {
-                                if (!listA.Contains(aw)) { listA.Add(aw); }
-                            }
-                        }
-
-                        if (pattern.arg1type == Entity._string)
-                        {
-                            List<TNode> copyListA = DeepCopy(listA);
-                            foreach (var assign in copyListA)
-                            {
-                                if (assign.firstChild.indexOfName != pkb.GetVarIndex(pattern.arg1.Substring(1, pattern.arg1.Length - 2)))
-                                {
-                                    listA.Remove(assign);
-                                }
-                            }
-
-                            UpdateListW(ref listW, listA);
-
-                            if(listW is null || !listW.Any())
-                            {
-                                UpdateResultTable(listW, pattern.synonym);
-                                return;
-                            }
-                        }
-                        #endregion
-
-                        if (pattern.arg2type == Entity._)
+                        if(pattern.arg1type == Entity._)
                         {
                             result = listW;
                             UpdateResultTable(result, pattern.synonym);
                             return;
                         }
-                        else
-                        {
-                            if (listA != null)
-                            {
-                                List<TNode> copyListA = DeepCopy(listA);
-                                listA.Clear();
-                                foreach (var assign in copyListA)
-                                {
-                                    if (AssignRightContainsPatter(assign, pattern.arg2))
-                                    {
-                                        listA.Add(assign);
-                                    }
-                                }
 
-                                UpdateListW(ref listW, listA);
-                                result = listW;
+                        foreach(var w in listW)
+                        {
+                            if(w.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", "")) 
+                                && !result.Contains(w))
+                            {
+                                result.Add(w);
                             }
-                            UpdateResultTable(result, pattern.synonym);
-                            return;
                         }
+
+                        UpdateResultTable(result, pattern.synonym);
+                        return;
 
                     }
                     break;
 
                 case Entity._if:
+                    {
+                        List<TNode> listIf;
+                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
+                        {
+                            listIf = queryResult.GetNodes(pattern.synonym);
+                        }
+                        else
+                        {
+                            listIf = astManager.GetAllIf();
+                        }
+
+                        if (listIf is null)
+                        {
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        if (pattern.arg1type == Entity._)
+                        {
+                            result = listIf;
+                            UpdateResultTable(result, pattern.synonym);
+                            return;
+                        }
+
+                        foreach (var i in listIf)
+                        {
+                            if (i.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", ""))
+                                && !result.Contains(i))
+                            {
+                                result.Add(i);
+                            }
+                        }
+
+                        UpdateResultTable(result, pattern.synonym);
+                        return;
+
+                    }
                     break;
             }
         }
@@ -288,7 +285,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region NextX(int, int), NextX(_, _)
@@ -560,7 +556,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Next(int, int), Next(_, _)
@@ -834,7 +829,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region FollowsX(int, int), FollowsX(_, _)
@@ -1106,7 +1100,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForFrom, candidateForTo;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Follows(int, int), Follows(_, _)
@@ -1376,7 +1369,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForChildren, candidateForFather;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region Parent(int, int), Parent(_, _)
@@ -1674,7 +1666,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             List<TNode> candidateForChildren, candidateForFather;
             List<TNode> resultList = new List<TNode>();
-            actualRelation = relation;
 
 
             #region ParentX(int, int), ParentX(_, _)
@@ -2078,7 +2069,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 queryResult.resultBoolean = queryResult.resultTableList.Count > 0 ? true : false;
             }
-            throw new NoResultsException("Relation " + actualRelation.ToString() + " has no results.");
+            throw new NoResultsException("Condition " + actualCondition.ToString() + " has no results.");
         }
 
         private void HandleBooleanReturn()
