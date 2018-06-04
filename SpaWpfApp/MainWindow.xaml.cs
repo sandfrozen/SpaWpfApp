@@ -201,22 +201,29 @@ namespace SpaWpfApp
 
         private void parseAndEvaluateButton_Click(object sender, RoutedEventArgs e)
         {
+            string query = StringFromRichTextBox(queryRichTextBox);
             try
             {
-                String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
+                query = QueryPreProcessor.GetInstance().Parse(query);
+
                 addLog("PQL Parser: Ok");
             }
             catch (QueryException ex)
             {
                 addLog("PQL Parser: QueryException:\n" + ex.Message);
+                return;
                 //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 addLog("PQL Parser: Error:\n" + ex.Message);
+                return;
                 //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            finally
+            {
+                queryRichTextBox.Document.Blocks.Clear();
+                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(query)));
             }
 
             resultRichTextBox.Document.Blocks.Clear();
