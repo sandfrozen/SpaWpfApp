@@ -73,19 +73,19 @@ namespace SpaWpfApp.ParserNew
             }
 
 
-            if (pkb.GetNumberOfProcs() > 1)
-            {
-                string firstProcedure = pkb.GetProcName(0);
-                var calledProcedures = pkb.GetCalled(firstProcedure);
-                foreach (string calledProcedure in calledProcedures)
-                {
-                    int callLine = pkb.IsCalls(firstProcedure, calledProcedure);
-                    if (callLine > 0)
-                    {
-                        SetRecursiveModifiesAndUses(callLine, calledProcedure);
-                    }
-                }
-            }
+            //if (pkb.GetNumberOfProcs() > 1)
+            //{
+            //    string firstProcedure = pkb.GetProcName(0);
+            //    var calledProcedures = pkb.GetCalled(firstProcedure);
+            //    foreach (string calledProcedure in calledProcedures)
+            //    {
+            //        int callLine = pkb.IsCalls(firstProcedure, calledProcedure);
+            //        if (callLine > 0)
+            //        {
+            //            SetRecursiveModifiesAndUses(callLine, calledProcedure);
+            //        }
+            //    }
+            //}
 
 
             Trace.WriteLine("PROC TABLE:");
