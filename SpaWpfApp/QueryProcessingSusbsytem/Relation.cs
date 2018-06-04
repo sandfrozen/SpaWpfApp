@@ -17,9 +17,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         public Relation(string type, string arg1, string arg1type, string arg2, string arg2type)
         {
             this.type = type;
-            this.arg1 = arg1;
+            this.arg1 = arg1.Trim('"');
             this.arg1type = arg1type;
-            this.arg2 = arg2;
+            this.arg2 = arg2.Trim('"');
             this.arg2type = arg2type;
         }
 

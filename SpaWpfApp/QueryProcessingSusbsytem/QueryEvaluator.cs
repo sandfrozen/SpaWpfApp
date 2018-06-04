@@ -1,5 +1,6 @@
 ﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
+using SpaWpfApp.Enums;
 using SpaWpfApp.Exceptions;
 using SpaWpfApp.PkbNew;
 using System;
@@ -709,7 +710,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 foreach (var c in candidates)
                 {
-                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
                     if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
                     {
                         foreach (var wia in whileIfAssignsUnder)
@@ -741,7 +742,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 foreach (var c in candidates)
                 {
-                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
                     if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
                     {
                         foreach (var wia in whileIfAssignsUnder)
@@ -786,7 +787,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidates)
                 {
-                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
                     foreach (var wia in whileIfAssignsUnder)
                     {
                         foreach (var v in candidates2)
@@ -1242,9 +1243,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(resultList, relation.arg2);
                     return;
                 }
-            }
-
-
+            }         
 
 
             if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
@@ -1264,7 +1263,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 foreach (var c in candidates)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
+                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
                     if (assignsUnder != null && assignsUnder.Any())
                     {
                         resultList.Add(c);
@@ -1278,13 +1277,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 foreach (var c in candidates)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
-                    foreach (var au in assignsUnder)
+                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
+                    if(assignsUnder != null)
                     {
-                        if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                        foreach (var au in assignsUnder)
                         {
-                            resultList.Add(c);
-                            break;
+                            if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                            {
+                                resultList.Add(c);
+                                break;
+                            }
                         }
                     }
                 }
@@ -1308,7 +1310,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidates)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, relation.arg1type);
+                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
                     foreach (var au in assignsUnder)
                     {
                         foreach (var v in candidates2)
@@ -3010,6 +3012,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public void UpdateResultTable(List<(TNode, TNode)> resultListTuple, string firstArgument, string secondArgument)
         {
+            queryResult.SetDeclarationWasDeterminated(firstArgument);
+            queryResult.SetDeclarationWasDeterminated(secondArgument);
+
             if (resultListTuple != null && resultListTuple.Any())
             {
                 List<TNode[]> newResultTableList = new List<TNode[]>();
@@ -3051,12 +3056,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 FinishQueryEvaluator();
             }
 
-            queryResult.SetDeclarationWasDeterminated(firstArgument);
-            queryResult.SetDeclarationWasDeterminated(secondArgument);
         }
 
         public void UpdateResultTable(List<TNode> resultList, string argumentLookingFor)
         {
+            queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
+
             if (resultList != null && resultList.Any())
             {
                 List<TNode[]> newResultTableList = new List<TNode[]>();
@@ -3098,8 +3103,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 queryResult.ClearResultTableList();
                 FinishQueryEvaluator();
             }
-
-            queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
         }
 
         public void UpdateResultTable(bool p_result)

@@ -31,7 +31,7 @@ namespace SpaWpfApp.Ast
         private TNode[] ParentTable;
         private PkbAPI Pkb;
         TNode rootNode;
-        private int lastProgramLineNumber;
+        public int lastProgramLineNumber { get; set; }
         public Dictionary<string, string> declarationsList { get; set; }
 
         private static AstManager instance;
@@ -143,15 +143,18 @@ namespace SpaWpfApp.Ast
             List<TNode> tmpAssigns = new List<TNode>();
             List<TNode> tmpStmt = new List<TNode>();
 
-            resultList.Add(UpNodeX);
+            if (candidatesType.ToLower() == Entity.prog_line) { candidatesType = Enum.GetName(typeof(TNodeTypeEnum), UpNodeX.type); }
             switch (candidatesType.ToLower())
             {
                 case Entity.assign:
+                    resultList.Add(UpNodeX);
                     return resultList;
                 case Entity._if:
                 case Entity._while:
                 case Entity.stmt:
                     {
+                        resultList.Add(UpNodeX);
+
                         tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
                         if (tmpAssigns != null)
                         {
@@ -541,11 +544,13 @@ namespace SpaWpfApp.Ast
             List<TNode> resultList = new List<TNode>();
             List<TNode> tmpAssigns = new List<TNode>();
 
-            resultList.Add(UpNodeX);
+            
 
+            if (candidatesType.ToLower() == Entity.prog_line) { candidatesType = Enum.GetName(typeof(TNodeTypeEnum), UpNodeX.type); }
             switch (candidatesType.ToLower())
             {
                 case Entity.assign:
+                    resultList.Add(UpNodeX);
                     return resultList;
                 case Entity._if:
                 case Entity._while:
@@ -661,6 +666,7 @@ namespace SpaWpfApp.Ast
 
                 case "stmt":
                 case "stmtLst":
+                case "prog_line":
                     {
                         result.Add(TNodeTypeEnum.Call);
                         result.Add(TNodeTypeEnum.While);
@@ -1241,6 +1247,7 @@ namespace SpaWpfApp.Ast
 
                 case "stmt":
                 case "stmtLst":
+                case "prog_line":
                     {
                         result.Add(TNodeTypeEnum.Call);
                         result.Add(TNodeTypeEnum.While);
