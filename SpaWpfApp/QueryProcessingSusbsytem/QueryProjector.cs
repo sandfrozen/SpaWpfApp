@@ -37,7 +37,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         }
 
-        internal string PrintResult()
+        public string PrintResult()
         {
             result = string.Empty;
 

@@ -53,19 +53,38 @@ namespace ConsoleSpa
             while (true)
             {
                 string query = Console.ReadLine();
-                if (query == "exit") break;
                 query += Console.ReadLine();
 
                 try
                 {
                     query = SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().Parse(query);
-                    SpaWpfApp.QueryProcessingSusbsytem.QueryEvaluator.GetInstance().Evaluate(SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().conditionsList);
+                    //SpaWpfApp.QueryProcessingSusbsytem.QueryEvaluator.GetInstance().Evaluate(SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().conditionsList);
+                    List<SpaWpfApp.QueryProcessingSusbsytem.Condition> conditionsList = SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance().conditionsList;
+                    SpaWpfApp.QueryProcessingSusbsytem.QueryEvaluator.GetInstance().Evaluate(conditionsList);
                     
-                    Console.WriteLine(SpaWpfApp.QueryProcessingSusbsytem.QueryResult.GetInstance().resultIsBoolean.ToString().ToLower());
+
+                    //Console.WriteLine(SpaWpfApp.QueryProcessingSusbsytem.QueryResult.GetInstance().resultIsBoolean.ToString().ToLower());
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.GetType().Name + ": " + e.Message);
+                    //Console.WriteLine(e.GetType().Name + ": " + e.Message);
+                }
+                finally
+                {
+                    //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
+                    try
+                    {
+                        SpaWpfApp.QueryProcessingSusbsytem.QueryResult queryResult = SpaWpfApp.QueryProcessingSusbsytem.QueryResult.GetInstance();
+                        SpaWpfApp.QueryProcessingSusbsytem.QueryProjector queryProjector = SpaWpfApp.QueryProcessingSusbsytem.QueryProjector.GetInstance();
+
+                        var vfvd = SpaWpfApp.QueryProcessingSusbsytem.QueryPreProcessor.GetInstance();
+                        Console.WriteLine(queryProjector.PrintResult());
+                    }
+                    catch
+                    {
+                        Console.WriteLine("none");
+                    }
+
                 }
             }
 
