@@ -11,6 +11,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
     {
         private QueryResult queryResult;
         private QueryPreProcessor queryPreProcessor;
+        private QueryEvaluator queryEvaluator;
         private AstManager astManager;
         public PkbAPI Pkb { get; set; }
 
@@ -26,6 +27,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 instance.queryPreProcessor = QueryPreProcessor.GetInstance();
                 instance.queryResult = QueryResult.GetInstance();
                 instance.astManager = AstManager.GetInstance();
+                instance.queryEvaluator = QueryEvaluator.GetInstance();
             }
             return instance;
         }
@@ -160,7 +162,66 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     return result;
                 }
             }
-            return "cdcs";
+            else
+            {
+                var returnList = new Dictionary<string, string>();
+                string newKey;
+                foreach (var v in queryPreProcessor.returnList)
+                {
+                    if (v.Key.Contains('.'))
+                    {
+                        newKey = v.Key.Substring(0, v.Key.IndexOf('.'));
+                    }
+                    else { newKey = v.Key; }
+
+                    returnList.Add(newKey, v.Value);
+                }
+
+                List<TNode> collection;
+                foreach(var v in returnList)
+                {
+                    if (!queryResult.DeclarationWasDeterminated(v.Key))
+                    {
+                        collection = astManager.GetNodes(v.Value);
+                        queryEvaluator.UpdateResultTable(collection, v.Key);
+                    }
+                }
+
+                List<int> indexList = new List<int>();
+                foreach(var v in returnList)
+                {
+                    indexList.Add(queryResult.FindIndexOfDeclaration(v.Key));
+                }
+
+                foreach(var r in queryResult.resultTableList)
+                {
+                    foreach(var i in indexList)
+                    {
+                        switch (queryResult.declarationsTable[i].value)
+                        {
+                            case Entity.procedure:
+                            case Entity.call:
+                                result += Pkb.GetProcName((int)r[i].indexOfName) + " ";
+                                break;
+                            case Entity.variable:
+                                result += Pkb.GetVarName((int)r[i].indexOfName) + " ";
+                                break;
+                            case Entity.constant:
+                                result += r[i].value + " ";
+                                break;
+                            default:
+                                result += r[i].programLine + " ";
+                                break;
+                        }
+                    }
+
+                    result = result.Substring(0, result.Length - 1);
+                    result += ", ";
+                }
+
+                result = result.Substring(0, result.Length - 2);
+                return result;
+            }
         }
     }
 }

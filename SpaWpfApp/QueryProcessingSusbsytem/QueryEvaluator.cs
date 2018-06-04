@@ -2573,7 +2573,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
 
 
-        private void UpdateResultTable(List<(TNode, TNode)> resultListTuple, string firstArgument, string secondArgument)
+        public void UpdateResultTable(List<(TNode, TNode)> resultListTuple, string firstArgument, string secondArgument)
         {
             if (resultListTuple != null && resultListTuple.Any())
             {
@@ -2620,11 +2620,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             queryResult.SetDeclarationWasDeterminated(secondArgument);
         }
 
-        private void UpdateResultTable(List<TNode> resultList, string argumentLookingFor)
+        public void UpdateResultTable(List<TNode> resultList, string argumentLookingFor)
         {
             if (resultList != null && resultList.Any())
             {
                 List<TNode[]> newResultTableList = new List<TNode[]>();
+                TNode[] newRecord;
                 int indexOfDeclaration = queryResult.FindIndexOfDeclaration(argumentLookingFor);
 
                 if (queryResult.HasRecords())
@@ -2635,14 +2636,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var record in earlierResultRecords)
                         {
-                            record[indexOfDeclaration] = result;
-                            newResultTableList.Add(record);
+                            newRecord = new TNode[record.Length];
+                            for(int i=0; i<record.Length; i++)
+                            {
+                                newRecord[i] = record[i];
+                            }
+                            newRecord[indexOfDeclaration] = result;
+                            newResultTableList.Add(newRecord);
                         }
                     }
                 }
                 else
                 {
-                    TNode[] newRecord;
                     foreach (var res in resultList)
                     {
                         newRecord = new TNode[queryResult.declarationsTable.Length];
@@ -2662,7 +2667,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
         }
 
-        private void UpdateResultTable(bool p_result)
+        public void UpdateResultTable(bool p_result)
         {
             if (queryResult.resultIsBoolean)
             {
