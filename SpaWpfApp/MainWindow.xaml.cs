@@ -198,5 +198,46 @@ namespace SpaWpfApp
             logsRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " " + log)));
             logsRichTextBox.ScrollToEnd();
         }
+
+        private void parseAndEvaluateButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
+                queryRichTextBox.Document.Blocks.Clear();
+                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
+                addLog("PQL Parser: Ok");
+            }
+            catch (QueryException ex)
+            {
+                addLog("PQL Parser: QueryException:\n" + ex.Message);
+                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                addLog("PQL Parser: Error:\n" + ex.Message);
+                //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            resultRichTextBox.Document.Blocks.Clear();
+
+            try
+            {
+                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
+                QueryEvaluator.GetInstance().Evaluate(conditionsList);
+            }
+            catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
+            finally
+            {
+                //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
+                QueryResult queryResult = QueryResult.GetInstance();
+                QueryProjector queryProjector = QueryProjector.GetInstance();
+
+                var vfvd = QueryPreProcessor.GetInstance();
+                resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
+                addLog("Result: " + queryProjector.PrintResult());
+
+            }
+        }
     }
 }

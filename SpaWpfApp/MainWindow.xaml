@@ -138,6 +138,7 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
+        <Button x:Name="parseAndEvaluateButton" Content="Parse And Evaluate" HorizontalAlignment="Left" Margin="442,284,0,0" VerticalAlignment="Top" Click="parseAndEvaluateButton_Click"/>
 
     </Grid>
 </Window>
