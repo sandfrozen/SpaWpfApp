@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SpaWpfApp.Exceptions
 {
-    class SourceCodeException : Exception
+    public class SourceCodeException : Exception
     {
         public SourceCodeException()
         {

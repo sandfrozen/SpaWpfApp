@@ -1,5 +1,6 @@
 ﻿using SpaWpfApp.Ast;
 using SpaWpfApp.Cfg;
+using SpaWpfApp.Exceptions;
 using SpaWpfApp.ParserNew;
 using SpaWpfApp.PkbNew;
 using SpaWpfApp.QueryProcessingSusbsytem;
@@ -60,7 +61,7 @@ namespace ConsoleSpa
             while (true)
             {
                 string query = Console.ReadLine();
-                query += Console.ReadLine();
+                query += " " + Console.ReadLine();
 
                 try
                 {
@@ -79,20 +80,13 @@ namespace ConsoleSpa
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.GetType().Name + ": " + e.Message);
-                    continue;
+
                 }
-                try
+                finally
                 {
                     QueryResult queryResult = QueryResult.GetInstance();
                     QueryProjector queryProjector = QueryProjector.GetInstance();
-
-                    var vfvd = QueryPreProcessor.GetInstance();
                     Console.WriteLine(queryProjector.PrintResult());
-                }
-                catch
-                {
-                    Console.WriteLine("none");
                 }
 
             }
