@@ -42,8 +42,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public const string Calls = "Calls";
         public const string CallsX = "Calls*";
-        public static List<string> CallsArgs1 = new List<string> { Entity.procedure, Entity._, Entity._int, Entity.prog_line };
-        public static List<string> CallsArgs2 = new List<string> { Entity.procedure, Entity._, Entity._int, Entity.prog_line };
+        public static List<string> CallsArgs1 = new List<string> { Entity.procedure, Entity._, Entity._string };
+        public static List<string> CallsArgs2 = new List<string> { Entity.procedure, Entity._, Entity._string };
 
         public const string Parent = "Parent";
         public const string ParentX = "Parent*";
