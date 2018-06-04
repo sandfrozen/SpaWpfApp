@@ -708,6 +708,7 @@ namespace SpaWpfApp.Cfg
 
                 case "stmt":
                 case "stmtLst":
+                case "prog_line":
                     {
                         result.Add(TNodeTypeEnum.Call);
                         result.Add(TNodeTypeEnum.While);
