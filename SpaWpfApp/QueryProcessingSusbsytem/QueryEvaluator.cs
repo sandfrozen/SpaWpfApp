@@ -163,7 +163,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if(relation.arg1type == Entity._string && relation.arg2type == Entity._string)
             {
-                Boolean result = pkb.IsCalls(relation.arg1.Trim('"'), relation.arg2.Trim('"'));
+                Boolean result = pkb.IsCalls(relation.arg1.Trim('"'), relation.arg2.Trim('"')) != -1 ? true : false;
                 UpdateResultTable(result);
                 return;
             }
@@ -239,7 +239,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidateForCalling)
                 {
-                    if (pkb.IsCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"')))
+                    if (pkb.IsCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"')) != -1 ? true : false)
                     {
                         resultList.Add(c);
                     }
@@ -285,7 +285,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     foreach(var c2 in candidateForCalled)
                     {
-                        if(pkb.IsCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName)) && !resultListTuple.Contains((c1,c2)))
+                        if(pkb.IsCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName)) != -1 ? true : false && !resultListTuple.Contains((c1,c2)))
                         {
                             resultListTuple.Add((c1, c2));
                         }
