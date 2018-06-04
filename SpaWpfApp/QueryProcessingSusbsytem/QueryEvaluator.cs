@@ -82,6 +82,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.Calls:
                             Calls(relation);
                             break;
+                        case Relation.CallsX:
+                            CallsX(relation);
+                            break;
                     }
                 }
                 else if (condition is Pattern)
@@ -98,6 +101,237 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             HandleBooleanReturn();
+        }
+
+        private void CallsX(Relation relation)
+        {
+            List<TNode> candidateForCalling, candidateForCalled;
+            List<TNode> resultList = new List<TNode>();
+            List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                bool result = astManager.GetNodes(Entity.call).Any();
+
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
+            {
+                var calls = astManager.GetNodes(Entity.call);
+                foreach (var c in calls)
+                {
+                    if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                    {
+                        UpdateResultTable(true);
+                        return;
+                    }
+                }
+                UpdateResultTable(false);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity.procedure)
+            {
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                {
+                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                }
+
+                var calls = astManager.GetNodes(Entity.call);
+                foreach (var c in calls)
+                {
+                    foreach (var can in candidateForCalled)
+                    {
+                        if (c.indexOfName == can.indexOfName && !resultList.Contains(can))
+                        {
+                            resultList.Add(can);
+                            break;
+                        }
+                    }
+                }
+
+                UpdateResultTable(resultList, relation.arg2);
+            }
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._)
+            {
+                Boolean result = pkb.GetCalled(relation.arg1.Trim('"')).Any();
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._string)
+            {
+                Boolean result = false;
+                CheckIfCallsX(relation.arg1.Trim('"'), relation.arg2.Trim('"'), ref result);
+
+                UpdateResultTable(result);
+                return;
+            }
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity.procedure)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                {
+                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                }
+
+                var calls = pkb.GetCalled(relation.arg1.Trim('"'));
+                foreach (var c in calls)
+                {
+                    foreach (var can in candidateForCalled)
+                    {
+                        CheckIfCallsX(relation.arg1.Trim('"'), pkb.GetProcName((int)can.indexOfName), ref resultList, can);
+                    }
+                }
+                UpdateResultTable(resultList, relation.arg2);
+            }
+            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity._)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
+                {
+                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                }
+
+                if (candidateForCalling is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+
+                foreach (var c in candidateForCalling)
+                {
+                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any())
+                    {
+                        resultList.Add(c);
+                    }
+                }
+
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity._string)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
+                {
+                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                }
+
+                if (candidateForCalling is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+
+                foreach (var c in candidateForCalling)
+                {
+                    CheckIfCallsX(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"'), ref resultList, c);
+                }
+
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity.procedure)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
+                {
+                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                }
+
+                if (candidateForCalling is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                {
+                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                }
+                else
+                {
+                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                }
+
+                if (candidateForCalled is null)
+                {
+                    UpdateResultTable(null, relation.arg2);
+                    return;
+                }
+
+                foreach (var c1 in candidateForCalling)
+                {
+                    foreach (var c2 in candidateForCalled)
+                    {
+                        CheckIfCallsX(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName), ref resultListTuple, c1, c2);
+                    }
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+            }
+        }
+
+        private void CheckIfCallsX(string p1, string p2, ref List<(TNode, TNode)> resultListTuple, TNode c1, TNode c2)
+        {
+            if (pkb.IsCalls(p1, p2) != -1 && !resultListTuple.Contains((c1,c2)))
+            {
+                resultListTuple.Add((c1, c2));
+                return;
+            }
+
+            foreach (var v in pkb.GetCalled(p1))
+            {
+                CheckIfCallsX(v, p2, ref resultListTuple, c1,c2);
+            }
+        }
+
+        private void CheckIfCallsX(string p1, string p2, ref List<TNode> resultList, TNode can)
+        {
+            if (pkb.IsCalls(p1, p2) != -1 && !resultList.Contains(can))
+            {
+                resultList.Add(can);
+                return;
+            }
+
+            foreach (var v in pkb.GetCalled(p1))
+            {
+                CheckIfCallsX(v, p2, ref resultList, can);
+            }
+        }
+
+        private void CheckIfCallsX(string p1, string p2, ref Boolean result)
+        {
+            if(pkb.IsCalls(p1, p2) != -1)
+            {
+                result = true;
+                return;
+            }
+
+            foreach(var v in pkb.GetCalled(p1))
+            {
+                CheckIfCallsX(v, p2, ref result);
+            }
         }
 
         private void Calls(Relation relation)
@@ -619,14 +853,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 string leftType = with.leftType.Substring(0, with.leftType.IndexOf('.'));
                 string leftSynonym = with.left.Substring(0, with.left.IndexOf('.'));
-                string leftAttrName = with.left.Substring(with.left.IndexOf('.'));
+                string leftAttrName = with.left.Substring(with.left.IndexOf('.') + 1);
 
                 List<TNode> candidates;
                 List<TNode> resultList = new List<TNode>();
 
                 if (leftType == Entity.assign || leftType == Entity.stmt || leftType == Entity._if || leftType == Entity._while)
                 {
-                    int rightValue = Int32.Parse(with.right);
+                    int rightValue = Int32.Parse(with.right.Trim('"'));
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
                     {
                         candidates = queryResult.GetNodes(leftSynonym);
@@ -671,7 +905,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     foreach (var c in candidates)
                     {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right))
+                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
                         {
                             resultList.Add(c);
                         }
@@ -698,7 +932,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     foreach (var c in candidates)
                     {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right))
+                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
                         {
                             resultList.Add(c);
                         }
@@ -725,7 +959,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     foreach (var c in candidates)
                     {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right))
+                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
                         {
                             resultList.Add(c);
                         }
@@ -736,7 +970,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (leftType == Entity.constant)
                 {
-                    int rightValue = Int32.Parse(with.right);
+                    int rightValue = Int32.Parse(with.right.Trim('"'));
 
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
                     {
