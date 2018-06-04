@@ -66,6 +66,7 @@ namespace SpaWpfApp
             {
                 pkb = ParserByTombs.Instance.pkb;
                 QueryEvaluator.GetInstance().pkb = pkb;
+                QueryProjector.GetInstance().Pkb = pkb;
                 addLog("PKB Created: Ok");
                 //pkb.PrintProcTable();
                 //pkb.PrintVarTable();
@@ -168,17 +169,22 @@ namespace SpaWpfApp
             {
                 //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
                 QueryResult queryResult = QueryResult.GetInstance();
-                if (queryResult.resultIsBoolean)
-                {
-                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryResult.resultBoolean.ToString().ToLower())));
-                    addLog("Result: " + queryResult.resultBoolean.ToString().ToLower());
-                }
-                else
-                {
-                    string now = DateTime.Now.ToLongTimeString();
-                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
-                    addLog("Result: NotSupported");
-                }
+                QueryProjector queryProjector = QueryProjector.GetInstance();
+
+                var vfvd = QueryPreProcessor.GetInstance();
+                resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
+                addLog("Result: " + queryProjector.PrintResult());
+                //if (queryResult.resultIsBoolean)
+                //{
+                //    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryResult.resultBoolean.ToString().ToLower())));
+                //    addLog("Result: " + queryResult.resultBoolean.ToString().ToLower());
+                //}
+                //else
+                //{
+                //    string now = DateTime.Now.ToLongTimeString();
+                //    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
+                //    addLog("Result: NotSupported");
+                //}
 
             }
 

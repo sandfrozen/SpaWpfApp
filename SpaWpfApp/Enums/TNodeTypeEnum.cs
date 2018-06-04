@@ -18,6 +18,7 @@ namespace SpaWpfApp.Enums
         Times,
         Minus,
         Constant,
-        Variable
+        Variable,
+        Prog_
     }
 }
