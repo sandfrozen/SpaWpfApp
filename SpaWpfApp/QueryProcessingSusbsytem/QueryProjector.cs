@@ -43,7 +43,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (queryPreProcessor.ReturnTypeIsBoolean())
             {
-                result = queryResult.resultBoolean.ToString();
+                result = queryResult.resultBoolean.ToString().ToLower();
                 return result;
             }
             else if (queryPreProcessor.returnList.Count == 1)
