@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SpaWpfApp.QueryProcessingSusbsytem
 {
@@ -73,6 +74,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.Modifies:
                             Modifies(relation);
                             break;
+
+                        case Relation.Uses:
+                            Uses(relation);
+                            break;
                     }
                 }
                 else if (condition is Pattern)
@@ -89,6 +94,322 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             HandleBooleanReturn();
+        }
+
+        private void Uses(Relation relation)
+        {
+            List<TNode> candidates, candidates2;
+            List<TNode> resultList = new List<TNode>();
+            List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                var allWhileIfAssigns = astManager.GetAllWhileIfAsigns();
+                if(allWhileIfAssigns != null)
+                {
+                    foreach(var wia in allWhileIfAssigns)
+                    {
+                        switch (wia.type)
+                        {
+                            case Enums.TNodeTypeEnum.If:
+                            case Enums.TNodeTypeEnum.While:
+                                UpdateResultTable(true);
+                                return;
+                            case Enums.TNodeTypeEnum.Assign:
+                                if (Regex.IsMatch(wia.info, @"[a-zA-Z]"))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if (relation.arg1type == Entity._int)
+            {
+                TNode tnode = astManager.FindNode(Int32.Parse(relation.arg1));
+                candidates = new List<TNode>();
+                candidates.Add(tnode);
+                if (tnode.type != Enums.TNodeTypeEnum.Assign)
+                {
+                    candidates = astManager.GetAllWhileIfAssignsUnder(tnode, Enum.GetName(typeof(Enums.TNodeTypeEnum), tnode.type));
+                }
+
+                if (candidates is null || (candidates != null && !candidates.Any())) { UpdateResultTable(false); return; }
+
+                if (relation.arg2type == Entity._)
+                {
+                    foreach (var c in candidates)
+                    {
+                        switch (c.type)
+                        {
+                            case Enums.TNodeTypeEnum.If:
+                            case Enums.TNodeTypeEnum.While:
+                                UpdateResultTable(true);
+                                return;
+                            case Enums.TNodeTypeEnum.Assign:
+                                if (Regex.IsMatch(c.info, @"[a-zA-Z]"))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                        }
+                    }
+                    UpdateResultTable(false);
+                    return;
+
+                }
+
+                if (relation.arg2type == Entity._string)
+                {
+                    foreach (var c in candidates)
+                    {
+                        switch (c.type)
+                        {
+                            case Enums.TNodeTypeEnum.If:
+                            case Enums.TNodeTypeEnum.While:
+                                if (c.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                            case Enums.TNodeTypeEnum.Assign:
+                                if (CInfoContainsVarable(c.info, relation.arg2.Trim('"')))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                        }
+                    }
+
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    }
+                    else
+                    {
+                        candidates2 = astManager.GetNodes(Entity.variable);
+                    }
+
+                    if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+
+                    foreach (var c in candidates)
+                    {
+                        foreach (var v in candidates2)
+                        {
+                            switch (c.type)
+                            {
+                                case Enums.TNodeTypeEnum.If:
+                                case Enums.TNodeTypeEnum.While:
+                                    if (c.firstChild.indexOfName == v.indexOfName)
+                                    {
+                                        resultList.Add(v);
+                                    }
+                                    break;
+                                case Enums.TNodeTypeEnum.Assign:
+                                    if (CInfoContainsVarable(c.info, pkb.GetVarName((int)v.indexOfName)))
+                                    {
+                                        resultList.Add(v);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                {
+                    candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                }
+                else
+                {
+                    candidates2 = astManager.GetNodes(Entity.variable);
+                }
+
+                if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+
+                foreach (var a in candidates)
+                {
+                    foreach (var v in candidates2)
+                    {
+                        if (v.indexOfName == a.firstChild.indexOfName && !resultList.Contains(v))
+                        {
+                            resultList.Add(v);
+                        }
+                    }
+                }
+                UpdateResultTable(resultList, relation.arg2);
+                return;
+            }
+
+
+
+            if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
+            {
+                candidates = queryResult.GetNodes(relation.arg1);
+            }
+            else
+            {
+                candidates = astManager.GetNodes(relation.arg1type);
+            }
+            //if (candidates != null && relation.arg1type != Entity.assign) { candidates = astManager.GetAllAssignUnder(candidates, relation.arg1type); }
+
+
+            if (candidates is null) { UpdateResultTable(null, relation.arg1); return; }
+
+            if (relation.arg2type == Entity._)
+            {
+                foreach (var c in candidates)
+                {
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
+                    {
+                        foreach (var wia in whileIfAssignsUnder)
+                        {
+                            switch (wia.type)
+                            {
+                                case Enums.TNodeTypeEnum.If:
+                                case Enums.TNodeTypeEnum.While:
+                                    resultList.Add(c);
+                                    goto SkipRestOfThisLoopStep;
+                                case Enums.TNodeTypeEnum.Assign:
+                                    if (Regex.IsMatch(wia.info, @"[a-zA-Z]"))
+                                    {
+                                        resultList.Add(c);
+                                        goto SkipRestOfThisLoopStep;
+                                    }
+                                    break;
+                            }
+                        }
+
+                    }
+                    SkipRestOfThisLoopStep:;
+                }
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+
+            if (relation.arg2type == Entity._string)
+            {
+                foreach (var c in candidates)
+                {
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
+                    {
+                        foreach (var wia in whileIfAssignsUnder)
+                        {
+                            switch (wia.type)
+                            {
+                                case Enums.TNodeTypeEnum.If:
+                                case Enums.TNodeTypeEnum.While:
+                                    if (wia.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
+                                    {
+                                        resultList.Add(c);
+                                    }
+                                    break;
+                                case Enums.TNodeTypeEnum.Assign:
+                                    if (CInfoContainsVarable(wia.info, relation.arg2.Trim('"')) && !resultList.Contains(c))
+                                    {
+                                        resultList.Add(c);
+                                    }
+                                    break;
+                            }
+                        }
+
+                    }
+                }
+
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+
+            if (relation.arg2type == Entity.variable)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidates2 = queryResult.GetNodes(relation.arg2);
+                }
+                else
+                {
+                    candidates2 = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
+
+                foreach (var c in candidates)
+                {
+                    var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, relation.arg1type);
+                    foreach (var wia in whileIfAssignsUnder)
+                    {
+                        foreach (var v in candidates2)
+                        {
+                            switch (wia.type)
+                            {
+                                case Enums.TNodeTypeEnum.If:
+                                case Enums.TNodeTypeEnum.While:
+                                    if (wia.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c,v)))
+                                    {
+                                        resultListTuple.Add((c, v));
+                                    }
+                                    break;
+                                case Enums.TNodeTypeEnum.Assign:
+                                    if (CInfoContainsVarable(wia.info, pkb.GetVarName((int)v.indexOfName)) && !resultListTuple.Contains((c, v)))
+                                    {
+                                        resultListTuple.Add((c, v));
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
+
+                }
+
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
+            }
+        }
+
+        private bool CInfoContainsVarable(string info, string arg2)
+        {
+            if (info.Contains(arg2))
+            {
+                int indexOfStart = info.IndexOf(arg2);
+                int indexOfEnd = indexOfStart + arg2.Length - 1;
+
+                if (indexOfStart != 0)
+                {
+                    if (info[indexOfStart - 1] != 42 && info[indexOfStart - 1] != 43 && info[indexOfStart - 1] != 45)
+                    {
+                        return false;
+                    }
+                }
+
+                if (indexOfEnd != info.Length - 1)
+                {
+                    if (info[indexOfEnd + 1] != 42 && info[indexOfEnd + 1] != 43 && info[indexOfEnd + 1] != 45)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private void DoWith(With with)

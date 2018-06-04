@@ -136,6 +136,128 @@ namespace SpaWpfApp.Ast
             this.lastProgramLineNumber = programLineNumber;
         }
 
+        internal List<TNode> GetAllWhileIfAssignsUnder(TNode UpNodeX, string candidatesType)
+        {
+            List<TNode> resultList = new List<TNode>();
+            List<TNode> tmpAssigns = new List<TNode>();
+            List<TNode> tmpStmt = new List<TNode>();
+
+            resultList.Add(UpNodeX);
+            switch (candidatesType.ToLower())
+            {
+                case Entity.assign:
+                    return resultList;
+                case Entity._if:
+                case Entity._while:
+                case Entity.stmt:
+                    {
+                        tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
+                        if (tmpAssigns != null)
+                        {
+                            foreach (var ta in tmpAssigns)
+                            {
+                                if (!resultList.Contains(ta)) { resultList.Add(ta); }
+                            }
+                        }
+
+                        tmpStmt = GetChildrenXOfType(UpNodeX, Entity.stmt);
+                        if (tmpStmt != null)
+                        {
+                            foreach (var ts in tmpStmt)
+                            {
+                                if (!resultList.Contains(ts)) { resultList.Add(ts); }
+                            }
+                        }
+
+                        var tmpCalls = GetChildrenXOfType(UpNodeX, Entity.call);
+                        if (tmpCalls != null)
+                        {
+                            var allWhileIfAssigns = GetAllWhileIfAsigns();
+                            foreach (var tc in tmpCalls)
+                            {
+                                AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)tc.indexOfName), allWhileIfAssigns);
+                            }
+                        }
+
+
+                        return resultList;
+                    }
+                    break;
+
+                case Entity.procedure:
+                    {
+                        var allWhileIfAssigns = GetAllWhileIfAsigns();
+                        var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == UpNodeX.indexOfName).First();
+                        int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
+                        int lineNumberLast = cfgProcedure.lastProgramLineNumber;
+
+                        foreach (var awi in allWhileIfAssigns)
+                        {
+                            if (awi.programLine >= lineNumberFirst && awi.programLine <= lineNumberLast && !resultList.Contains(awi))
+                            {
+                                resultList.Add(awi);
+                            }
+
+                        }
+
+                        return resultList;
+                    }
+                    break;
+
+                case Entity.call:
+                    {
+                        var allWhileIfAssigns = GetAllWhileIfAsigns();
+                        AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)UpNodeX.indexOfName), allWhileIfAssigns);
+
+                        return resultList;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        private void AddWhileIfAssignUnderCall(ref List<TNode> resultList, string procName, List<TNode> allWhileIfAssigns)
+        {
+            var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == Pkb.GetProcIndex(procName)).First();
+            int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
+            int lineNumberLast = cfgProcedure.lastProgramLineNumber;
+
+            foreach (var wia in allWhileIfAssigns)
+            {
+                if (wia.programLine >= lineNumberFirst && wia.programLine <= lineNumberLast && !resultList.Contains(wia))
+                {
+                    resultList.Add(wia);
+                }
+            }
+            var called = Pkb.GetCalled(procName);
+            if (called != null && called.Any())
+            {
+                foreach (var p in called)
+                {
+                    AddWhileIfAssignUnderCall(ref resultList, p, allWhileIfAssigns);
+                }
+            }
+        }
+
+        internal List<TNode> GetAllWhileIfAsigns()
+        {
+            var result = DeepCopy(GetAllAssigns());
+            result.AddRange(GetAllParents());
+            return result;
+        }
+
+        private List<TNode> DeepCopy(List<TNode> listA)
+        {
+            List<TNode> copy = new List<TNode>();
+            foreach (var assign in listA)
+            {
+                copy.Add(assign);
+            }
+
+            return copy;
+        }
+
 
         private void BuildAssign(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
         {
@@ -417,8 +539,13 @@ namespace SpaWpfApp.Ast
         {
             List<TNode> resultList = new List<TNode>();
             List<TNode> tmpAssigns = new List<TNode>();
+
+            resultList.Add(UpNodeX);
+
             switch (candidatesType.ToLower())
             {
+                case Entity.assign:
+                    return resultList;
                 case Entity._if:
                 case Entity._while:
                 case Entity.stmt:
@@ -1238,6 +1365,9 @@ namespace SpaWpfApp.Ast
 
                 case Entity.variable:
                     return VariableList;
+
+                case Entity.call:
+                    return this.CallList;
             }
 
             return null;
