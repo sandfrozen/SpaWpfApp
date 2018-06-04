@@ -238,6 +238,14 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += Environment.NewLine;
                 }
+                else if (i < length - 2 && s == "}" && wordsInCode[i + 1] == "}")
+                {
+                    parsed += " ";
+                }
+                else if ( i > 0 && i < length - 1 && wordsInCode[i - 1] == "}" && s == "}")
+                {
+                    parsed += Environment.NewLine;
+                }
                 else if (i > 0 && wordsInCode[i - 1] == ";" && s == "}")
                 {
                     parsed += Environment.NewLine;
