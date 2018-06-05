@@ -249,8 +249,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     i = i + 2;
                 }
             }
-            string[] separators = new string[] { " ", Environment.NewLine };
-            return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] separators = new string[] { " " };
+            return Regex.Replace(query, @"\s+", " ").Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            //string[] separators = new string[] { " ", Environment.NewLine };
+            //return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private bool IsSeparatorChar(char toCheck)
