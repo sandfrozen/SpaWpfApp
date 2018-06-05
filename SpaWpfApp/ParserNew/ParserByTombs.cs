@@ -243,10 +243,10 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += Environment.NewLine;
                 }
-                else if (i == length - 1)
-                {
-                    //done
-                }
+                //else if (i == length - 1)
+                //{
+                //    //done
+                //}
                 else if (i == length - 2)
                 {
                     parsed += " ";
