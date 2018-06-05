@@ -77,6 +77,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {"int", "int" },
                 {"procedure", "string" },
                 {"procedure.procName", "string" },
+                {"stmtLst", "int" },
                 {"stmt", "int" },
                 {"stmt.stmt#", "int" },
                 {"assign", "int" },
@@ -91,7 +92,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {"if.stmt#", "int" },
                 {"while", "int" },
                 {"while.stmt#", "int" },
-
+                {"prog_line", "int" },
+                {"prog_line.stmt#", "int" },
             };
 
             declarationActions = new Dictionary<string, Action>{

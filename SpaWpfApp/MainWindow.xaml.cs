@@ -171,25 +171,9 @@ namespace SpaWpfApp
                 QueryResult queryResult = QueryResult.GetInstance();
                 QueryProjector queryProjector = QueryProjector.GetInstance();
 
-                var vfvd = QueryPreProcessor.GetInstance();
                 resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
                 addLog("Result: " + queryProjector.PrintResult());
-                //if (queryResult.resultIsBoolean)
-                //{
-                //    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryResult.resultBoolean.ToString().ToLower())));
-                //    addLog("Result: " + queryResult.resultBoolean.ToString().ToLower());
-                //}
-                //else
-                //{
-                //    string now = DateTime.Now.ToLongTimeString();
-                //    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " result")));
-                //    addLog("Result: NotSupported");
-                //}
-
             }
-
-
-
         }
 
         private void addLog(string log)

@@ -43,6 +43,43 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             queryResult.Init();
 
+            List<Condition> rpList = new List<Condition>();
+            List<With> wList = new List<With>();
+            List<With> w2synonymList = new List<With>();
+
+            foreach (var condition in conditionsList)
+            {
+                if (condition is With)
+                {
+                    wList.Add((With)condition);
+                    if(((With)condition).leftType != Entity._int && ((With)condition).leftType != Entity._string &&
+                        ((With)condition).rightType != Entity._int && ((With)condition).rightType != Entity._string)
+                    {
+                        w2synonymList.Add((With)condition);
+                    }
+                }
+                else { rpList.Add(condition); }
+            }
+
+            if (w2synonymList.Any())
+            {
+                foreach(var w2synonym in w2synonymList)
+                {
+                    wList.Remove(w2synonym);
+                    wList.Add(w2synonym);
+                }
+            }
+
+            conditionsList.Clear();
+            foreach(var rp in rpList)
+            {
+                conditionsList.Add(rp);
+            }
+            foreach(var w2 in wList)
+            {
+                conditionsList.Add(w2);
+            }
+
             foreach (var condition in conditionsList)
             {
                 actualCondition = condition;
@@ -295,7 +332,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void CheckIfCallsX(string p1, string p2, ref List<(TNode, TNode)> resultListTuple, TNode c1, TNode c2)
         {
-            if (pkb.IsCalls(p1, p2) != -1 && !resultListTuple.Contains((c1,c2)))
+            if (pkb.IsCalls(p1, p2) != -1 && !resultListTuple.Contains((c1, c2)))
             {
                 resultListTuple.Add((c1, c2));
                 return;
@@ -303,7 +340,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             foreach (var v in pkb.GetCalled(p1))
             {
-                CheckIfCallsX(v, p2, ref resultListTuple, c1,c2);
+                CheckIfCallsX(v, p2, ref resultListTuple, c1, c2);
             }
         }
 
@@ -323,13 +360,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void CheckIfCallsX(string p1, string p2, ref Boolean result)
         {
-            if(pkb.IsCalls(p1, p2) != -1)
+            if (pkb.IsCalls(p1, p2) != -1)
             {
                 result = true;
                 return;
             }
 
-            foreach(var v in pkb.GetCalled(p1))
+            foreach (var v in pkb.GetCalled(p1))
             {
                 CheckIfCallsX(v, p2, ref result);
             }
@@ -352,9 +389,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
             {
                 var calls = astManager.GetNodes(Entity.call);
-                foreach(var c in calls)
+                foreach (var c in calls)
                 {
-                    if(c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                    if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
                     {
                         UpdateResultTable(true);
                         return;
@@ -363,7 +400,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 UpdateResultTable(false);
                 return;
             }
-            else if(relation.arg1type == Entity._ && relation.arg2type == Entity.procedure)
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity.procedure)
             {
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
@@ -376,11 +413,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 var calls = astManager.GetNodes(Entity.call);
-                foreach(var c in calls)
+                foreach (var c in calls)
                 {
-                    foreach(var can in candidateForCalled)
+                    foreach (var can in candidateForCalled)
                     {
-                        if(c.indexOfName == can.indexOfName && !resultList.Contains(can))
+                        if (c.indexOfName == can.indexOfName && !resultList.Contains(can))
                         {
                             resultList.Add(can);
                             break;
@@ -390,19 +427,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 UpdateResultTable(resultList, relation.arg2);
             }
-            else if(relation.arg1type == Entity._string && relation.arg2type == Entity._)
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._)
             {
                 Boolean result = pkb.GetCalled(relation.arg1.Trim('"')).Any();
                 UpdateResultTable(result);
                 return;
             }
-            else if(relation.arg1type == Entity._string && relation.arg2type == Entity._string)
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._string)
             {
                 Boolean result = pkb.IsCalls(relation.arg1.Trim('"'), relation.arg2.Trim('"')) != -1 ? true : false;
                 UpdateResultTable(result);
                 return;
             }
-            else if(relation.arg1type == Entity._string && relation.arg2type == Entity.procedure)
+            else if (relation.arg1type == Entity._string && relation.arg2type == Entity.procedure)
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
@@ -414,11 +451,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
                 var calls = pkb.GetCalled(relation.arg1.Trim('"'));
-                foreach(var c in calls)
+                foreach (var c in calls)
                 {
-                    foreach(var can in candidateForCalled)
+                    foreach (var can in candidateForCalled)
                     {
-                        if(c == pkb.GetProcName((int)can.indexOfName))
+                        if (c == pkb.GetProcName((int)can.indexOfName))
                         {
                             resultList.Add(can);
                             break;
@@ -438,13 +475,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForCalling = astManager.GetNodes(Entity.procedure);
                 }
 
-                if(candidateForCalling is null)
+                if (candidateForCalling is null)
                 {
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
 
-                foreach(var c in candidateForCalling)
+                foreach (var c in candidateForCalling)
                 {
                     if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any())
                     {
@@ -483,9 +520,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 UpdateResultTable(resultList, relation.arg1);
                 return;
             }
-            else if(relation.arg1type == Entity.procedure && relation.arg2type == Entity.procedure)
+            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity.procedure)
             {
-                if(queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
                     candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
                 }
@@ -516,11 +553,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     return;
                 }
 
-                foreach(var c1 in candidateForCalling)
+                foreach (var c1 in candidateForCalling)
                 {
-                    foreach(var c2 in candidateForCalled)
+                    foreach (var c2 in candidateForCalled)
                     {
-                        if(pkb.IsCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName)) != -1 ? true : false && !resultListTuple.Contains((c1,c2)))
+                        if (pkb.IsCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName)) != -1 ? true : false && !resultListTuple.Contains((c1, c2)))
                         {
                             resultListTuple.Add((c1, c2));
                         }
@@ -541,9 +578,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
                 var allWhileIfAssigns = astManager.GetAllWhileIfAsigns();
-                if(allWhileIfAssigns != null)
+                if (allWhileIfAssigns != null)
                 {
-                    foreach(var wia in allWhileIfAssigns)
+                    foreach (var wia in allWhileIfAssigns)
                     {
                         switch (wia.type)
                         {
@@ -796,7 +833,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             {
                                 case Enums.TNodeTypeEnum.If:
                                 case Enums.TNodeTypeEnum.While:
-                                    if (wia.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c,v)))
+                                    if (wia.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
                                     {
                                         resultListTuple.Add((c, v));
                                     }
@@ -850,156 +887,303 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void DoWith(With with)
         {
-            if (with.leftType.Contains('.'))
+            List<TNode> candidates, candidates2;
+            List<TNode> resultList = new List<TNode>();
+            List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
+
+            if (with.leftType == Entity._int)
             {
-                string leftType = with.leftType.Substring(0, with.leftType.IndexOf('.'));
-                string leftSynonym = with.left.Substring(0, with.left.IndexOf('.'));
-                string leftAttrName = with.left.Substring(with.left.IndexOf('.') + 1);
-
-                List<TNode> candidates;
-                List<TNode> resultList = new List<TNode>();
-
-                if (leftType == Entity.assign || leftType == Entity.stmt || leftType == Entity._if || leftType == Entity._while)
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    int rightValue = Int32.Parse(with.right.Trim('"'));
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(leftType);
-                    }
+                    candidates = queryResult.GetNodes(with.right);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(with.rightType);
+                }
 
-                    if (candidates is null)
+                foreach (var c in candidates)
+                {
+                    if (TheSame(c, Int32.Parse(with.left)) && !resultList.Contains(c))
                     {
-                        UpdateResultTable(null, leftSynonym);
+                        resultList.Add(c);
                     }
+                }
 
-                    foreach (var c in candidates)
+                UpdateResultTable(resultList, with.right);
+                return;
+            }
+
+            else if (with.rightType == Entity._int)
+            {
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
+                {
+                    candidates = queryResult.GetNodes(with.left);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(with.leftType);
+                }
+
+                foreach (var c in candidates)
+                {
+                    if (TheSame(c, Int32.Parse(with.right)) && !resultList.Contains(c))
                     {
-                        if (c.programLine == rightValue)
-                        {
-                            resultList.Add(c);
-                        }
+                        resultList.Add(c);
                     }
+                }
 
-                    UpdateResultTable(resultList, leftSynonym);
+                UpdateResultTable(resultList, with.left);
+                return;
+            }
+
+            else if (with.leftType == Entity._string)
+            {
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
+                {
+                    candidates = queryResult.GetNodes(with.right);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(with.rightType);
+                }
+
+                if (candidates is null)
+                {
+                    UpdateResultTable(null, with.right);
                     return;
                 }
 
-                if (leftType == Entity.procedure)
+                string rt = with.rightType;
+                RemoveDotFromNameIfItIsAttrRef(ref rt);
+                switch (rt)
                 {
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(leftType);
-                    }
+                    case Entity.procedure:
+                    case Entity.call:
+                        foreach (var c in candidates)
+                        {
+                            if (pkb.GetProcName((int)c.indexOfName) == with.left.Trim('"') && !resultList.Contains(c))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                        break;
+                    case Entity.variable:
+                        foreach (var c in candidates)
+                        {
+                            if (pkb.GetVarName((int)c.indexOfName) == with.left.Trim('"') && !resultList.Contains(c))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                        break;
+                }
 
-                    if (candidates is null)
-                    {
-                        UpdateResultTable(null, leftSynonym);
-                    }
+                UpdateResultTable(resultList, with.right);
+                return;
+            }
 
+            else if (with.rightType == Entity._string)
+            {
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
+                {
+                    candidates = queryResult.GetNodes(with.left);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(with.leftType);
+                }
+
+                if (candidates is null)
+                {
+                    UpdateResultTable(null, with.left);
+                    return;
+                }
+
+                string lt = with.leftType;
+                RemoveDotFromNameIfItIsAttrRef(ref lt);
+                switch (lt)
+                {
+                    case Entity.procedure:
+                    case Entity.call:
+                        foreach (var c in candidates)
+                        {
+                            if (pkb.GetProcName((int)c.indexOfName) == with.right.Trim('"') && !resultList.Contains(c))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                        break;
+                    case Entity.variable:
+                        foreach (var c in candidates)
+                        {
+                            if (pkb.GetVarName((int)c.indexOfName) == with.right.Trim('"') && !resultList.Contains(c))
+                            {
+                                resultList.Add(c);
+                            }
+                        }
+                        break;
+                }
+
+                UpdateResultTable(resultList, with.left);
+                return;
+            }
+
+            else
+            {
+                List<(object, string)> leftCollection = new List<(object, string)>();
+                List<(object, string)> rightCollection = new List<(object, string)>();
+
+                #region determine candidates
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
+                {
+                    candidates = queryResult.GetNodes(with.left);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(with.leftType);
+                }
+
+                if (candidates is null)
+                {
+                    UpdateResultTable(null, with.left);
+                    return;
+                }
+
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
+                {
+                    candidates2 = queryResult.GetNodes(with.right);
+                }
+                else
+                {
+                    candidates2 = astManager.GetNodes(with.rightType);
+                }
+
+                if (candidates2 is null)
+                {
+                    UpdateResultTable(null, with.right);
+                    return;
+                }
+                #endregion
+
+                #region determine objects from candidates
+                string leftTypeX = with.leftType, rightTypeX = with.rightType;
+                RemoveDotFromNameIfItIsAttrRef(ref leftTypeX);
+                RemoveDotFromNameIfItIsAttrRef(ref rightTypeX);
+                if (with.left.Contains('.') && leftTypeX == Entity.call || leftTypeX == Entity.procedure)
+                {
                     foreach (var c in candidates)
                     {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
+                        leftCollection.Add((pkb.GetProcName((int)c.indexOfName), Entity._string));
+                    }
+                }
+                else if (leftTypeX == Entity.variable)
+                {
+                    foreach (var c in candidates)
+                    {
+                        leftCollection.Add((pkb.GetVarName((int)c.indexOfName), Entity._string));
+                    }
+                }
+                else if (leftTypeX == Entity.stmtLst)
+                {
+                    foreach (var c in candidates)
+                    {
+                        leftCollection.Add((c.programLine, "int"));
+                    }
+                }
+                else if (leftTypeX == Entity.constant)
+                {
+                    foreach (var c in candidates)
+                    {
+                        leftCollection.Add((c.value, "int"));
+                    }
+                }
+                else
+                {
+                    foreach (var c in candidates)
+                    {
+                        leftCollection.Add((c.programLine, "int"));
+                    }
+                }
+
+
+                if (with.right.Contains('.') && rightTypeX == Entity.call || rightTypeX == Entity.procedure)
+                {
+                    foreach (var c in candidates2)
+                    {
+                        rightCollection.Add((pkb.GetProcName((int)c.indexOfName), Entity._string));
+                    }
+                }
+                else if (rightTypeX == Entity.variable)
+                {
+                    foreach (var c in candidates2)
+                    {
+                        rightCollection.Add((pkb.GetVarName((int)c.indexOfName), Entity._string));
+                    }
+                }
+                else if (rightTypeX == Entity.stmtLst)
+                {
+                    foreach (var c in candidates2)
+                    {
+                        rightCollection.Add((c.programLine, "int"));
+                    }
+                }
+                else if (rightTypeX == Entity.constant)
+                {
+                    foreach (var c in candidates2)
+                    {
+                        rightCollection.Add((c.value, "int"));
+                    }
+                }
+                else
+                {
+                    foreach (var c in candidates2)
+                    {
+                        rightCollection.Add((c.programLine, "int"));
+                    }
+                }
+                #endregion
+
+                for (int i = 0; i < candidates.Count; i++)
+                    for (int j = 0; j < candidates2.Count; j++)
+                    {
+                        if (TheSame(leftCollection[i], rightCollection[j]) && !resultListTuple.Contains((candidates[i], candidates2[j])))
                         {
-                            resultList.Add(c);
+                            resultListTuple.Add((candidates[i], candidates2[j]));
                         }
                     }
 
-                    UpdateResultTable(resultList, leftSynonym);
-                }
+                UpdateResultTable(resultListTuple, with.left, with.right);
+                return;
+            }
 
-                if (leftType == Entity.call)
-                {
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(leftType);
-                    }
+        }
 
-                    if (candidates is null)
-                    {
-                        UpdateResultTable(null, leftSynonym);
-                    }
-
-                    foreach (var c in candidates)
-                    {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
-                        {
-                            resultList.Add(c);
-                        }
-                    }
-
-                    UpdateResultTable(resultList, leftSynonym);
-                }
-
-                if (leftType == Entity.variable)
-                {
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(Entity.variable);
-                    }
-
-                    if (candidates is null)
-                    {
-                        UpdateResultTable(null, leftSynonym);
-                    }
-
-                    foreach (var c in candidates)
-                    {
-                        if (c.indexOfName == pkb.GetProcIndex(with.right.Trim('"')))
-                        {
-                            resultList.Add(c);
-                        }
-                    }
-
-                    UpdateResultTable(resultList, leftSynonym);
-                }
-
-                if (leftType == Entity.constant)
-                {
-                    int rightValue = Int32.Parse(with.right.Trim('"'));
-
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(leftSynonym))
-                    {
-                        candidates = queryResult.GetNodes(leftSynonym);
-                    }
-                    else
-                    {
-                        candidates = astManager.GetNodes(leftType);
-                    }
-
-                    if (candidates is null)
-                    {
-                        UpdateResultTable(null, leftSynonym);
-                    }
-
-                    foreach (var c in candidates)
-                    {
-                        if (c.value == rightValue)
-                        {
-                            resultList.Add(c);
-                        }
-                    }
-
-                    UpdateResultTable(resultList, leftSynonym);
-                }
+        private bool TheSame(TNode c, int v)
+        {
+            switch (c.type)
+            {
+                case TNodeTypeEnum.Constant:
+                    return c.value == v;
+                default:
+                    return c.programLine == v;
             }
         }
 
+        private bool TheSame((object, string) p1, (object, string) p2)
+        {
+            switch (p1.Item2)
+            {
+                case "string":
+                    return (string)p1.Item1 == (string)p2.Item1;
+                case "int":
+                    return (int)p1.Item1 == (int)p2.Item1;
+            }
+            return false;
+        }
 
         private void DoPattern(Pattern pattern)
         {
@@ -1243,7 +1427,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(resultList, relation.arg2);
                     return;
                 }
-            }         
+            }
 
 
             if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
@@ -1278,7 +1462,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 foreach (var c in candidates)
                 {
                     var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                    if(assignsUnder != null)
+                    if (assignsUnder != null)
                     {
                         foreach (var au in assignsUnder)
                         {
@@ -3012,6 +3196,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public void UpdateResultTable(List<(TNode, TNode)> resultListTuple, string firstArgument, string secondArgument)
         {
+            RemoveDotFromNameIfItIsAttrRef(ref firstArgument);
+            RemoveDotFromNameIfItIsAttrRef(ref secondArgument);
             queryResult.SetDeclarationWasDeterminated(firstArgument);
             queryResult.SetDeclarationWasDeterminated(secondArgument);
 
@@ -3024,14 +3210,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 if (queryResult.HasRecords())
                 {
                     var earlierResultRecords = queryResult.GetResultTableList();
-
+                    TNode[] newRecord;
                     foreach (var result in resultListTuple)
                     {
                         foreach (var record in earlierResultRecords)
                         {
-                            record[indexOfDeclarationFirstArgument] = result.Item1;
-                            record[indexOfDeclarationSecondArgument] = result.Item2;
-                            newResultTableList.Add(record);
+                            newRecord = new TNode[queryResult.declarationsTable.Length];
+                            for (int i = 0; i < record.Length; i++)
+                            {
+                                newRecord[i] = record[i];
+                            }
+                            newRecord[indexOfDeclarationFirstArgument] = result.Item1;
+                            newRecord[indexOfDeclarationSecondArgument] = result.Item2;
+                            newResultTableList.Add(newRecord);
                         }
                     }
                 }
@@ -3060,6 +3251,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public void UpdateResultTable(List<TNode> resultList, string argumentLookingFor)
         {
+            RemoveDotFromNameIfItIsAttrRef(ref argumentLookingFor);
+
             queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
 
             if (resultList != null && resultList.Any())
@@ -3077,7 +3270,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         foreach (var record in earlierResultRecords)
                         {
                             newRecord = new TNode[record.Length];
-                            for(int i=0; i<record.Length; i++)
+                            for (int i = 0; i < record.Length; i++)
                             {
                                 newRecord[i] = record[i];
                             }
@@ -3134,6 +3327,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 queryResult.resultBoolean = queryResult.resultTableList.Count > 0 ? true : false;
             }
+        }
+
+        private void RemoveDotFromNameIfItIsAttrRef(ref string s)
+        {
+            if (s.Contains('.')) { s = s.Substring(0, s.IndexOf('.')); }
         }
     }
 }
