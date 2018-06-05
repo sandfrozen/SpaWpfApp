@@ -1,4 +1,5 @@
 ﻿using SpaWpfApp.Exceptions;
+using SpaWpfApp.PkbNew;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,6 +27,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> declarationActions;
 
         private static QueryPreProcessor instance;
+        private PkbAPI pkb;
+
         public static QueryPreProcessor GetInstance()
         {
             if (instance == null)
@@ -108,6 +111,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
               { Entity.constant, ParseDeclaration},
               { Entity.prog_line, ParseDeclaration},
             };
+        }
+
+        internal void SetPkb(PkbAPI pkb)
+        {
+            this.pkb = pkb;
         }
 
         private void CheckModifies()
@@ -623,7 +631,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     if (declarationsList.ContainsKey(synonym))
                     {
                         string synonymType = declarationsList[synonym];
-                        if ( entityAttributeType.Keys.Contains(synonymType + attrRef) )
+                        if (entityAttributeType.Keys.Contains(synonymType + attrRef))
                         {
                             leftType = synonymType + attrRef;
                         }
@@ -649,7 +657,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (int.TryParse(right, out int result2))
                 {
-                    if ( int.TryParse(left, out int result22) )
+                    if (int.TryParse(left, out int result22))
                     {
                         throw new QueryException("Left and right argument in with cannot be <int>: " + left + " = " + right);
                     }
@@ -699,7 +707,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 //checking left and right argument types
                 string leftTypeTest = entityAttributeType[leftType];
                 string rightTypeTest = entityAttributeType[rightType];
-                if ( !leftTypeTest.Equals(rightTypeTest) )
+                if (!leftTypeTest.Equals(rightTypeTest))
                 {
                     throw new QueryException("Arguments in with have different types: " + left + " (" + leftTypeTest + ") = " + right + " (" + rightTypeTest + ")");
                 }
@@ -750,7 +758,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg1.First() == '"' && arg1.Last() == '"')
                             {
-                                IsSynonym(arg1.Trim('"'));
+                                string arg1string = arg1.Trim('"');
+                                IsSynonym(arg1string);
+
+                                if (pkb.GetVarIndex(arg1string) == -1)
+                                {
+                                    throw new QueryException("Argument 1 in assign " + arg1 + "is not delcared");
+                                }
+
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
@@ -791,7 +806,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg1.First() == '"' && arg1.Last() == '"')
                             {
-                                IsSynonym(arg1.Trim('"'));
+                                //IsSynonym(arg1.Trim('"'));
+                                //arg1type = Entity._string;
+                                string arg1string = arg1.Trim('"');
+                                IsSynonym(arg1string);
+
+                                if (pkb.GetVarIndex(arg1string) == -1)
+                                {
+                                    throw new QueryException("Argument 1 in while " + arg1 + "is not delcared");
+                                }
+
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
@@ -831,7 +855,16 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg1.First() == '"' && arg1.Last() == '"')
                             {
-                                IsSynonym(arg1.Trim('"'));
+                                //IsSynonym(arg1.Trim('"'));
+                                //arg1type = Entity._string;
+                                string arg1string = arg1.Trim('"');
+                                IsSynonym(arg1string);
+
+                                if (pkb.GetVarIndex(arg1string) == -1)
+                                {
+                                    throw new QueryException("Argument 1 in while " + arg1 + "is not delcared");
+                                }
+
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
