@@ -160,12 +160,27 @@ namespace SpaWpfApp.Cfg
                     case "while":
                         {
                             BuildWhile(sourceCodeLines, ref i, ref currentPreviousNode, ref actualNode, ref actualCfgStructure, ref programLineNumber, ref howManyStatementsEnd);
+
+                            if (howManyStatementsEnd > 0) // end of then section
+                            {
+                                endNodeThenSection = actualNode;
+                                actualNode = ifNodeMain;
+                                --howManyStatementsEnd;
+                            }
                         }
                         break;
 
                     case "if":
                         {
                             BuildIf(sourceCodeLines, ref i, ref currentPreviousNode, ref actualNode, ref actualCfgStructure, ref programLineNumber, ref howManyStatementsEnd);
+
+
+                            if (howManyStatementsEnd > 0) // end of then section
+                            {
+                                endNodeThenSection = actualNode;
+                                actualNode = ifNodeMain;
+                                --howManyStatementsEnd;
+                            }
                         }
                         break;
 
