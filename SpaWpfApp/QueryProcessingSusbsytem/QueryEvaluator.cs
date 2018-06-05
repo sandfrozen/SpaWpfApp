@@ -2565,6 +2565,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForFrom = DeepCopy(astManager.GetNodes(relation.arg1type));
                 }
 
+                if(candidateForFrom is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                    return;
+                }
+
                 //candidates for to
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
