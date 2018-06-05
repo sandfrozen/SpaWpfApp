@@ -49,7 +49,9 @@ namespace SpaWpfApp
 
                 procedureRichTextBox.Document.Blocks.Clear();
                 procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.parsedSourceCode)));
-                
+                procedureRichTextBox.ScrollToVerticalOffset(0);
+                //linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
+
                 addLog("Source Code Parser: Ok");
                 return;
             }
@@ -230,6 +232,11 @@ namespace SpaWpfApp
                 addLog("Result: " + queryProjector.PrintResult());
 
             }
+        }
+
+        private void ProcedureRichTextBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
         }
     }
 }

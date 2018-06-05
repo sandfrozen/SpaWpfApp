@@ -113,7 +113,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             };
         }
 
-        internal void SetPkb(PkbAPI pkb)
+        public void SetPkb(PkbAPI pkb)
         {
             this.pkb = pkb;
         }
