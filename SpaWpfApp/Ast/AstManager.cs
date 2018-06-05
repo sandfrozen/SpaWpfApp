@@ -1355,6 +1355,7 @@ namespace SpaWpfApp.Ast
 
         public List<TNode> GetNodes(string nodesType)
         {
+            RemoveDotFromNameIfItIsAttrRef(ref nodesType);
             switch (nodesType)
             {
                 case Entity._if:
@@ -1366,8 +1367,9 @@ namespace SpaWpfApp.Ast
                 case Entity.assign:
                     return AssignList;
 
+                case Entity.prog_line:
                 case Entity.stmt:
-                    return this.GetAllParents();
+                    return this.NodeWithLineNumberList;
 
                 case Entity.procedure:
                     return ProcedureList;
@@ -1383,12 +1385,14 @@ namespace SpaWpfApp.Ast
 
                 case Entity.stmtLst:
                     return this.StmtLstList;
-
-                case Entity.prog_line:
-                    return NodeWithLineNumberList;
             }
 
             return null;
+        }
+
+        private void RemoveDotFromNameIfItIsAttrRef(ref string s)
+        {
+            if (s.Contains('.')) { s = s.Substring(0, s.IndexOf('.')); }
         }
     }
 }

@@ -78,12 +78,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         internal bool DeclarationWasDeterminated(string argument)
         {
+            argument = EnsureWithoutDot(argument);
             return declarationsTable.Where(x => x.key == argument).Select(p => p.wasDeterminated).FirstOrDefault();
         }
 
         internal List<TNode> GetNodes(string argument)
         {
             List<TNode> result = new List<TNode>();
+            argument = EnsureWithoutDot(argument);
             int indexOfDeclaration = FindIndexOfDeclaration(argument);
             foreach(var resultTable in resultTableList)
             {
@@ -93,6 +95,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             return result.Count() > 0 ? result : null;
         }
 
+        private string EnsureWithoutDot(string right)
+        {
+            return right.Contains('.') ? right.Substring(0, right.IndexOf('.')) : right;
+        }
         public int FindIndexOfDeclaration(string argument)
         {
             for(int i=0; i<declarationsTable.Length; i++)
