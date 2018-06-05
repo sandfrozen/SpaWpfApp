@@ -2486,7 +2486,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                         {
-                            candidateForTo = queryResult.GetNodes(relation.arg2);
+                            candidateForTo = DeepCopy(queryResult.GetNodes(relation.arg2));
                             if (candidateForTo != null)
                             {
                                 foreach (var from in fromList)
@@ -2558,17 +2558,17 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 //candidates for from
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
                 {
-                    candidateForFrom = queryResult.GetNodes(relation.arg1);
+                    candidateForFrom = DeepCopy(queryResult.GetNodes(relation.arg1));
                 }
                 else
                 {
-                    candidateForFrom = astManager.GetNodes(relation.arg1type);
+                    candidateForFrom = DeepCopy(astManager.GetNodes(relation.arg1type));
                 }
 
                 //candidates for to
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidateForTo = queryResult.GetNodes(relation.arg2);
+                    candidateForTo = DeepCopy(queryResult.GetNodes(relation.arg2));
                     if (candidateForTo != null)
                     {
                         for (int i = 0; i < candidateForFrom.Count(); i++)

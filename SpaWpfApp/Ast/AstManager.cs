@@ -84,7 +84,7 @@ namespace SpaWpfApp.Ast
             TNode actualNode = null;
             int howManyStatementsEnd = 0;
 
-            for (int i = 0; i < sourceCodeLines.Length - 1; i++)
+            for (int i = 0; i < sourceCodeLines.Length; i++)
             {
                 if (sourceCodeLines[i] == "") { break; }
                 lineWords = sourceCodeLines[i].Split(' ');
@@ -1262,17 +1262,41 @@ namespace SpaWpfApp.Ast
 
         private void FindAllChildrenS(ref List<TNode> children, TNode p_father, List<TNodeTypeEnum> acceptableType)
         {
-            for (int i = 0; i < ParentTable.Length; i++)
+            if(p_father is null)
             {
-                if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
-                {
-                    if (!children.Contains(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault()))
-                    {
-                        children.Add(FindNode(i + 1));
-                    }
-                    FindAllChildrenS(ref children, NodeList.Where(x => x.programLine == i + 1).FirstOrDefault(), acceptableType);
-                }
+                return;
             }
+
+            TNode tmp = p_father.firstChild;
+            if (tmp is null)
+            {
+                return;
+            }
+            do
+            {
+                if (acceptableType.Contains(tmp.type) && !children.Contains(tmp))
+                {
+                    children.Add(tmp);
+                }
+                if (tmp.type != TNodeTypeEnum.Assign)
+                {
+                    FindAllChildrenS(ref children, tmp, acceptableType);
+                }
+                tmp = tmp.rightSibling;
+            }
+            while (tmp != null);
+
+            //for (int i = 0; i < ParentTable.Length; i++)
+            //{
+            //    if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
+            //    {
+            //        if (!children.Contains(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault()))
+            //        {
+            //            children.Add(FindNode(i + 1));
+            //        }
+            //        FindAllChildrenS(ref children, NodeList.Where(x => x.programLine == i + 1).FirstOrDefault(), acceptableType);
+            //    }
+            //}
         }
         #endregion
 
