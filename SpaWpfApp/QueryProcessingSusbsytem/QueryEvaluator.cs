@@ -70,6 +70,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
             }
 
+            conditionsList.Clear();
+            foreach(var rp in rpList)
+            {
+                conditionsList.Add(rp);
+            }
+            foreach(var w2 in wList)
+            {
+                conditionsList.Add(w2);
+            }
 
             foreach (var condition in conditionsList)
             {
@@ -884,9 +893,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (with.leftType == Entity._int)
             {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right.Substring(0, with.right.IndexOf('.'))))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    candidates = queryResult.GetNodes(with.right.Substring(0, with.right.IndexOf('.')));
+                    candidates = queryResult.GetNodes(with.right);
                 }
                 else
                 {
@@ -895,7 +904,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidates)
                 {
-                    if (c.programLine == Int32.Parse(with.left) && !resultList.Contains(c))
+                    if (TheSame(c, Int32.Parse(with.left)) && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -907,9 +916,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             else if (with.rightType == Entity._int)
             {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left.Substring(0, with.left.IndexOf('.'))))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
                 {
-                    candidates = queryResult.GetNodes(with.left.Substring(0, with.left.IndexOf('.')));
+                    candidates = queryResult.GetNodes(with.left);
                 }
                 else
                 {
@@ -931,9 +940,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else if (with.leftType == Entity._string)
             {
 
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right.Substring(0, with.right.IndexOf('.'))))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    candidates = queryResult.GetNodes(with.right.Substring(0, with.right.IndexOf('.')));
+                    candidates = queryResult.GetNodes(with.right);
                 }
                 else
                 {
@@ -946,13 +955,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     return;
                 }
 
-                switch (with.rightType)
+                string rt = with.rightType;
+                RemoveDotFromNameIfItIsAttrRef(ref rt);
+                switch (rt)
                 {
                     case Entity.procedure:
                     case Entity.call:
                         foreach (var c in candidates)
                         {
-                            if (pkb.GetProcName((int)c.indexOfName) == with.left && !resultList.Contains(c))
+                            if (pkb.GetProcName((int)c.indexOfName) == with.left.Trim('"') && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -961,7 +972,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     case Entity.variable:
                         foreach (var c in candidates)
                         {
-                            if (pkb.GetVarName((int)c.indexOfName) == with.left && !resultList.Contains(c))
+                            if (pkb.GetVarName((int)c.indexOfName) == with.left.Trim('"') && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -976,7 +987,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else if (with.rightType == Entity._string)
             {
 
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(EnsureWithoutDot(with.left)))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
                 {
                     candidates = queryResult.GetNodes(with.left);
                 }
@@ -1026,7 +1037,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 List<(object, string)> rightCollection = new List<(object, string)>();
 
                 #region determine candidates
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(EnsureWithoutDot(with.left)))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
                 {
                     candidates = queryResult.GetNodes(with.left);
                 }
@@ -1042,9 +1053,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
 
 
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(EnsureWithoutDot(with.right)))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    candidates2 = queryResult.GetNodes(EnsureWithoutDot(with.right));
+                    candidates2 = queryResult.GetNodes(with.right);
                 }
                 else
                 {
@@ -1149,11 +1160,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 return;
             }
 
-        }
-
-        private string EnsureWithoutDot(string right)
-        {
-            return right.Contains('.') ? right.Substring(0, right.IndexOf('.')) : right;
         }
 
         private bool TheSame(TNode c, int v)
