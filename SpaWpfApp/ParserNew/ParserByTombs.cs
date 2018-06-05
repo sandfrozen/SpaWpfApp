@@ -356,6 +356,10 @@ namespace SpaWpfApp.ParserNew
                     throw new SourceCodeException(message);
                 }
             }
+            if( currentIndex >= wordsInCode.Length )
+            {
+                throw new SourceCodeException("'}' at the end of procedure not found");
+            }
             currentIndex++;
             currentLevel--;
         }
