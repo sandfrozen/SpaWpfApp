@@ -1719,7 +1719,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeWithLineNumberList;
+                            candidateForFrom = astManager.GetNodes(relation.arg1);
                         }
 
                         if (candidateForFrom != null)
@@ -1747,7 +1747,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeWithLineNumberList;
+                    candidateForFrom = astManager.GetNodes(relation.arg1);
                 }
 
                 //candidates for to
@@ -1990,7 +1990,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeWithLineNumberList;
+                            candidateForFrom = astManager.GetNodes(relation.arg1);
                         }
 
                         if (candidateForFrom != null)
@@ -2018,7 +2018,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeWithLineNumberList;
+                    candidateForFrom = astManager.GetNodes(relation.arg1);
                 }
 
                 //candidates for to
@@ -2263,7 +2263,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeWithLineNumberList;
+                            candidateForFrom = astManager.GetNodes(relation.arg1);
                         }
 
                         if (candidateForFrom != null)
@@ -2291,7 +2291,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeWithLineNumberList;
+                    candidateForFrom = astManager.GetNodes(relation.arg1);
                 }
 
                 //candidates for to
@@ -2534,7 +2534,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.NodeWithLineNumberList;
+                            candidateForFrom = astManager.GetNodes(relation.arg1type);
                         }
 
                         if (candidateForFrom != null)
@@ -2562,7 +2562,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.NodeWithLineNumberList;
+                    candidateForFrom = astManager.GetNodes(relation.arg1type);
                 }
 
                 //candidates for to
