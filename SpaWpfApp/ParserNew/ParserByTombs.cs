@@ -174,6 +174,14 @@ namespace SpaWpfApp.ParserNew
                     parsed += Environment.NewLine + InsertSpaces(level);
                     lines += ++line + Environment.NewLine;
                 }
+                else if (i == length - 1)
+                {
+                    //done
+                }
+                else if (i == length - 2)
+                {
+                    parsed += " ";
+                }
                 else if (s == ";" && wordsInCode[i + 1] == "}")
                 {
                     parsed += " ";
@@ -191,6 +199,10 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += Environment.NewLine + InsertSpaces(level);
                     lines += Environment.NewLine;
+                }
+                else if (i < length - 2 && s == "}" && wordsInCode[i + 1] == "}")
+                {
+                    parsed += " ";
                 }
                 else if (s == "}" && i == length - 1)
                 {
@@ -229,6 +241,14 @@ namespace SpaWpfApp.ParserNew
                 if (s == "{")
                 {
                     parsed += Environment.NewLine;
+                }
+                else if (i == length - 1)
+                {
+                    //done
+                }
+                else if (i==length-2)
+                {
+                    parsed += " ";
                 }
                 else if (i < length - 1 && s == ";" && wordsInCode[i + 1] == "}")
                 {
@@ -517,8 +537,9 @@ namespace SpaWpfApp.ParserNew
                     i = i + 2;
                 }
             }
-            string[] separators = new string[] { " ", Environment.NewLine };
-            return code.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] separators = new string[] { " " };
+            return Regex.Replace(code, @"\s+", " ").Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            //return code.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private bool IsSeparatorChar(char toCheck)
