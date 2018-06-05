@@ -305,7 +305,14 @@ namespace SpaWpfApp.ParserNew
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
-            pkb.InsertProc(procName);
+            if( pkb.GetProcIndex(procName) == -1 )
+            {
+                pkb.InsertProc(procName);
+            } else
+            {
+                throw new SourceCodeException("Procedure: \""+ procName + "\" cannot be declared second time");
+            }
+            
             addToDeclaredProcedures(procName);
             currentProcedure = procName;
             firstLineOfProcedure.Add(currentLine + 1);
