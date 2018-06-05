@@ -219,7 +219,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     result += ", ";
                 }
 
-                result = result.Substring(0, result.Length - 2);
+                if(result.Length > 2) { result = result.Substring(0, result.Length - 2); }
+                else { result = "none"; }
                 return result;
             }
         }

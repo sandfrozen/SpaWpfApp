@@ -1310,7 +1310,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                         foreach (var i in listIf)
                         {
-                            if (i.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Replace("\"", ""))
+                            if (i.firstChild.indexOfName == pkb.GetVarIndex(pattern.arg1.Trim('"'))
                                 && !result.Contains(i))
                             {
                                 result.Add(i);
