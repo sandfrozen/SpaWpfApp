@@ -174,11 +174,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 var calls = astManager.GetNodes(Entity.call);
@@ -214,11 +214,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 var calls = pkb.GetCalled(relation.arg1.Trim('"'));
@@ -235,11 +235,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -263,11 +263,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -288,11 +288,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -304,11 +304,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalled is null)
@@ -405,11 +405,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 var calls = astManager.GetNodes(Entity.call);
@@ -443,11 +443,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 var calls = pkb.GetCalled(relation.arg1.Trim('"'));
@@ -468,11 +468,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -496,11 +496,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -524,11 +524,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = queryResult.GetNodes(relation.arg1.Trim('"'));
+                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = astManager.GetNodes(Entity.procedure);
+                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalling is null)
@@ -540,11 +540,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = astManager.GetNodes(Entity.procedure);
+                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 if (candidateForCalled is null)
@@ -668,11 +668,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                     {
-                        candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                        candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                     }
                     else
                     {
-                        candidates2 = astManager.GetNodes(Entity.variable);
+                        candidates2 = DeepCopy(astManager.GetNodes(Entity.variable));
                     }
 
                     if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
@@ -705,11 +705,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidates2 = astManager.GetNodes(Entity.variable);
+                    candidates2 = DeepCopy(astManager.GetNodes(Entity.variable));
                 }
 
                 if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
@@ -732,11 +732,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
             {
-                candidates = queryResult.GetNodes(relation.arg1);
+                candidates = DeepCopy(queryResult.GetNodes(relation.arg1));
             }
             else
             {
-                candidates = astManager.GetNodes(relation.arg1type);
+                candidates = DeepCopy(astManager.GetNodes(relation.arg1type));
             }
             //if (candidates != null && relation.arg1type != Entity.assign) { candidates = astManager.GetAllAssignUnder(candidates, relation.arg1type); }
 
@@ -813,11 +813,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
-                    candidates2 = queryResult.GetNodes(relation.arg2);
+                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2));
                 }
                 else
                 {
-                    candidates2 = astManager.GetNodes(relation.arg2type);
+                    candidates2 = DeepCopy(astManager.GetNodes(relation.arg2type));
                 }
 
                 if (candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
@@ -895,11 +895,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    candidates = queryResult.GetNodes(with.right);
+                    candidates = DeepCopy(queryResult.GetNodes(with.right));
                 }
                 else
                 {
-                    candidates = astManager.GetNodes(with.rightType);
+                    candidates = DeepCopy(astManager.GetNodes(with.rightType));
                 }
 
                 foreach (var c in candidates)
@@ -918,11 +918,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.left))
                 {
-                    candidates = queryResult.GetNodes(with.left);
+                    candidates = DeepCopy(queryResult.GetNodes(with.left));
                 }
                 else
                 {
-                    candidates = astManager.GetNodes(with.leftType);
+                    candidates = DeepCopy(astManager.GetNodes(with.leftType));
                 }
 
                 foreach (var c in candidates)
@@ -942,11 +942,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(with.right))
                 {
-                    candidates = queryResult.GetNodes(with.right);
+                    candidates = DeepCopy(queryResult.GetNodes(with.right));
                 }
                 else
                 {
-                    candidates = astManager.GetNodes(with.rightType);
+                    candidates = DeepCopy(astManager.GetNodes(with.rightType));
                 }
 
                 if (candidates is null)
@@ -1197,11 +1197,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         #region set listA
                         if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(pattern.synonym))
                         {
-                            listA = queryResult.GetNodes(pattern.synonym);
+                            listA = DeepCopy(queryResult.GetNodes(pattern.synonym));
                         }
                         else
                         {
-                            listA = astManager.GetAllAssigns();
+                            listA = DeepCopy(astManager.GetAllAssigns());
                         }
 
                         if (pattern.arg1type == Entity._string)
@@ -1334,7 +1334,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 copy.Add(assign);
             }
 
-            return copy;
+            return copy.Any() ? copy : null;
         }
 
         private bool AssignRightContainsPatter(TNode assign, string arg2)
@@ -1531,7 +1531,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeWithLineNumberList;
+                var nodes = astManager.GetAllNodesWithLineNumbers();
                 List<TNode> result = new List<TNode>();
                 if (nodes != null)
                 {
@@ -1665,7 +1665,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Next(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeWithLineNumberList;
+                    fromList = astManager.GetAllNodesWithLineNumbers();
 
                     if (fromList != null)
                     {
@@ -1802,7 +1802,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeWithLineNumberList;
+                var nodes = astManager.GetAllNodesWithLineNumbers();
                 List<TNode> result = new List<TNode>();
                 if (nodes != null)
                 {
@@ -1936,7 +1936,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Next(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeWithLineNumberList;
+                    fromList = astManager.GetAllNodesWithLineNumbers();
 
                     if (fromList != null)
                     {
@@ -2075,7 +2075,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeWithLineNumberList;
+                var nodes = astManager.GetAllNodesWithLineNumbers();
                 List<TNode> result;
                 if (nodes != null)
                 {
@@ -2208,7 +2208,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region FollowsX(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeWithLineNumberList;
+                    fromList = astManager.GetAllNodesWithLineNumbers();
 
                     if (fromList != null)
                     {
@@ -2346,7 +2346,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var nodes = astManager.NodeWithLineNumberList;
+                var nodes = astManager.GetAllNodesWithLineNumbers();
                 TNode result;
                 if (nodes != null)
                 {
@@ -2480,7 +2480,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #region Follows(_, *)
                 if (relation.arg1type == Entity._)
                 {
-                    fromList = astManager.NodeWithLineNumberList;
+                    fromList = astManager.GetAllNodesWithLineNumbers();
 
                     if (fromList != null)
                     {

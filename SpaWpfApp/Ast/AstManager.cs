@@ -25,7 +25,7 @@ namespace SpaWpfApp.Ast
     public class AstManager : AstAPI
     {
         public List<TNode> NodeList { get; set; }
-        public List<TNode> NodeWithLineNumberList { get; set; }
+        private List<TNode> NodeWithLineNumberList;
         private List<TNode> WhileList, IfList, AssignList, CallList, ProcedureList, ConstantList, VariableList, StmtLstList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
@@ -290,7 +290,7 @@ namespace SpaWpfApp.Ast
             // create subTree of entire expression
             TNode tmpUpNode = null, tmpActualNode = null, tmpRightNode = null;
             List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
-            for (int i = 2; i < lineWords.Length - 1 && lineWords[i][0] != 125; i += 2)
+            for (int i = 2; i < lineWords.Length && lineWords[i][0] != 125; i += 2)
             {
                 if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                 {
@@ -418,7 +418,7 @@ namespace SpaWpfApp.Ast
             currentUpNode = ifNodeMain;
             #endregion
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 
@@ -733,7 +733,7 @@ namespace SpaWpfApp.Ast
             currentUpNode = whileNodeMain;
             #endregion
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 
@@ -1330,22 +1330,27 @@ namespace SpaWpfApp.Ast
                 fathers.Add(i);
             }
 
-            return fathers.Count() > 0 ? fathers : null;
+            return fathers.Count() > 0 ? DeepCopy(fathers): null;
         }
 
         internal List<TNode> GetAllWhile()
         {
-            return WhileList.Count() > 0 ? WhileList : null;
+            return WhileList.Count() > 0 ? DeepCopy(WhileList): null;
         }
 
         internal List<TNode> GetAllIf()
         {
-            return IfList.Count() > 0 ? IfList : null;
+            return IfList.Count() > 0 ? DeepCopy(IfList): null;
         }
 
         internal List<TNode> GetAllAssigns()
         {
-            return AssignList.Count() > 0 ? AssignList : null;
+            return AssignList.Count() > 0 ? DeepCopy(AssignList): null;
+        }
+
+        internal List<TNode> GetAllNodesWithLineNumbers()
+        {
+            return NodeWithLineNumberList.Count() > 0 ? DeepCopy(NodeWithLineNumberList) : null;
         }
 
         private bool OutOfRange(int lineNumber)
@@ -1359,32 +1364,32 @@ namespace SpaWpfApp.Ast
             switch (nodesType)
             {
                 case Entity._if:
-                    return IfList;
+                    return DeepCopy(IfList);
 
                 case Entity._while:
-                    return WhileList;
+                    return DeepCopy(WhileList);
 
                 case Entity.assign:
-                    return AssignList;
+                    return DeepCopy(AssignList);
 
                 case Entity.prog_line:
                 case Entity.stmt:
-                    return this.NodeWithLineNumberList;
+                    return DeepCopy(this.NodeWithLineNumberList);
 
                 case Entity.procedure:
-                    return ProcedureList;
+                    return DeepCopy(ProcedureList);
 
                 case Entity.constant:
-                    return ConstantList;
+                    return DeepCopy(ConstantList);
 
                 case Entity.variable:
-                    return VariableList;
+                    return DeepCopy(VariableList);
 
                 case Entity.call:
-                    return this.CallList;
+                    return DeepCopy(this.CallList);
 
                 case Entity.stmtLst:
-                    return this.StmtLstList;
+                    return DeepCopy(this.StmtLstList);
             }
 
             return null;
