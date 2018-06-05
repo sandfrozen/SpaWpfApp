@@ -176,7 +176,8 @@ namespace SpaWpfApp.ParserNew
                 }
                 else if (i == length - 1)
                 {
-                    //done
+                    // done
+                    lines = lines.Remove(lines.Length-2);
                 }
                 else if (i == length - 2)
                 {
