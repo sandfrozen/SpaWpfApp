@@ -65,6 +65,7 @@ namespace SpaWpfApp
             try
             {
                 pkb = ParserByTombs.Instance.pkb;
+                QueryPreProcessor.GetInstance().SetPkb(pkb);
                 QueryEvaluator.GetInstance().pkb = pkb;
                 QueryProjector.GetInstance().Pkb = pkb;
                 addLog("PKB Created: Ok");
