@@ -48,6 +48,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (queryPreProcessor.returnList.Count == 1)
             {
+                if (!queryResult.resultTableList.Any())
+                {
+                    return "none";
+                }
                 var returnElement = queryPreProcessor.returnList.First();
                 if (!returnElement.Key.Contains('.'))
                 {
@@ -164,6 +168,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else
             {
+                if (!queryResult.resultTableList.Any())
+                {
+                    return "none";
+                }
                 var returnList = new Dictionary<string, string>();
                 string newKey;
                 foreach (var v in queryPreProcessor.returnList)
