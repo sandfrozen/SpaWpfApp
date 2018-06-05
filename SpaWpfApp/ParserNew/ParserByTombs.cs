@@ -136,7 +136,7 @@ namespace SpaWpfApp.ParserNew
             for (; firstLine <= lastLine; firstLine++)
             {
                 var modifiedVars = pkb.GetModified(firstLine);
-                foreach(string modifiedVar in modifiedVars)
+                foreach (string modifiedVar in modifiedVars)
                 {
                     pkb.SetModifies(modifiedVar, rootLine);
                 }
@@ -246,7 +246,7 @@ namespace SpaWpfApp.ParserNew
                 {
                     //done
                 }
-                else if (i==length-2)
+                else if (i == length - 2)
                 {
                     parsed += " ";
                 }
@@ -262,7 +262,7 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += " ";
                 }
-                else if ( i > 0 && i < length - 1 && wordsInCode[i - 1] == "}" && s == "}")
+                else if (i > 0 && i < length - 1 && wordsInCode[i - 1] == "}" && s == "}")
                 {
                     parsed += Environment.NewLine;
                 }
@@ -305,7 +305,16 @@ namespace SpaWpfApp.ParserNew
             }
             currentIndex++;
             string procName = wordsInCode[currentIndex];
-            pkb.InsertProc(procName);
+            if (declaredProcedures.Contains(procName))
+            {
+                throw new SourceCodeException("Procedure: \"" + procName + "\" cannot be declared second time");
+            }
+            else
+            {
+                pkb.InsertProc(procName);
+                addToDeclaredProcedures(procName);
+            }
+
             addToDeclaredProcedures(procName);
             currentProcedure = procName;
             firstLineOfProcedure.Add(currentLine + 1);
@@ -355,6 +364,10 @@ namespace SpaWpfApp.ParserNew
                     }
                     throw new SourceCodeException(message);
                 }
+            }
+            if (currentIndex >= wordsInCode.Length)
+            {
+                throw new SourceCodeException("'}' at the end of procedure not found");
             }
             currentIndex++;
             currentLevel--;
@@ -407,6 +420,10 @@ namespace SpaWpfApp.ParserNew
         {
             currentIndex++;
             string procName = wordsInCode[currentIndex];
+            if( procName == currentProcedure)
+            {
+                throw new SourceCodeException("You can not call procedures recursively (line " + currentLine + ")");
+            }
             pkb.InsertProc(procName);
             addToCalledProcedures(procName);
             currentIndex++;
