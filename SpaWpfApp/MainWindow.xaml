@@ -5,12 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpaWpfApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="808" MinHeight="450" MinWidth="808">
-    <Grid HorizontalAlignment="Left" Width="792">
+        Title="MainWindow" Height="450" Width="1244" MinHeight="450" MinWidth="808">
+    <Grid HorizontalAlignment="Left" Width="1234">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="0*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
-        <RichTextBox x:Name="procedureRichTextBox" Margin="39,35,547,10" FontFamily="Courier New">
+        <RichTextBox x:Name="procedureRichTextBox" Margin="39,35,605,10" FontFamily="Courier New">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -85,8 +89,8 @@
         <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click" Height="20"/>
         <Button x:Name="astCfgButton" Content="AST i CFG" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Height="20" Click="astCfgButton_Click"/>
         <Label x:Name="logsLabel" Content="Logs:" HorizontalAlignment="Left" Margin="250,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Width="37" Padding="0,5,5,5"/>
-        <Button x:Name="evaluateQueryButton" Content="Evaluate Query" Margin="346,284,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click" Height="20" VerticalAlignment="Top"/>
-        <RichTextBox x:Name="queryRichTextBox" Margin="250,170,10,0" Height="110" VerticalAlignment="Top">
+        <Button x:Name="evaluateQueryButton" Content="Evaluate Query" Margin="730,285,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click" Height="20" VerticalAlignment="Top"/>
+        <RichTextBox x:Name="queryRichTextBox" Margin="634,170,10,0" Height="110" VerticalAlignment="Top">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -102,7 +106,7 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <RichTextBox x:Name="logsRichTextBox" Margin="250,35,10,0" Height="110" VerticalAlignment="Top" IsReadOnly="True">
+        <RichTextBox x:Name="logsRichTextBox" Margin="634,35,10,0" Height="110" VerticalAlignment="Top" IsReadOnly="True">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -115,10 +119,10 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <Label x:Name="queryLabel" Content="PQL Query:" Margin="250,144,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Padding="0,5,5,5" HorizontalAlignment="Left" Width="64"/>
-        <Button x:Name="parseQueryButton" Content="Parse Query" HorizontalAlignment="Left" Margin="250,284,0,0" Width="91" Click="parseQueryButton_Click" Height="20" VerticalAlignment="Top"/>
-        <Label x:Name="resultLabel" Content="Query Result:" Margin="250,304,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Padding="0,5,5,5" HorizontalAlignment="Left"/>
-        <RichTextBox x:Name="resultRichTextBox" Margin="250,336,10,10" IsReadOnly="True">
+        <Label x:Name="queryLabel" Content="PQL Query:" Margin="634,145,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Padding="0,5,5,5" HorizontalAlignment="Left" Width="64"/>
+        <Button x:Name="parseQueryButton" Content="Parse Query" HorizontalAlignment="Left" Margin="634,285,0,0" Width="91" Click="parseQueryButton_Click" Height="20" VerticalAlignment="Top"/>
+        <Label x:Name="resultLabel" Content="Query Result:" Margin="634,310,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Padding="0,5,5,5" HorizontalAlignment="Left" Width="75"/>
+        <RichTextBox x:Name="resultRichTextBox" Margin="634,336,10,10" IsReadOnly="True">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -138,7 +142,7 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <Button x:Name="parseAndEvaluateButton" Content="Parse And Evaluate" HorizontalAlignment="Left" Margin="442,284,0,0" VerticalAlignment="Top" Click="parseAndEvaluateButton_Click"/>
+        <Button x:Name="parseAndEvaluateButton" Content="Parse And Evaluate" HorizontalAlignment="Left" Margin="826,285,0,0" VerticalAlignment="Top" Click="parseAndEvaluateButton_Click" Height="20" Width="104"/>
 
     </Grid>
 </Window>
