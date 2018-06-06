@@ -555,6 +555,8 @@ namespace SpaWpfApp.Ast
                 case Entity._if:
                 case Entity._while:
                 case Entity.stmt:
+                case Entity._:
+                case Entity.prog_line:
                     {
                         tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
                         if (tmpAssigns != null)
@@ -1398,6 +1400,7 @@ namespace SpaWpfApp.Ast
 
                 case Entity.prog_line:
                 case Entity.stmt:
+                case Entity._:
                     return DeepCopy(this.NodeWithLineNumberList);
 
                 case Entity.procedure:
@@ -1414,6 +1417,12 @@ namespace SpaWpfApp.Ast
 
                 case Entity.stmtLst:
                     return DeepCopy(this.StmtLstList);
+
+                case "procAndCalls":
+                    var result = new List<TNode>();
+                    foreach(var  p in ProcedureList) { result.Add(p); }
+                    if (CallList != null) { foreach (var c in CallList) { result.Add(c); } }
+                    return result;
             }
 
             return null;

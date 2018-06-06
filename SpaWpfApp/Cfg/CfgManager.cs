@@ -96,7 +96,7 @@ namespace SpaWpfApp.Cfg
                 actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
                 actualCfgStructure.GNodeList.Add(actualNode);
             }
-            else if (actualNode.type != GNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w while/if
+            else if (actualNode.type == GNodeTypeEnum.While) // jesli pierwsza instrukcja w while/if
             {
                 currentPreviousNode = actualNode;
                 actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
@@ -464,32 +464,20 @@ namespace SpaWpfApp.Cfg
             if (p_to is null) { return null; }
 
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
+
+            var candidates = AstManager.GetInstance().GetNodes(QueryPreProcessor.GetInstance().declarationsList[p_from]);
             List<TNode> resultList = new List<TNode>();
-            TNode tmp;
-            ProcedureCfg cfg = FindCfg((int)p_to.programLine);
-            int programLinesInNode;
 
-            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains((int)p_to.programLine)).FirstOrDefault();
+            if (candidates is null) { return null; }
 
-            programLinesInNode = actual.programLineList.Count();
-
-            if (programLinesInNode > 1) // jesli previousS w tym samym nodzie
+            foreach(var c in candidates)
             {
-                for (int i = 1; i < programLinesInNode; i++)
+                if(IsNextX((int)c.programLine, (int)p_to.programLine))
                 {
-                    if (actual.programLineList[i] == (int)p_to.programLine)
-                    {
-                        for (int j = i - 1; j >= 0; j--)
-                        {
-                            tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(j));
-                            if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
-                        }
-                    }
+                    resultList.Add(c);
                 }
             }
-
-            FindAndAddAllPreviousSInPreviousNodes(actual, ref resultList, acceptableType);
-
+            
             return resultList.Count > 0 ? resultList : null;
         }
 
@@ -516,6 +504,8 @@ namespace SpaWpfApp.Cfg
             ProcedureCfg cfg = FindCfg(p1);
             int programLinesInNode;
             Boolean findedNextX = false;
+            List<int>[] visitorsTable = new List<int>[cfg.GNodeList.Count()];
+            for (int i = 0; i < visitorsTable.Length; i++) { visitorsTable[i] = new List<int>(); }
 
             GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(p1)).FirstOrDefault();
 
@@ -538,33 +528,37 @@ namespace SpaWpfApp.Cfg
                     }
                 }
             }
-            CheckIfNextSInNextNodes(actual, p2, ref findedNextX);
+            CheckIfNextSInNextNodes(actual, p2, ref findedNextX, ref visitorsTable);
             return findedNextX;
         }
 
-        private void CheckIfNextSInNextNodes(GNode actual, int p2, ref Boolean findedNextX)
+        private void CheckIfNextSInNextNodes(GNode actual, int p2, ref Boolean findedNextX, ref List<int>[] visitedTable)
         {
             foreach (var n in actual.nextGNodeList)
             {
-                if (n.type != GNodeTypeEnum.Ghost)
+                if (!visitedTable[n.index].Contains(n.index))
                 {
-                    foreach (var i in n.programLineList)
+                    visitedTable[n.index].Add(n.index);
+                    if (n.type != GNodeTypeEnum.Ghost)
                     {
-                        if (i == p2)
+                        foreach (var i in n.programLineList)
                         {
-                            findedNextX = true;
-                            return;
+                            if (i == p2)
+                            {
+                                findedNextX = true;
+                                return;
+                            }
                         }
                     }
-                }
 
-                if (n.nextGNodeList.Count() > 0)
-                {
-                    if (!(n.nextGNodeList[0].type != GNodeTypeEnum.Ghost
-                        && n.type != GNodeTypeEnum.Ghost
-                        && n.programLineList[0] > n.nextGNodeList.First().programLineList[0]))
+                    if (n.nextGNodeList.Count() > 0)
                     {
-                        CheckIfNextSInNextNodes(n, p2, ref findedNextX);
+                        if (!(n.nextGNodeList[0].type != GNodeTypeEnum.Ghost
+                            && n.type != GNodeTypeEnum.Ghost
+                            && n.programLineList[0] > n.nextGNodeList.First().programLineList[0]))
+                        {
+                            CheckIfNextSInNextNodes(n, p2, ref findedNextX, ref visitedTable);
+                        }
                     }
                 }
             }
