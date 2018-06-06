@@ -48,6 +48,17 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (queryPreProcessor.returnList.Count == 1)
             {
+                List<TNode> collection;
+                var returnList = queryPreProcessor.returnList;
+                foreach (var v in returnList)
+                {
+                    if (!queryResult.DeclarationWasDeterminated(v.Key))
+                    {
+                        collection = astManager.GetNodes(v.Value);
+                        queryEvaluator.UpdateResultTable(collection, v.Key);
+                    }
+                }
+
                 if (!queryResult.resultTableList.Any())
                 {
                     return "none";
@@ -168,15 +179,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else
             {
-                if (!queryResult.resultTableList.Any())
-                {
-                    return "none";
-                }
-                var returnList = queryPreProcessor.returnList;
-
                 List<TNode> collection;
-                
-                foreach(var v in returnList)
+                var returnList = queryPreProcessor.returnList;
+                foreach (var v in returnList)
                 {
                     if (!queryResult.DeclarationWasDeterminated(v.Key))
                     {
@@ -184,6 +189,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         queryEvaluator.UpdateResultTable(collection, v.Key);
                     }
                 }
+
+                if (!queryResult.resultTableList.Any())
+                {
+                    return "none";
+                }
+ 
 
                 List<(int, (string, string))> indexList = new List<(int, (string, string))>();
                 foreach(var v in returnList)
@@ -207,7 +218,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 result += r[i.Item1].value + " ";
                                 break;
                             case Entity.call:
-                                if (i.Item2.Item2.Contains('.')) { result += Pkb.GetProcName((int)r[i.Item1].indexOfName) + " "; }
+                                if (i.Item2.Item1.Contains('.')) { result += Pkb.GetProcName((int)r[i.Item1].indexOfName) + " "; }
                                 else { result += r[i.Item1].programLine + " "; }
                                 break;
                             default:
