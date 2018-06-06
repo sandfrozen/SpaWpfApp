@@ -766,7 +766,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (candidates is null || (candidates != null && !candidates.Any()))
             {
-                if(relation.arg1type != Entity._string && relation.arg1type != Entity._)
+                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
                 {
                     queryResult.SetDeclarationWasDeterminated(relation.arg1);
                 }
@@ -3478,6 +3478,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             RemoveDotFromNameIfItIsAttrRef(ref firstArgument);
             RemoveDotFromNameIfItIsAttrRef(ref secondArgument);
+
             queryResult.SetDeclarationWasDeterminated(firstArgument);
             queryResult.SetDeclarationWasDeterminated(secondArgument);
 
@@ -3533,6 +3534,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         {
             RemoveDotFromNameIfItIsAttrRef(ref argumentLookingFor);
 
+            if (!queryResult.HasRecords() && queryResult.declarationsTable.Where(p => p.wasDeterminated).Any())
+            {
+                return;
+            }
+
             queryResult.SetDeclarationWasDeterminated(argumentLookingFor);
 
             if (resultList != null && resultList.Any())
@@ -3559,10 +3565,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                     }
                 }
-                else if(queryResult.declarationsTable.Where(p => p.wasDeterminated).Any())
-                {
-                    return;
-                }
                 else
                 {
                     foreach (var res in resultList)
@@ -3584,7 +3586,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public void UpdateResultTable(bool p_result)
         {
-            if(actualCondition is With)
+            if (actualCondition is With)
             {
                 var relation = (Relation)actualCondition;
                 if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
