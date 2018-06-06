@@ -763,7 +763,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                                 if (pkb.GetVarIndex(arg1string) == -1)
                                 {
-                                    throw new QueryException("Argument 1 in assign " + arg1 + " is not delcared");
+                                    throw new QueryException("Argument 1 in pattern <assign>: " + arg1 + " is not delcared");
                                 }
 
                                 arg1type = Entity._string;
@@ -784,7 +784,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else
                             {
-                                IsSynonym(arg1.Trim('"'));
+                                string arg2string = arg2.Trim('"');
+                                if( arg2string.Contains("_") )
+                                {
+                                    throw new QueryException("Argument 2 in pattern <assign> cannot be: " + arg2);
+                                }
                                 arg2type = Entity._string;
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
@@ -810,7 +814,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                                 if (pkb.GetVarIndex(arg1string) == -1)
                                 {
-                                    throw new QueryException("Argument 1 in while " + arg1 + " is not delcared");
+                                    throw new QueryException("Argument 1 in pattern <while>: " + arg1 + " is not delcared");
                                 }
 
                                 arg1type = Entity._string;
@@ -831,7 +835,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else
                             {
-                                throw new QueryException("Pattern for while as second paremeter must have: '_', but is: " + arg2);
+                                throw new QueryException("Argument 2 in pattern <while> must be: '_', but is: " + arg2);
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
                         }
