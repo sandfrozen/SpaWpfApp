@@ -140,23 +140,29 @@ namespace SpaWpfApp
 
             try
             {
-                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
-                QueryEvaluator.GetInstance().Evaluate(conditionsList);
-            }
-            catch (NoResultsException ex)
-            {
-                addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
-                good = false;
-            }
-            finally
-            {
-                //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
-                QueryResult queryResult = QueryResult.GetInstance();
-                QueryProjector queryProjector = QueryProjector.GetInstance();
+                try
+                {
+                    List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
+                    QueryEvaluator.GetInstance().Evaluate(conditionsList);
+                }
+                catch (NoResultsException ex)
+                {
+                    addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
+                }
+                finally
+                {
+                    //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
+                    QueryResult queryResult = QueryResult.GetInstance();
+                    QueryProjector queryProjector = QueryProjector.GetInstance();
 
-                resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
-                addLog("Q Evaluator: Result: ok, check Result window");
+                    resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
+                    addLog("Q Evaluator: Result: ok, check Result window");
+                }
+            } catch( Exception ex)
+            {
+                addLog("FATAL Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
             }
+
             good = true;
         }
 
