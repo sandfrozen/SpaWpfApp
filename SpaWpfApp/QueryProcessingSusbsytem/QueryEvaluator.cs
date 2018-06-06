@@ -766,6 +766,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (candidates is null || (candidates != null && !candidates.Any()))
             {
+                if(relation.arg1type != Entity._string && relation.arg1type != Entity._)
+                {
+                    queryResult.SetDeclarationWasDeterminated(relation.arg1);
+                }
+                if (relation.arg2type != Entity._string && relation.arg2type != Entity._)
+                {
+                    queryResult.SetDeclarationWasDeterminated(relation.arg2);
+                }
                 if (relation.arg1type != Entity._string)
                 {
                     UpdateResultTable(null, relation.arg1);
@@ -3572,6 +3580,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public void UpdateResultTable(bool p_result)
         {
+            if(actualCondition is With)
+            {
+                var relation = (Relation)actualCondition;
+                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
+                {
+                    queryResult.SetDeclarationWasDeterminated(relation.arg1);
+                }
+                if (relation.arg2type != Entity._string && relation.arg2type != Entity._)
+                {
+                    queryResult.SetDeclarationWasDeterminated(relation.arg2);
+                }
+            }
+
             if (queryResult.resultIsBoolean)
             {
                 queryResult.resultBoolean = p_result;
