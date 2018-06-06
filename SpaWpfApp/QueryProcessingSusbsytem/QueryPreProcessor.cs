@@ -774,6 +774,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 }
                                 arg2type = Entity._string;
                             }
+                            else if (arg2.First() == '"' && arg2.Last() == '"')
+                            {
+                                arg1type = Entity._string;
+                            }
                             else
                             {
                                 throw new QueryException("Argument 2 in pattern <assign> cannot be: " + arg2);
