@@ -3559,6 +3559,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                     }
                 }
+                else if(queryResult.declarationsTable.Where(p => p.wasDeterminated).Any())
+                {
+                    return;
+                }
                 else
                 {
                     foreach (var res in resultList)
