@@ -26,6 +26,7 @@ namespace SpaWpfApp
         private int numerOfVars;
         private string parsed;
         private PkbAPI pkb;
+        private bool good = false;
 
         public MainWindow()
         {
@@ -58,12 +59,15 @@ namespace SpaWpfApp
             catch (Exception ex)
             {
                 addLog("Source Code Parser: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
                 return;
             }
+            good = true;
         }
 
         private void astCfgButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!good) return;
             try
             {
                 pkb = ParserByTombs.Instance.pkb;
@@ -75,6 +79,7 @@ namespace SpaWpfApp
             catch (Exception ex)
             {
                 addLog("PKB Create: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
                 return;
             }
 
@@ -86,6 +91,7 @@ namespace SpaWpfApp
             catch (Exception ex)
             {
                 addLog("AST Create: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
                 return;
             }
 
@@ -97,8 +103,10 @@ namespace SpaWpfApp
             catch (Exception ex)
             {
                 addLog("CFG Create: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
                 return;
             }
+            good = true;
         }
 
         private void parseQueryButton_Click(object sender, RoutedEventArgs e)
@@ -113,6 +121,7 @@ namespace SpaWpfApp
             catch (Exception ex)
             {
                 addLog("PQL Parser: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
                 return;
             }
             finally
@@ -120,10 +129,12 @@ namespace SpaWpfApp
                 queryRichTextBox.Document.Blocks.Clear();
                 queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(query)));
             }
+            good = true;
         }
 
         private void evaluateQueryButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!good) return;
             resultRichTextBox.Document.Blocks.Clear();
 
             try
@@ -134,6 +145,7 @@ namespace SpaWpfApp
             catch (NoResultsException ex)
             {
                 addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
+                good = false;
             }
             finally
             {
@@ -144,20 +156,32 @@ namespace SpaWpfApp
                 resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
                 addLog("Q Evaluator: Result: ok, check Result window");
             }
+            good = true;
         }
 
         private void parseAndEvaluateButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!good) return;
             this.parseQueryButton_Click(sender, e);
-            this.evaluateQueryButton_Click(sender, e);
+            if (good)
+                this.evaluateQueryButton_Click(sender, e);
         }
 
         private void autoButton_Click(object sender, RoutedEventArgs e)
         {
             parseButton_Click(sender, e);
-            astCfgButton_Click(sender, e);
-            parseQueryButton_Click(sender, e);
-            evaluateQueryButton_Click(sender, e);
+            if (good)
+            {
+                astCfgButton_Click(sender, e);
+                if (good)
+                {
+                    parseQueryButton_Click(sender, e);
+                    if (good)
+                    {
+                        evaluateQueryButton_Click(sender, e);
+                    }
+                }
+            }
         }
 
         private void ProcedureRichTextBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
