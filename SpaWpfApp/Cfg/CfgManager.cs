@@ -472,8 +472,16 @@ namespace SpaWpfApp.Cfg
             if (p_to is null) { return null; }
 
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_from);
+            List<TNode> candidates;
 
-            var candidates = AstManager.GetInstance().GetNodes(QueryPreProcessor.GetInstance().declarationsList[p_from]);
+            if (p_from != "_")
+            {
+                candidates = AstManager.GetInstance().GetNodes(QueryPreProcessor.GetInstance().declarationsList[p_from]);
+            }
+            else
+            {
+                candidates = AstManager.GetInstance().GetNodes("_");
+            }
             List<TNode> resultList = new List<TNode>();
 
             if (candidates is null) { return null; }
