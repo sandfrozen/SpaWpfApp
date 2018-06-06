@@ -760,12 +760,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             {
                                 string arg1string = arg1.Trim('"');
                                 IsSynonym(arg1string);
-
-                                if (pkb.GetVarIndex(arg1string) == -1)
-                                {
-                                    throw new QueryException("Argument 1 in pattern <assign>: " + arg1 + " is not delcared");
-                                }
-
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
@@ -811,12 +805,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             {
                                 string arg1string = arg1.Trim('"');
                                 IsSynonym(arg1string);
-
-                                if (pkb.GetVarIndex(arg1string) == -1)
-                                {
-                                    throw new QueryException("Argument 1 in pattern <while>: " + arg1 + " is not delcared");
-                                }
-
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
@@ -857,12 +845,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             {
                                 string arg1string = arg1.Trim('"');
                                 IsSynonym(arg1string);
-
-                                if (pkb.GetVarIndex(arg1string) == -1)
-                                {
-                                    throw new QueryException("Argument 1 in while " + arg1 + "is not delcared");
-                                }
-
                                 arg1type = Entity._string;
                             }
                             else if (declarationsList.ContainsKey(arg1))
