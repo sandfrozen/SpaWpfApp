@@ -96,14 +96,22 @@ namespace SpaWpfApp.Cfg
                 actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
                 actualCfgStructure.GNodeList.Add(actualNode);
             }
-            else if (actualNode.type == GNodeTypeEnum.While) // jesli pierwsza instrukcja w while/if
+            else if(actualNode != null && actualNode.type == GNodeTypeEnum.Ghost)
             {
                 currentPreviousNode = actualNode;
                 actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
                 actualCfgStructure.GNodeList.Add(actualNode);
 
                 currentPreviousNode.nextGNodeList.Add(actualNode);
-                actualNode.previousGNodeList.Add(currentPreviousNode);
+            }
+            else if (actualNode.type == GNodeTypeEnum.While || actualNode.type == GNodeTypeEnum.If) // jesli pierwsza instrukcja w while/if
+            {
+                currentPreviousNode = actualNode;
+                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
+                actualCfgStructure.GNodeList.Add(actualNode);
+
+                currentPreviousNode.nextGNodeList.Add(actualNode);
+                //if(currentPreviousNode.type == GNodeTypeEnum.While) { actualNode.previousGNodeList.Add(currentPreviousNode); }
             }
             else
             {
@@ -147,8 +155,8 @@ namespace SpaWpfApp.Cfg
                             actualNode.nextGNodeList.Add(ghostNode);
                             endNodeThenSection.nextGNodeList.Add(ghostNode);
 
-                            ghostNode.previousGNodeList.Add(actualNode);
-                            ghostNode.previousGNodeList.Add(endNodeThenSection);
+                            //ghostNode.previousGNodeList.Add(actualNode);
+                            //ghostNode.previousGNodeList.Add(endNodeThenSection);
 
                             currentPreviousNode = null;
                             actualNode = ghostNode;
