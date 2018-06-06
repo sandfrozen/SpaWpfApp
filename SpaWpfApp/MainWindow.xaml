@@ -14,7 +14,7 @@
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
         <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
-        <RichTextBox x:Name="procedureRichTextBox" Margin="39,35,605,10" FontFamily="Courier New" ScrollViewer.ScrollChanged="ProcedureRichTextBox_ScrollChanged">
+        <RichTextBox x:Name="procedureRichTextBox" Margin="53,35,605,10" FontFamily="Courier New" ScrollViewer.ScrollChanged="ProcedureRichTextBox_ScrollChanged">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
                     <Setter Property="Margin" Value="0"/>
@@ -135,8 +135,8 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <RichTextBox x:Name="linesRichTextBox" HorizontalAlignment="Left" Margin="10,35,0,10" Width="29" FontFamily="Courier New" HorizontalContentAlignment="Right">
-            <FlowDocument>
+        <RichTextBox x:Name="linesRichTextBox" HorizontalAlignment="Left" Margin="10,35,0,10" Width="43" FontFamily="Courier New" HorizontalContentAlignment="Right" AllowDrop="False" AcceptsReturn="False" IsEnabled="False">
+            <FlowDocument TextAlignment="Right" PagePadding="1,0">
                 <Paragraph>
                     <Run Text="0"/>
                 </Paragraph>
