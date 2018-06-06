@@ -844,7 +844,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (relation.arg2type == Entity._string)
             {
-                if (relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
                 {
                     foreach (var c in candidates)
                     {
@@ -928,7 +928,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     else { UpdateResultTable(null, relation.arg2); return; }
                 }
 
-                if (relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
                 {
                     foreach (var c in candidates)
                     {
@@ -1068,11 +1068,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidates = DeepCopy(astManager.GetNodes(with.leftType));
                 }
 
-                foreach (var c in candidates)
+                if(candidates != null)
                 {
-                    if (TheSame(c, Int32.Parse(with.right)) && !resultList.Contains(c))
+                    foreach (var c in candidates)
                     {
-                        resultList.Add(c);
+                        if (TheSame(c, Int32.Parse(with.right)) && !resultList.Contains(c))
+                        {
+                            resultList.Add(c);
+                        }
                     }
                 }
 

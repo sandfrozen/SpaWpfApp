@@ -172,20 +172,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     return "none";
                 }
-                var returnList = new Dictionary<string, string>();
-                string newKey;
-                foreach (var v in queryPreProcessor.returnList)
-                {
-                    if (v.Key.Contains('.'))
-                    {
-                        newKey = v.Key.Substring(0, v.Key.IndexOf('.'));
-                    }
-                    else { newKey = v.Key; }
-
-                    returnList.Add(newKey, v.Value);
-                }
+                var returnList = queryPreProcessor.returnList;
 
                 List<TNode> collection;
+                
                 foreach(var v in returnList)
                 {
                     if (!queryResult.DeclarationWasDeterminated(v.Key))
@@ -195,30 +185,33 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                 }
 
-                List<int> indexList = new List<int>();
+                List<(int, (string, string))> indexList = new List<(int, (string, string))>();
                 foreach(var v in returnList)
                 {
-                    indexList.Add(queryResult.FindIndexOfDeclaration(v.Key));
+                    indexList.Add((queryResult.FindIndexOfDeclaration(v.Key), (v.Key, v.Value)));
                 }
 
                 foreach(var r in queryResult.resultTableList)
                 {
                     foreach(var i in indexList)
                     {
-                        switch (queryResult.declarationsTable[i].value)
+                        switch (queryResult.declarationsTable[i.Item1].value)
                         {
-                            case Entity.procedure:
-                            case Entity.call:
-                                result += Pkb.GetProcName((int)r[i].indexOfName) + " ";
+                            case Entity.procedure:                            
+                                result += Pkb.GetProcName((int)r[i.Item1].indexOfName) + " ";
                                 break;
                             case Entity.variable:
-                                result += Pkb.GetVarName((int)r[i].indexOfName) + " ";
+                                result += Pkb.GetVarName((int)r[i.Item1].indexOfName) + " ";
                                 break;
                             case Entity.constant:
-                                result += r[i].value + " ";
+                                result += r[i.Item1].value + " ";
+                                break;
+                            case Entity.call:
+                                if (i.Item2.Item2.Contains('.')) { result += Pkb.GetProcName((int)r[i.Item1].indexOfName) + " "; }
+                                else { result += r[i.Item1].programLine + " "; }
                                 break;
                             default:
-                                result += r[i].programLine + " ";
+                                result += r[i.Item1].programLine + " ";
                                 break;
                         }
                     }
@@ -231,6 +224,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else { result = "none"; }
                 return result;
             }
+        }
+        private void RemoveDotFromNameIfItIsAttrRef(ref string s)
+        {
+            if (s.Contains('.')) { s = s.Substring(0, s.IndexOf('.')); }
         }
     }
 }

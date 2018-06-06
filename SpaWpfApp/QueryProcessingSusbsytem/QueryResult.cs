@@ -101,9 +101,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
         public int FindIndexOfDeclaration(string argument)
         {
+            string s = EnsureWithoutDot(argument);
             for(int i=0; i<declarationsTable.Length; i++)
             {
-                if(declarationsTable[i].key == argument)
+                if(declarationsTable[i].key == s)
                 {
                     return i;
                 }
