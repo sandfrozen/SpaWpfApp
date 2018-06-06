@@ -12,21 +12,24 @@ namespace SpaWpfApp.Cfg
         public List<int> programLineList { get; set; }
         public List<GNode> nextGNodeList { get; set; }
         public List<GNode> previousGNodeList { get; set; }
+        public int index { get; set; }
 
 
         public GNode() { }
 
-        public GNode(GNodeTypeEnum p_type)
+        public GNode(GNodeTypeEnum p_type, int p_index)
         {
             init();
             this.type = p_type;
+            this.index = p_index;
         }
 
-        public GNode(GNodeTypeEnum p_type, int p_lineNumber)
+        public GNode(GNodeTypeEnum p_type, int p_lineNumber, int p_index)
         {
             init();
             this.type = p_type;
             this.programLineList.Add(p_lineNumber);
+            this.index = p_index;
         }
 
 
