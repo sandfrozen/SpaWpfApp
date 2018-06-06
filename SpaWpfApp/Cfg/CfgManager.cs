@@ -93,13 +93,13 @@ namespace SpaWpfApp.Cfg
         {
             if (actualNode == null) // jesli pierwsza instrukcja w procedurze
             {
-                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber);
+                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
                 actualCfgStructure.GNodeList.Add(actualNode);
             }
             else if (actualNode.type != GNodeTypeEnum.StmtLst) // jesli pierwsza instrukcja w while/if
             {
                 currentPreviousNode = actualNode;
-                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber);
+                actualNode = new GNode(GNodeTypeEnum.StmtLst, ++programLineNumber, actualCfgStructure.GNodeList.Count());
                 actualCfgStructure.GNodeList.Add(actualNode);
 
                 currentPreviousNode.nextGNodeList.Add(actualNode);
@@ -118,7 +118,7 @@ namespace SpaWpfApp.Cfg
             #region create node for if and remember this node and endNodeThenSection
             currentPreviousNode = actualNode;
 
-            actualNode = new GNode(GNodeTypeEnum.If, ++programLineNumber);
+            actualNode = new GNode(GNodeTypeEnum.If, ++programLineNumber, actualCfgStructure.GNodeList.Count());
             actualCfgStructure.GNodeList.Add(actualNode);
 
             // zapamietaj
@@ -127,7 +127,7 @@ namespace SpaWpfApp.Cfg
             if (currentPreviousNode != null)
             {
                 currentPreviousNode.nextGNodeList.Add(actualNode);
-                actualNode.previousGNodeList.Add(currentPreviousNode);
+                //actualNode.previousGNodeList.Add(currentPreviousNode);
             }
             #endregion
 
@@ -141,7 +141,7 @@ namespace SpaWpfApp.Cfg
                         {
                             BuildElse(sourceCodeLines, ref i, ref currentPreviousNode, ref actualNode, ref actualCfgStructure, ref programLineNumber, ref howManyStatementsEnd);
 
-                            ghostNode = new GNode(GNodeTypeEnum.Ghost);
+                            ghostNode = new GNode(GNodeTypeEnum.Ghost, actualCfgStructure.GNodeList.Count());
                             actualCfgStructure.GNodeList.Add(ghostNode);
 
                             actualNode.nextGNodeList.Add(ghostNode);
@@ -254,7 +254,7 @@ namespace SpaWpfApp.Cfg
             #region create node for while and remember it
             currentPreviousNode = actualNode;
 
-            actualNode = new GNode(GNodeTypeEnum.While, ++programLineNumber);
+            actualNode = new GNode(GNodeTypeEnum.While, ++programLineNumber, actualCfgStructure.GNodeList.Count());
             actualCfgStructure.GNodeList.Add(actualNode);
 
             //zapamietaj
@@ -263,7 +263,7 @@ namespace SpaWpfApp.Cfg
             if (currentPreviousNode != null)
             {
                 currentPreviousNode.nextGNodeList.Add(actualNode);
-                actualNode.previousGNodeList.Add(currentPreviousNode);
+                //actualNode.previousGNodeList.Add(currentPreviousNode);
             }
             currentPreviousNode = actualNode;
             #endregion
@@ -387,8 +387,11 @@ namespace SpaWpfApp.Cfg
 
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_to);
 
+
             List<TNode> resultList = new List<TNode>();
             ProcedureCfg cfg = FindCfg((int)p_from.programLine);
+            List<int>[] visitorsTable = new List<int>[cfg.GNodeList.Count()];
+            for (int i = 0; i < visitorsTable.Length; i++) { visitorsTable[i] = new List<int>(); }
             int programLinesInNode;
             TNode tmp;
 
@@ -412,7 +415,7 @@ namespace SpaWpfApp.Cfg
                 }
             }
 
-            FindAndAddAllNextSInNextNodes(actual, ref resultList, acceptableType);
+            FindAndAddAllNextSInNextNodes(actual, ref resultList, ref visitorsTable, acceptableType);
 
 
             return resultList.Count > 0 ? resultList : null; ;
@@ -621,30 +624,29 @@ namespace SpaWpfApp.Cfg
             }
 
         }
-        private void FindAndAddAllNextSInNextNodes(GNode actual, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)
+        private void FindAndAddAllNextSInNextNodes(GNode actual, ref List<TNode> resultList, ref List<int>[] visitedTable, List<TNodeTypeEnum> acceptableType)
         {
             TNode tmp;
 
             foreach (var n in actual.nextGNodeList)
             {
-                if (n.type != GNodeTypeEnum.Ghost)
+                if (!visitedTable[n.index].Contains(n.index))
                 {
-                    foreach (var i in n.programLineList)
-                    {
-                        tmp = AstManager.GetInstance().FindNode(i);
-                        if (acceptableType.Contains(tmp.type) && !resultList.Contains(tmp)) { resultList.Add(tmp); }
-                    }
-                }
-                if (n.nextGNodeList.Count() > 0)
-                {
-                    if (!(n.nextGNodeList[0].type != GNodeTypeEnum.Ghost
-                        && n.type != GNodeTypeEnum.Ghost
-                        && n.programLineList[0] > n.nextGNodeList.First().programLineList[0]))
-                    {
-                        FindAndAddAllNextSInNextNodes(n, ref resultList, acceptableType);
-                    }
-                }
+                    visitedTable[n.index].Add(n.index);
 
+                    if (n.type != GNodeTypeEnum.Ghost)
+                    {
+                        foreach (var i in n.programLineList)
+                        {
+                            tmp = AstManager.GetInstance().FindNode(i);
+                            if (acceptableType.Contains(tmp.type) && !resultList.Contains(tmp)) { resultList.Add(tmp); }
+                        }
+                    }
+                    if (n.nextGNodeList.Count() > 0)
+                    {
+                        FindAndAddAllNextSInNextNodes(n, ref resultList, ref visitedTable, acceptableType);
+                    }
+                }
             }
         }
         private void FindAndAddAllPreviousSInPreviousNodes(GNode actual, ref List<TNode> resultList, List<TNodeTypeEnum> acceptableType)

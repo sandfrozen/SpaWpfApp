@@ -1597,8 +1597,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     List<TNode> tmp = cfgManager.NextX(from, relation.arg2);
-                    if (tmp != null) { resultList = tmp; }
+                    if (tmp != null)
+                    {
+                        foreach(var tr in tmp)
+                        {
+                            resultList.Add(tr);
+                        }
+                    }
                     UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
                 #endregion
             }
@@ -1754,6 +1761,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 else
                 {
                     candidateForFrom = astManager.GetNodes(relation.arg1type);
+                }
+
+                if(candidateForFrom is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                    return;
                 }
 
                 //candidates for to
