@@ -31,6 +31,7 @@ namespace SpaWpfApp
         {
             InitializeComponent();
         }
+
         private void parseButton_Click(object sender, RoutedEventArgs e)
         {
             logsRichTextBox.Document.Blocks.Clear();
@@ -49,14 +50,14 @@ namespace SpaWpfApp
 
                 procedureRichTextBox.Document.Blocks.Clear();
                 procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.parsedSourceCode)));
-                procedureRichTextBox.ScrollToVerticalOffset(0);
-                //linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
+                //procedureRichTextBox.ScrollToVerticalOffset(0);
+                linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
 
                 addLog("Source Code Parser: Ok");
             }
-            catch (SourceCodeException ex)
+            catch (Exception ex)
             {
-                addLog("Error while parsing Source Code:\n" + ex.Message);
+                addLog("Source Code Parser: " + ex.GetType().Name + ": " + ex.Message);
                 return;
             }
         }
@@ -69,91 +70,55 @@ namespace SpaWpfApp
                 QueryPreProcessor.GetInstance().SetPkb(pkb);
                 QueryEvaluator.GetInstance().pkb = pkb;
                 QueryProjector.GetInstance().Pkb = pkb;
-                addLog("PKB Created: Ok");
-                //pkb.PrintProcTable();
-                //pkb.PrintVarTable();
-                //pkb.PrintCallsTable();
-                //pkb.PrintModifiesTable();
-                //pkb.PrintUsesTable();
-                //Trace.WriteLine(pkb.GetNumberOfLines());
-
-                //parsed = System.IO.File.ReadAllText(@"C:\Users\Slightom\OneDrive\semestr 2.1\1 ATS\sparsowanySourceCodeDlaAst4.txt");
-
-                //pkb = new Pkb(20, 1, 3);
-                //pkb.InsertProc("p500");
-
-                //pkb.InsertVar("x");
-                //pkb.InsertVar("i");
-                //pkb.InsertVar("y");
+                addLog("PKB Create: Ok");
             }
             catch (Exception ex)
             {
-                addLog("PKB Created: Error:\n" + ex);
+                addLog("PKB Create: " + ex.GetType().Name + ": " + ex.Message);
                 return;
             }
 
             try
             {
                 AstManager.GetInstance().GenerateStructures(parsed, pkb);
-                var astManager = AstManager.GetInstance();
-                //List<int> result = astManager.GetChildren(6);
-                //result = astManager.GetChildrenS(6);
-                //result = astManager.GetParentS(6);
-
-                //bool r = astManager.IsFollows(9, 11);
-                //r = astManager.IsFollowsS(5, 14);
-                //r = astManager.IsParent(8, 10);
-                //r = astManager.IsParentS(8, 10);
-
-                addLog("AST Created: Ok");
+                addLog("AST Create: Ok");
             }
             catch (Exception ex)
             {
-                addLog("AST Created: Error:\n" + ex);
+                addLog("AST Create: " + ex.GetType().Name + ": " + ex.Message);
                 return;
             }
 
             try
             {
                 CfgManager.GetInstance().GenerateStructure(parsed, pkb);
-                //bool r = cfgManager.GetInstance().IsNext(11, 13);
-                //r = cfgManager.IsNext(9, 12);
-                addLog("CFG Created: Ok");
+                addLog("CFG Create: Ok");
             }
             catch (Exception ex)
             {
-                addLog("CFG Created: Error:\n" + ex);
+                addLog("CFG Create: " + ex.GetType().Name + ": " + ex.Message);
                 return;
             }
         }
 
-        private string StringFromRichTextBox(RichTextBox rtb)
-        {
-            TextRange textRange = new TextRange(
-                rtb.Document.ContentStart,
-                rtb.Document.ContentEnd
-            );
-            return textRange.Text;
-        }
-
         private void parseQueryButton_Click(object sender, RoutedEventArgs e)
         {
+            string query = StringFromRichTextBox(queryRichTextBox);
             try
             {
-                String parsedQuery = QueryPreProcessor.GetInstance().Parse(StringFromRichTextBox(queryRichTextBox));
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(parsedQuery)));
+                query = QueryPreProcessor.GetInstance().Parse(query);
+
                 addLog("PQL Parser: Ok");
-            }
-            catch (QueryException ex)
-            {
-                addLog("PQL Parser: QueryException:\n" + ex.Message);
-                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                addLog("PQL Parser: Error:\n" + ex.Message);
-                //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                addLog("PQL Parser: " + ex.GetType().Name + ": " + ex.Message);
+                return;
+            }
+            finally
+            {
+                queryRichTextBox.Document.Blocks.Clear();
+                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(query)));
             }
         }
 
@@ -166,7 +131,10 @@ namespace SpaWpfApp
                 List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
                 QueryEvaluator.GetInstance().Evaluate(conditionsList);
             }
-            catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
+            catch (NoResultsException ex)
+            {
+                addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
+            }
             finally
             {
                 //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
@@ -174,63 +142,22 @@ namespace SpaWpfApp
                 QueryProjector queryProjector = QueryProjector.GetInstance();
 
                 resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
-                addLog("Result: " + queryProjector.PrintResult());
+                addLog("Q Evaluator: Result: ok, check Result window");
             }
-        }
-
-        private void addLog(string log)
-        {
-            string now = DateTime.Now.ToLongTimeString();
-            logsRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " " + log)));
-            logsRichTextBox.ScrollToEnd();
         }
 
         private void parseAndEvaluateButton_Click(object sender, RoutedEventArgs e)
         {
-            string query = StringFromRichTextBox(queryRichTextBox);
-            try
-            {
-                query = QueryPreProcessor.GetInstance().Parse(query);
+            this.parseQueryButton_Click(sender, e);
+            this.evaluateQueryButton_Click(sender, e);
+        }
 
-                addLog("PQL Parser: Ok");
-            }
-            catch (QueryException ex)
-            {
-                addLog("PQL Parser: QueryException:\n" + ex.Message);
-                return;
-                //MessageBox.Show(ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                addLog("PQL Parser: Error:\n" + ex.Message);
-                return;
-                //MessageBox.Show("Unknown Praser Error in query: " + ex.Message, "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            finally
-            {
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(query)));
-            }
-
-            resultRichTextBox.Document.Blocks.Clear();
-
-            try
-            {
-                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
-                QueryEvaluator.GetInstance().Evaluate(conditionsList);
-            }
-            catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException:\n" + ex.Message); }
-            finally
-            {
-                //tutaj QueryProjector wkracza do gry - interpretuje instancję klasy Result
-                QueryResult queryResult = QueryResult.GetInstance();
-                QueryProjector queryProjector = QueryProjector.GetInstance();
-
-                var vfvd = QueryPreProcessor.GetInstance();
-                resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
-                addLog("Result: " + queryProjector.PrintResult());
-
-            }
+        private void autoButton_Click(object sender, RoutedEventArgs e)
+        {
+            parseButton_Click(sender, e);
+            astCfgButton_Click(sender, e);
+            parseQueryButton_Click(sender, e);
+            evaluateQueryButton_Click(sender, e);
         }
 
         private void ProcedureRichTextBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -238,111 +165,20 @@ namespace SpaWpfApp
             linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
         }
 
-        private void autoButton_Click(object sender, RoutedEventArgs e)
+        private string StringFromRichTextBox(RichTextBox rtb)
         {
-            logsRichTextBox.Document.Blocks.Clear();
-            resultRichTextBox.Document.Blocks.Clear();
-            try
-            {
-                ParserByTombs.SetNewInstance();
+            TextRange textRange = new TextRange(
+                rtb.Document.ContentStart,
+                rtb.Document.ContentEnd
+            );
+            return textRange.Text;
+        }
 
-                // parsed    - FOR AST AND CFG
-                parsed = ParserByTombs.Instance.Parse(StringFromRichTextBox(procedureRichTextBox));
-
-                // formatted - ONLY FOR "MAIN WINDOW"
-                var formatted = ParserByTombs.Instance.GetParsedFormattedSourceCode();
-
-                linesRichTextBox.Document.Blocks.Clear();
-                linesRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.lineNumbers)));
-
-                procedureRichTextBox.Document.Blocks.Clear();
-                procedureRichTextBox.Document.Blocks.Add(new Paragraph(new Run(formatted.parsedSourceCode)));
-                procedureRichTextBox.ScrollToVerticalOffset(0);
-                //linesRichTextBox.ScrollToVerticalOffset(procedureRichTextBox.VerticalOffset);
-
-                addLog("Source Code Parser: Ok");
-            }
-            catch (SourceCodeException ex)
-            {
-                addLog("Error while parsing Source Code:\n" + ex.Message);
-                return;
-            }
-
-            try
-            {
-                pkb = ParserByTombs.Instance.pkb;
-                QueryPreProcessor.GetInstance().SetPkb(pkb);
-                QueryEvaluator.GetInstance().pkb = pkb;
-                QueryProjector.GetInstance().Pkb = pkb;
-                addLog("PKB Created: Ok");
-            }
-            catch (Exception ex)
-            {
-                addLog("PKB Created: Error: " + ex);
-                return;
-            }
-            try
-            {
-                AstManager.GetInstance().GenerateStructures(parsed, pkb);
-                var astManager = AstManager.GetInstance();
-                addLog("AST Created: Ok");
-            }
-            catch (Exception ex)
-            {
-                addLog("AST Created: Error: " + ex);
-                return;
-            }
-
-            try
-            {
-                CfgManager.GetInstance().GenerateStructure(parsed, pkb);
-                addLog("CFG Created: Ok");
-            }
-            catch (Exception ex)
-            {
-                addLog("CFG Created: Error: " + ex);
-                return;
-            }
-
-            string query = StringFromRichTextBox(queryRichTextBox);
-            try
-            {
-                query = QueryPreProcessor.GetInstance().Parse(query);
-
-                addLog("PQL Parser: Ok");
-            }
-            catch (QueryException ex)
-            {
-                addLog("PQL Parser: QueryException: " + ex.Message);
-                return;
-            }
-            catch (Exception ex)
-            {
-                addLog("PQL Parser: Error: " + ex.Message);
-                return;
-            }
-            finally
-            {
-                queryRichTextBox.Document.Blocks.Clear();
-                queryRichTextBox.Document.Blocks.Add(new Paragraph(new Run(query)));
-            }
-
-            try
-            {
-                List<QueryProcessingSusbsytem.Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
-                QueryEvaluator.GetInstance().Evaluate(conditionsList);
-            }
-            catch (NoResultsException ex) { addLog("Q Evaluator: NoResultsException: " + ex.Message); }
-            finally
-            {
-                QueryResult queryResult = QueryResult.GetInstance();
-                QueryProjector queryProjector = QueryProjector.GetInstance();
-
-                var vfvd = QueryPreProcessor.GetInstance();
-                resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
-                addLog("Result: " + queryProjector.PrintResult());
-            }
-
+        private void addLog(string log)
+        {
+            string now = DateTime.Now.ToLongTimeString();
+            logsRichTextBox.Document.Blocks.Add(new Paragraph(new Run("[" + now + "]" + " " + log)));
+            logsRichTextBox.ScrollToEnd();
         }
     }
 }
