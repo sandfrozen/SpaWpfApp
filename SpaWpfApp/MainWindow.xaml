@@ -13,7 +13,6 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
-        <Button x:Name="openFileButton" Content="Open file" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Height="20"/>
         <RichTextBox x:Name="procedureRichTextBox" Margin="53,35,605,10" FontFamily="Courier New" ScrollViewer.ScrollChanged="ProcedureRichTextBox_ScrollChanged">
             <RichTextBox.Resources>
                 <Style TargetType="{x:Type Paragraph}">
@@ -86,9 +85,9 @@
                 </Paragraph>
             </FlowDocument>
         </RichTextBox>
-        <Button x:Name="parseButton" Content="Parse" HorizontalAlignment="Left" Margin="90,10,0,0" VerticalAlignment="Top" Width="75" Click="parseButton_Click" Height="20"/>
-        <Button x:Name="astCfgButton" Content="AST i CFG" HorizontalAlignment="Left" Margin="170,10,0,0" VerticalAlignment="Top" Width="75" Height="20" Click="astCfgButton_Click"/>
-        <Label x:Name="logsLabel" Content="Logs:" HorizontalAlignment="Left" Margin="634,7,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Width="37" Padding="0,5,5,5"/>
+        <Button x:Name="parseButton" Content="Parse Source Code" HorizontalAlignment="Left" Margin="53,10,0,0" VerticalAlignment="Top" Click="parseButton_Click" Height="20" Width="110"/>
+        <Button x:Name="astCfgButton" Content="Create AST &amp; CFG" HorizontalAlignment="Left" Margin="168,10,0,0" VerticalAlignment="Top" Height="20" Click="astCfgButton_Click" Width="110"/>
+        <Label x:Name="logsLabel" Content="Logs:" HorizontalAlignment="Left" Margin="634,9,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.327,0.587" Height="26" Width="37" Padding="0,5,5,5"/>
         <Button x:Name="evaluateQueryButton" Content="Evaluate Query" Margin="730,285,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Left" Width="91" MinWidth="91" MinHeight="20" MaxWidth="91" MaxHeight="20" ScrollViewer.VerticalScrollBarVisibility="Disabled" Click="evaluateQueryButton_Click" Height="20" VerticalAlignment="Top"/>
         <RichTextBox x:Name="queryRichTextBox" Margin="634,170,10,0" Height="110" VerticalAlignment="Top">
             <RichTextBox.Resources>

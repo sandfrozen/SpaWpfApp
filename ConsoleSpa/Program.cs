@@ -21,19 +21,19 @@ namespace ConsoleSpa
             PkbAPI pkb;
             if (args.Length == 0)
             {
-                Console.WriteLine("No parameter (Source.txt)");
+                Console.WriteLine("No parameter with path to file");
                 Console.WriteLine("Program exit.");
                 Console.ReadKey();
                 return;
             }
 
             string path = args[0];
-            Console.WriteLine("Path: " + path);
+            //Console.WriteLine("Path: " + path);
 
             try
             {
                 SourceCode = File.ReadAllText(path);
-                Console.WriteLine("File Readed ok");
+                Console.WriteLine("File ok: " + path);
 
                 SourceCode = ParserByTombs.Instance.Parse(SourceCode);
                 Console.WriteLine("Source Parsed ok");
@@ -84,11 +84,17 @@ namespace ConsoleSpa
                 }
                 finally
                 {
-                    QueryResult queryResult = QueryResult.GetInstance();
-                    QueryProjector queryProjector = QueryProjector.GetInstance();
-                    Console.WriteLine(queryProjector.PrintResult());
+                    try
+                    {
+                        QueryResult queryResult = QueryResult.GetInstance();
+                        QueryProjector queryProjector = QueryProjector.GetInstance();
+                        Console.WriteLine(queryProjector.PrintResult());
+                    }
+                    catch
+                    {
+                        Console.WriteLine("none");
+                    }
                 }
-
             }
 
             Console.WriteLine("Program exit.");
