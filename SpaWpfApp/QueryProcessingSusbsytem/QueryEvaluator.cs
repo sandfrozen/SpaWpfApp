@@ -52,7 +52,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 if (condition is With)
                 {
                     wList.Add((With)condition);
-                    if(((With)condition).leftType != Entity._int && ((With)condition).leftType != Entity._string &&
+                    if (((With)condition).leftType != Entity._int && ((With)condition).leftType != Entity._string &&
                         ((With)condition).rightType != Entity._int && ((With)condition).rightType != Entity._string)
                     {
                         w2synonymList.Add((With)condition);
@@ -63,7 +63,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (w2synonymList.Any())
             {
-                foreach(var w2synonym in w2synonymList)
+                foreach (var w2synonym in w2synonymList)
                 {
                     wList.Remove(w2synonym);
                     wList.Add(w2synonym);
@@ -71,11 +71,11 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             conditionsList.Clear();
-            foreach(var rp in rpList)
+            foreach (var rp in rpList)
             {
                 conditionsList.Add(rp);
             }
-            foreach(var w2 in wList)
+            foreach (var w2 in wList)
             {
                 conditionsList.Add(w2);
             }
@@ -1692,7 +1692,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             foreach (var from in fromList)
                             {
                                 List<TNode> tmp = cfgManager.NextX(from, relation.arg2);
-                                if (tmp != null) { resultList = tmp; }
+                                if (tmp != null)
+                                {
+                                    foreach (var tr in tmp)
+                                    {
+                                        resultList.Add(tr);
+                                    }
+                                }
                             }
                         }
 
@@ -1965,7 +1971,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 List<TNode> tmp = cfgManager.Next(from, relation.arg2);
                                 if (tmp != null)
                                 {
-                                    foreach(var tr in tmp)
+                                    foreach (var tr in tmp)
                                     {
                                         resultList.Add(tr);
                                     }
@@ -2027,7 +2033,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForFrom = astManager.GetNodes(relation.arg1type);
                 }
 
-                if(candidateForFrom is null)
+                if (candidateForFrom is null)
                 {
                     UpdateResultTable(null, relation.arg1, relation.arg2);
                     return;
@@ -2247,9 +2253,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             foreach (var from in fromList)
                             {
                                 tmpResult = astManager.GetRightSiblingX(from, relation.arg2);
-                                UpdateResultTable(resultList, relation.arg2);
-                                return;
+                                if (tmpResult != null)
+                                {
+                                    foreach (var tr in tmpResult)
+                                    {
+                                        if (!resultList.Contains(tr))
+                                        {
+                                            resultList.Add(tr);
+                                        }
+                                    }
+                                }
                             }
+                            UpdateResultTable(resultList, relation.arg2);
+                            return;
                         }
 
                         UpdateResultTable(resultList, relation.arg2);
@@ -2519,7 +2535,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             foreach (var from in fromList)
                             {
                                 TNode tmp = astManager.GetRightSibling(from, relation.arg2);
-                                if (tmp != null) { resultList.Add(tmp); }
+                                if (tmp != null)
+                                {
+                                    resultList.Add(tmp);
+                                }
                             }
                         }
 
@@ -2577,7 +2596,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForFrom = DeepCopy(astManager.GetNodes(relation.arg1type));
                 }
 
-                if(candidateForFrom is null)
+                if (candidateForFrom is null)
                 {
                     UpdateResultTable(null, relation.arg1, relation.arg2);
                     return;
