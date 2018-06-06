@@ -770,14 +770,20 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             {
                                 arg2type = Entity._;
                             }
-                            else
+                            else if (arg2.First().Equals('_') && arg2.Last().Equals('_'))
                             {
-                                string arg2string = arg2.Trim('"');
-                                if( arg2string.Contains("_") )
+                                string arg2string = arg2.Remove(0, 1);
+                                arg2string = arg2string.Remove(arg2string.Length - 1);
+                                if (arg2string.Contains("_"))
                                 {
-                                    throw new QueryException("Argument 2 in pattern <assign> cannot be: " + arg2);
+                                    throw new QueryException("Argument 2 in pattern <assign> cannot be: " + arg2string);
                                 }
                                 arg2type = Entity._string;
+                            }
+                            else
+                            {
+                                throw new QueryException("Argument 2 in pattern <assign> cannot be: " + arg2);
+
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
                         }
