@@ -251,8 +251,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             string[] separators = new string[] { " " };
             return Regex.Replace(query, @"\s+", " ").Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            //string[] separators = new string[] { " ", Environment.NewLine };
-            //return query.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private bool IsSeparatorChar(char toCheck)
@@ -741,7 +739,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 string synonym = pattern.Substring(0, pattern.IndexOf('('));
                 if (!declarationsList.Keys.Contains(synonym))
                 {
-                    throw new QueryException("Synonym used in pattern is not declared: " + synonym + "\nCheck pattern: " + pattern);
+                    throw new QueryException("Synonym used in pattern is not declared: " + synonym + ". Check pattern: " + pattern);
                 }
                 string synonymType = declarationsList[synonym];
 
@@ -765,7 +763,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                                 if (pkb.GetVarIndex(arg1string) == -1)
                                 {
-                                    throw new QueryException("Argument 1 in assign " + arg1 + "is not delcared");
+                                    throw new QueryException("Argument 1 in assign " + arg1 + " is not delcared");
                                 }
 
                                 arg1type = Entity._string;
@@ -791,7 +789,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
                         }
-                        //CheckAssignPattern(args);
                         else
                         {
                             throw new QueryException("Wrong pattern for assign: " + pattern);
@@ -808,14 +805,12 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg1.First() == '"' && arg1.Last() == '"')
                             {
-                                //IsSynonym(arg1.Trim('"'));
-                                //arg1type = Entity._string;
                                 string arg1string = arg1.Trim('"');
                                 IsSynonym(arg1string);
 
                                 if (pkb.GetVarIndex(arg1string) == -1)
                                 {
-                                    throw new QueryException("Argument 1 in while " + arg1 + "is not delcared");
+                                    throw new QueryException("Argument 1 in while " + arg1 + " is not delcared");
                                 }
 
                                 arg1type = Entity._string;
@@ -836,11 +831,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else
                             {
-                                throw new QueryException("Pattern for while as second paremeter must have: '_', but founded " + arg2);
+                                throw new QueryException("Pattern for while as second paremeter must have: '_', but is: " + arg2);
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
                         }
-                        //CheckWhilePattern(args);
                         else
                         {
                             throw new QueryException("Wrong pattern for while: " + pattern);
@@ -857,8 +851,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg1.First() == '"' && arg1.Last() == '"')
                             {
-                                //IsSynonym(arg1.Trim('"'));
-                                //arg1type = Entity._string;
                                 string arg1string = arg1.Trim('"');
                                 IsSynonym(arg1string);
 
@@ -887,20 +879,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else
                             {
-                                throw new QueryException("Worng pattern: " + pattern + ". 'if' as second paremeter must have: '_', but founded " + arg2);
+                                throw new QueryException("Wrong pattern: " + pattern + ". 'if' as second paremeter must have: '_', but founded " + arg2);
                             }
                             string arg3 = args.Substring(args.IndexOf(',') + 1);
-                            if (arg3 == Entity._)
+                            if (arg3 != Entity._)
                             {
-                                // ok
-                            }
-                            else
-                            {
-                                throw new QueryException("Worng pattern: " + pattern + ". 'if' as third paremeter must have: '_', but founded " + arg3);
+                                throw new QueryException("Wrong pattern: " + pattern + ". 'if' as third paremeter must have: '_', but founded " + arg3);
                             }
                             conditionsList.Add(new Pattern(synonym, synonymType, arg1, arg1type, arg2, arg2type));
                         }
-                        //CheckIfPattern(args);
                         else
                         {
                             throw new QueryException("Wrong pattern for if: " + pattern);
@@ -911,33 +898,8 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else
             {
-                throw new QueryException("With wrong format: " + pattern);
+                throw new QueryException("With is in wrong format: " + pattern);
             }
-        }
-
-        private void CheckAssignPattern(string pattern)
-        {
-            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
-            string arg2 = pattern.Substring(pattern.IndexOf(',') + 1);
-            //check arguments
-
-        }
-        private void CheckWhilePattern(string pattern)
-        {
-            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
-            string arg2 = pattern.Substring(pattern.IndexOf(',') + 1);
-            //check arguments
-
-        }
-        private void CheckIfPattern(string pattern)
-        {
-            string arg1 = pattern.Substring(0, pattern.IndexOf(','));
-            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
-            string arg2 = pattern.Substring(0, pattern.IndexOf(','));
-            pattern = pattern.Substring(pattern.IndexOf(',') + 1);
-            string arg3 = pattern;
-            //check arguments
-
         }
     }
 }
