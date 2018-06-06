@@ -736,7 +736,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else
             {
-                if(relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string)
                 {
                     candidates = DeepCopy(astManager.GetNodes(relation.arg1type));
                 }
@@ -744,14 +744,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     var procedures = new List<TNode>();
                     var indexOfProcedure = pkb.GetProcIndex(relation.arg1);
-                    if(indexOfProcedure != -1)
+                    if (indexOfProcedure != -1)
                     {
                         procedures = astManager.GetNodes("procAndCalls");
-                        if(procedures !=null){
+                        if (procedures != null)
+                        {
                             candidates = new List<TNode>();
-                            foreach(var pc in procedures)
+                            foreach (var pc in procedures)
                             {
-                                if(pc.indexOfName == indexOfProcedure)
+                                if (pc.indexOfName == indexOfProcedure)
                                 {
                                     candidates.Add(pc);
                                 }
@@ -765,7 +766,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (candidates is null || (candidates != null && !candidates.Any()))
             {
-                if(relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string)
                 {
                     UpdateResultTable(null, relation.arg1);
                     return;
@@ -779,7 +780,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (relation.arg2type == Entity._)
             {
-                if(relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string)
                 {
                     foreach (var c in candidates)
                     {
@@ -843,7 +844,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (relation.arg2type == Entity._string)
             {
-                if(relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string)
                 {
                     foreach (var c in candidates)
                     {
@@ -927,7 +928,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     else { UpdateResultTable(null, relation.arg2); return; }
                 }
 
-                if(relation.arg1type != Entity._string)
+                if (relation.arg1type != Entity._string)
                 {
                     foreach (var c in candidates)
                     {
@@ -1867,7 +1868,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     List<TNode> tmp = cfgManager.PreviousX(to, relation.arg1);
                     if (tmp != null)
                     {
-                        foreach(var tr in tmp)
+                        foreach (var tr in tmp)
                         {
                             resultList.Add(tr);
                         }
@@ -3427,13 +3428,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForChildren = queryResult.GetNodes(relation.arg2);
                     if (candidateForChildren != null)
                     {
-                        for (int i = 0; i < candidateForFather.Count(); i++)
-                        {
-                            if (astManager.IsParentX((int)candidateForFather[i].programLine, (int)candidateForChildren[i].programLine))
+                        foreach (var c in candidateForFather)
+                            foreach (var c2 in candidateForChildren)
                             {
-                                resultListTuple.Add((candidateForFather[i], candidateForChildren[i]));
+                                if (astManager.IsParentX((int)c.programLine, (int)c2.programLine))
+                                {
+                                    resultListTuple.Add((c, c2));
+                                }
                             }
-                        }
                     }
                 }
                 else
