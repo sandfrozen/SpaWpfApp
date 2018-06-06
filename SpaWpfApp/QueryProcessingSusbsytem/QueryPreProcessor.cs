@@ -213,21 +213,21 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
 
-            Trace.WriteLine("Declarations:");
-            foreach (var v in declarationsList)
-            {
-                Trace.WriteLine(v.Value + " " + v.Key);
-            }
-            Trace.WriteLine("Return List:");
-            foreach (var v in returnList)
-            {
-                Trace.WriteLine(v.Value + " " + v.Key);
-            }
-            Trace.WriteLine("Relations List:");
-            foreach (var r in conditionsList)
-            {
-                Trace.WriteLine(r.ToString());
-            }
+            //Trace.WriteLine("Declarations:");
+            //foreach (var v in declarationsList)
+            //{
+            //    Trace.WriteLine(v.Value + " " + v.Key);
+            //}
+            //Trace.WriteLine("Return List:");
+            //foreach (var v in returnList)
+            //{
+            //    Trace.WriteLine(v.Value + " " + v.Key);
+            //}
+            //Trace.WriteLine("Relations List:");
+            //foreach (var r in conditionsList)
+            //{
+            //    Trace.WriteLine(r.ToString());
+            //}
 
             return parsedQuery;
         }
@@ -429,8 +429,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
 
             CheckRelation(relation);
-
-            //Trace.WriteLine("Relationship: " + relationship);
             parsedQuery += " " + relation;
         }
 
@@ -591,9 +589,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 with += wordsInQuery[currentIndex++];
             } while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]));
-            Trace.WriteLine("With: " + with);
             CheckWith(with);
-
             parsedQuery += " " + with;
         }
 
@@ -720,8 +716,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 pattern += wordsInQuery[currentIndex++];
             } while (currentIndex < wordsInQuery.Length && !selectClauses.Contains(wordsInQuery[currentIndex]));
-            Trace.WriteLine("Pattern: " + pattern);
-
             CheckPattern(pattern);
             parsedQuery += " " + pattern;
         }

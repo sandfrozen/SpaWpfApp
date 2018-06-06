@@ -87,25 +87,24 @@ namespace SpaWpfApp.ParserNew
             //    }
             //}
 
+            //Trace.WriteLine("PROC TABLE:");
+            //for (int i = 0; i < pkb.GetNumberOfProcs(); i++)
+            //{
+            //    Trace.WriteLine(firstLineOfProcedure[i] + " " + pkb.GetProcName(i));
+            //}
+            //Trace.WriteLine("VAR TABLE:");
+            //for (int i = 0; i < pkb.GetNumberOfVars(); i++)
+            //{
+            //    Trace.WriteLine(pkb.GetVarName(i));
+            //}
+            //Trace.WriteLine("MODIFIES TABLE:");
+            //pkb.PrintModifiesTable();
 
-            Trace.WriteLine("PROC TABLE:");
-            for (int i = 0; i < pkb.GetNumberOfProcs(); i++)
-            {
-                Trace.WriteLine(firstLineOfProcedure[i] + " " + pkb.GetProcName(i));
-            }
-            Trace.WriteLine("VAR TABLE:");
-            for (int i = 0; i < pkb.GetNumberOfVars(); i++)
-            {
-                Trace.WriteLine(pkb.GetVarName(i));
-            }
-            Trace.WriteLine("MODIFIES TABLE:");
-            pkb.PrintModifiesTable();
+            //Trace.WriteLine("USES TABLE:");
+            //pkb.PrintUsesTable();
 
-            Trace.WriteLine("USES TABLE:");
-            pkb.PrintUsesTable();
-
-            Trace.WriteLine("CALLS TABLE:");
-            pkb.PrintCallsTable();
+            //Trace.WriteLine("CALLS TABLE:");
+            //pkb.PrintCallsTable();
 
             return GetParsedSouceCode();
         }
