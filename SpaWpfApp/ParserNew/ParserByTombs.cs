@@ -177,7 +177,7 @@ namespace SpaWpfApp.ParserNew
                 else if (i == length - 1)
                 {
                     // done
-                    lines = lines.Remove(lines.Length-2);
+                    lines = lines.Remove(lines.Length - 2);
                 }
                 else if (i == length - 2)
                 {
@@ -243,10 +243,10 @@ namespace SpaWpfApp.ParserNew
                 {
                     parsed += Environment.NewLine;
                 }
-                //else if (i == length - 1)
-                //{
-                //    //done
-                //}
+                else if (i == length - 1)
+                {
+                    // done
+                }
                 else if (i == length - 2)
                 {
                     parsed += " ";
@@ -421,7 +421,7 @@ namespace SpaWpfApp.ParserNew
         {
             currentIndex++;
             string procName = wordsInCode[currentIndex];
-            if( procName == currentProcedure)
+            if (procName == currentProcedure)
             {
                 throw new SourceCodeException("You can not call procedures recursively (line " + currentLine + ")");
             }
