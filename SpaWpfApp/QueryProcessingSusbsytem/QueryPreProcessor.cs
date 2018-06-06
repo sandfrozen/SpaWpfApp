@@ -27,7 +27,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         private Dictionary<string, Action> declarationActions;
 
         private static QueryPreProcessor instance;
-        private PkbAPI pkb;
 
         public static QueryPreProcessor GetInstance()
         {
@@ -111,11 +110,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
               { Entity.constant, ParseDeclaration},
               { Entity.prog_line, ParseDeclaration},
             };
-        }
-
-        public void SetPkb(PkbAPI pkb)
-        {
-            this.pkb = pkb;
         }
 
         private void CheckModifies()

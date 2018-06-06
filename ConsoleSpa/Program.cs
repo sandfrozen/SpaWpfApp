@@ -39,7 +39,6 @@ namespace ConsoleSpa
                 Console.WriteLine("Source Parsed ok");
 
                 pkb = ParserByTombs.Instance.pkb;
-                QueryPreProcessor.GetInstance().SetPkb(pkb);
                 QueryEvaluator.GetInstance().pkb = pkb;
                 QueryProjector.GetInstance().Pkb = pkb;
                 Console.WriteLine("PKB ok");
