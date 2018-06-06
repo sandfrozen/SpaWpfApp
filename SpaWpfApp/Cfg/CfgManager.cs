@@ -47,7 +47,7 @@ namespace SpaWpfApp.Cfg
 
             sourceCodeLines = p_sourceCode.Split('\n');
 
-            for (int i = 0; i < sourceCodeLines.Length - 1; i++)
+            for (int i = 0; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
                 switch (lineWords[0])
@@ -131,7 +131,7 @@ namespace SpaWpfApp.Cfg
             }
             #endregion
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 
@@ -203,7 +203,7 @@ namespace SpaWpfApp.Cfg
         {
             string[] lineWords;
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 
@@ -268,7 +268,7 @@ namespace SpaWpfApp.Cfg
             currentPreviousNode = actualNode;
             #endregion
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 
@@ -598,7 +598,7 @@ namespace SpaWpfApp.Cfg
                 return;
             }
 
-            foreach (var p in nodeNext.previousGNodeList)
+            foreach (var p in nodeNext.nextGNodeList)
             {
                 FindAndAddNextResult(p, ref resultList, acceptableType);
             }

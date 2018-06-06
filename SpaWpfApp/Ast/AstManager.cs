@@ -295,7 +295,7 @@ namespace SpaWpfApp.Ast
                 if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                 {
                     tmpRightNode = null;
-                    while (i < lineWords.Length - 1 && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
+                    while (i < lineWords.Length && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                     {
                         tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null, null, programLineNumber);
                         //create L
@@ -333,7 +333,7 @@ namespace SpaWpfApp.Ast
                     i += 2;
                 }
 
-                if (i < lineWords.Length - 1)
+                if (i < lineWords.Length)
                 {
                     if (WordIsConstant(lineWords[i]))
                     {
@@ -484,7 +484,7 @@ namespace SpaWpfApp.Ast
         {
             string[] lineWords;
 
-            for (++i; i < sourceCodeLines.Length - 1; i++)
+            for (++i; i < sourceCodeLines.Length; i++)
             {
                 lineWords = sourceCodeLines[i].Split(' ');
 

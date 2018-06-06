@@ -1719,7 +1719,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.GetNodes(relation.arg1);
+                            candidateForFrom = astManager.GetNodes(relation.arg1type);
                         }
 
                         if (candidateForFrom != null)
@@ -1747,7 +1747,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.GetNodes(relation.arg1);
+                    candidateForFrom = astManager.GetNodes(relation.arg1type);
                 }
 
                 //candidates for to
@@ -1990,7 +1990,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.GetNodes(relation.arg1);
+                            candidateForFrom = astManager.GetNodes(relation.arg1type);
                         }
 
                         if (candidateForFrom != null)
@@ -2018,7 +2018,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.GetNodes(relation.arg1);
+                    candidateForFrom = astManager.GetNodes(relation.arg1type);
+                }
+
+                if(candidateForFrom is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                    return;
                 }
 
                 //candidates for to
@@ -2263,7 +2269,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         else
                         {
-                            candidateForFrom = astManager.GetNodes(relation.arg1);
+                            candidateForFrom = astManager.GetNodes(relation.arg1type);
                         }
 
                         if (candidateForFrom != null)
@@ -2291,7 +2297,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 }
                 else
                 {
-                    candidateForFrom = astManager.GetNodes(relation.arg1);
+                    candidateForFrom = astManager.GetNodes(relation.arg1type);
                 }
 
                 //candidates for to
