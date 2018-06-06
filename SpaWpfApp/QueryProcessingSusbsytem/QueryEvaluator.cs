@@ -1963,7 +1963,13 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             foreach (var from in fromList)
                             {
                                 List<TNode> tmp = cfgManager.Next(from, relation.arg2);
-                                if (tmp != null) { resultList = tmp; }
+                                if (tmp != null)
+                                {
+                                    foreach(var tr in tmp)
+                                    {
+                                        resultList.Add(tr);
+                                    }
+                                }
                             }
                         }
 
