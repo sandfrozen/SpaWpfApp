@@ -1650,7 +1650,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (candidates is null)
             {
-                UpdateResultTable(null, relation.arg1);
+                UpdateResultTable(null, relation.arg2);
                 return;
             }
 
