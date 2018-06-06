@@ -62,12 +62,7 @@ namespace SpaWpfApp
                 good = false;
                 return;
             }
-            good = true;
-        }
 
-        private void astCfgButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!good) return;
             try
             {
                 pkb = ParserByTombs.Instance.pkb;
@@ -81,6 +76,13 @@ namespace SpaWpfApp
                 good = false;
                 return;
             }
+
+            good = true;
+        }
+
+        private void astCfgButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!good) return;
 
             try
             {
