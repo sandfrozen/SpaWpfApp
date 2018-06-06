@@ -250,7 +250,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidateForCalling)
                 {
-                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any())
+                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any() && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -483,7 +483,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidateForCalling)
                 {
-                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any())
+                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any() && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -511,7 +511,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                 foreach (var c in candidateForCalling)
                 {
-                    if (pkb.IsCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"')) != -1 ? true : false)
+                    if (pkb.IsCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"')) != -1 ? true : false && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -785,7 +785,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     foreach (var c in candidates)
                     {
                         var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
+                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any() && !resultList.Contains(c))
                         {
                             foreach (var wia in whileIfAssignsUnder)
                             {
@@ -1068,7 +1068,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidates = DeepCopy(astManager.GetNodes(with.leftType));
                 }
 
-                if(candidates != null)
+                if (candidates != null)
                 {
                     foreach (var c in candidates)
                     {
@@ -1660,7 +1660,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 foreach (var c in candidates)
                 {
                     var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                    if (assignsUnder != null && assignsUnder.Any())
+                    if (assignsUnder != null && assignsUnder.Any() && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -1678,7 +1678,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var au in assignsUnder)
                         {
-                            if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                            if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -1797,7 +1797,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForTo)
                         {
-                            if (cfgManager.IsNextX(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (cfgManager.IsNextX(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -1856,7 +1856,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFrom)
                         {
-                            if (cfgManager.IsNextX((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (cfgManager.IsNextX((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -1921,7 +1921,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 {
                                     foreach (var tr in tmp)
                                     {
-                                        resultList.Add(tr);
+                                        if (!resultList.Contains(tr))
+                                        {
+                                            resultList.Add(tr);
+                                        }
                                     }
                                 }
                             }
@@ -2093,7 +2096,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForTo)
                         {
-                            if (cfgManager.IsNext(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (cfgManager.IsNext(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -2145,7 +2148,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFrom)
                         {
-                            if (cfgManager.IsNext((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (cfgManager.IsNext((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -2378,7 +2381,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForTo)
                         {
-                            if (astManager.IsFollowsX(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (astManager.IsFollowsX(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -2430,7 +2433,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFrom)
                         {
-                            if (astManager.IsFollowsX((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (astManager.IsFollowsX((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -2659,7 +2662,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForTo)
                         {
-                            if (astManager.IsFollows(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (astManager.IsFollows(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -2711,7 +2714,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFrom)
                         {
-                            if (astManager.IsFollows((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (astManager.IsFollows((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -2937,7 +2940,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForChildren)
                         {
-                            if (astManager.IsParent(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (astManager.IsParent(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -2988,7 +2991,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFather)
                         {
-                            if (astManager.IsParent((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (astManager.IsParent((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -3234,7 +3237,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForChildren)
                         {
-                            if (astManager.IsParentX(Int32.Parse(relation.arg1), (int)c.programLine))
+                            if (astManager.IsParentX(Int32.Parse(relation.arg1), (int)c.programLine) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                             }
@@ -3286,7 +3289,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         foreach (var c in candidateForFather)
                         {
-                            if (astManager.IsParentX((int)c.programLine, Int32.Parse(relation.arg2)))
+                            if (astManager.IsParentX((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
