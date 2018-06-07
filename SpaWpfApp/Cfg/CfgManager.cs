@@ -363,11 +363,11 @@ namespace SpaWpfApp.Cfg
                         tmp = AstManager.GetInstance().FindNode(actual.programLineList.ElementAt(i + 1));
                         if (acceptableType.Contains(tmp.type)) { resultList.Add(tmp); }
 
-                        break;
+                        return resultList.Count > 0 ? resultList : null;
                     }
                 }
             }
-            else if (actual.nextGNodeList != null)
+            if (actual.nextGNodeList != null)
             {
                 foreach (var nodeNext in actual.nextGNodeList)
                 {

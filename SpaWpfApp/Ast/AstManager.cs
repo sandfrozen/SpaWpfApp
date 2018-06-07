@@ -201,7 +201,15 @@ namespace SpaWpfApp.Ast
                             {
                                 resultList.Add(awi);
                             }
+                        }
 
+                        var allCalls = GetNodes(Entity.call);
+                        if(allCalls != null)
+                        {
+                            foreach (var awi in allCalls)
+                            {
+                                AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)awi.indexOfName), allWhileIfAssigns);
+                            }
                         }
 
                         return resultList;
@@ -287,94 +295,119 @@ namespace SpaWpfApp.Ast
             CreateLink(TLinkTypeEnum.Up, leftSideOfAssignNode, actualNode);
 
 
-            // create subTree of entire expression
             int indexOfSemiColon = -1;
-            for(int i=0; i<lineWords.Length; i++)
+            for (int i = 0; i < lineWords.Length; i++)
             {
                 if (lineWords[i].Contains(";")) { indexOfSemiColon = i; break; }
             }
-            TNode tmpUpNode = null, tmpActualNode = null, tmpRightNode = null;
-            List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
-            for (int i = 2; i < indexOfSemiColon && lineWords[i][0] != 125; i += 2)
+            TNode tmp = null;
+            for (int i = 2; i < indexOfSemiColon;  i++)
             {
-                if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
-                {
-                    tmpRightNode = null;
-                    while (i < lineWords.Length && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
-                    {
-                        tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null, null, programLineNumber);
-                        //create L
-                        if (tmpRightNode is null)
-                        {
-                            if (WordIsConstant(lineWords[i]))
-                            {
-                                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]), programLineNumber);
-                            }
-                            else
-                            {
-                                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
-                            }
-                            tmpRightNode = tmpActualNode;
-                        }
-                        CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpUpNode);
-                        CreateLink(TLinkTypeEnum.FirstChild, tmpUpNode, tmpRightNode);
-
-                        //create P
-                        if (WordIsConstant(lineWords[i + 2]))
-                        {
-                            tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i + 2]), programLineNumber);
-                        }
-                        else
-                        {
-                            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]), null, programLineNumber);
-                        }
-                        CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
-                        CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
-
-                        tmpRightNode = tmpUpNode;
-                        i += 2;
-                    }
-                    ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
-                    i += 2;
-                }
-
-                if (i < indexOfSemiColon)
-                //if (i < lineWords.Length)
+                if(!lineWords[i].Equals(ConvertEnumToSign(SignEnum.Times)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Minus)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Plus)))
                 {
                     if (WordIsConstant(lineWords[i]))
                     {
-                        tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]), programLineNumber);
+                        CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]), programLineNumber);
                     }
                     else
                     {
-                        tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
+                        CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
                     }
-                    ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
                 }
             }
 
-            tmpRightNode = ListExpr[0].TNode;
-            if (ListExpr.Count() > 1)
-            {
-                for (int i = 0; i < ListExpr.Count(); i++)
-                {
-                    if (ListExpr[i].sign != SignEnum.Semicolon)
-                    {
-                        tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null, null, programLineNumber);
-                        CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
-                        CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
-                        CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
-                        CreateLink(TLinkTypeEnum.RightSibling, tmpRightNode, ListExpr[i + 1].TNode);
+            //// create subTree of entire expression
+            //int indexOfSemiColon = -1;
+            //for(int i=0; i<lineWords.Length; i++)
+            //{
+            //    if (lineWords[i].Contains(";")) { indexOfSemiColon = i; break; }
+            //}
+            //TNode tmpUpNode = null, tmpActualNode = null, tmpRightNode = null;
+            //List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
+            //for (int i = 2; i < indexOfSemiColon && lineWords[i][0] != 125; i += 2)
+            //{
+            //    if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
+            //    {
+            //        tmpRightNode = null;
+            //        while (i < lineWords.Length && lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
+            //        {
+            //            tmpUpNode = CreateTNode(TNodeTypeEnum.Times, null, null, null, programLineNumber);
+            //            //create L
+            //            if (tmpRightNode is null)
+            //            {
+            //                if (WordIsConstant(lineWords[i]))
+            //                {
+            //                    tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i]), programLineNumber);
+            //                }
+            //                else
+            //                {
+            //                    tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
+            //                }
+            //                tmpRightNode = tmpActualNode;
+            //            }
+            //            CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpUpNode);
+            //            CreateLink(TLinkTypeEnum.FirstChild, tmpUpNode, tmpRightNode);
 
-                        tmpRightNode = tmpActualNode;
-                    }
-                }
+                //            //create P
+                //            if (WordIsConstant(lineWords[i + 2]))
+                //            {
+                //                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i + 2]), programLineNumber);
+                //            }
+                //            else
+                //            {
+                //                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]), null, programLineNumber);
+                //            }
+                //            CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
+                //            CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
 
-                ListExpr.Clear();
-            }
+                //            tmpRightNode = tmpUpNode;
+                //            i += 2;
+                //        }
+                //        ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
+                //        i += 2;
+                //    }
 
-            CreateLink(TLinkTypeEnum.Up, tmpRightNode, actualNode);
-            CreateLink(TLinkTypeEnum.RightSibling, leftSideOfAssignNode, tmpRightNode);
+                //    if (i < indexOfSemiColon)
+                //    //if (i < lineWords.Length)
+                //    {
+                //        if (WordIsConstant(lineWords[i]))
+                //        {
+                //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, null, Int32.Parse(lineWords[i]), programLineNumber);
+                //        }
+                //        else
+                //        {
+                //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
+                //        }
+
+                //        if(lineWords[i][0] != 40 && lineWords[i][0] != 41)
+                //        {
+                //            ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
+                //        }
+                //    }
+                //}
+
+                //tmpRightNode = ListExpr[0].TNode;
+                //if (ListExpr.Count() > 1)
+                //{
+                //    for (int i = 0; i < ListExpr.Count(); i++)
+                //    {
+                //        if (ListExpr[i].sign != SignEnum.Semicolon)
+                //        {
+                //            tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null, null, programLineNumber);
+                //            CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
+                //            CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
+                //            CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
+                //            CreateLink(TLinkTypeEnum.RightSibling, tmpRightNode, ListExpr[i + 1].TNode);
+
+                //            tmpRightNode = tmpActualNode;
+                //        }
+                //    }
+
+                //    ListExpr.Clear();
+                //}
+
+                //CreateLink(TLinkTypeEnum.Up, tmpRightNode, actualNode);
+                //CreateLink(TLinkTypeEnum.RightSibling, leftSideOfAssignNode, tmpRightNode);
         }
         private void BuildCall(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
         {
