@@ -23,7 +23,6 @@ namespace ConsoleSpa
             {
                 Console.WriteLine("No parameter with path to file");
                 Console.WriteLine("Program exit.");
-                Console.ReadKey();
                 return;
             }
 
@@ -48,12 +47,10 @@ namespace ConsoleSpa
 
                 CfgManager.GetInstance().GenerateStructure(SourceCode, pkb);
                 Console.WriteLine("CFG ok");
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.GetType().Name + ": " + e.Message);
-                Console.ReadKey();
                 return;
             }
             Console.WriteLine("Ready");
@@ -98,7 +95,6 @@ namespace ConsoleSpa
             }
 
             Console.WriteLine("Program exit.");
-            Console.ReadKey();
             return;
         }
     }
