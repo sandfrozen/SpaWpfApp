@@ -90,7 +90,7 @@ namespace ConsoleSpa
                         QueryProjector queryProjector = QueryProjector.GetInstance();
                         Console.WriteLine(queryProjector.PrintResult());
                     }
-                    catch
+                    catch (Exception e)
                     {
                         Console.WriteLine("none");
                     }
