@@ -776,7 +776,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             }
                             else if (arg2.First() == '"' && arg2.Last() == '"')
                             {
-                                arg1type = Entity._string;
+                                arg2type = Entity._string;
                             }
                             else
                             {
