@@ -66,7 +66,7 @@ namespace ConsoleSpa
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.GetType().Name + ": " + ex);
+                    Console.WriteLine(ex.GetType().Name + ": " + ex.Message);
                     continue;
                 }
 
