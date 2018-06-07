@@ -27,7 +27,6 @@ namespace ConsoleSpa
             }
 
             string path = args[0];
-            //Console.WriteLine("Path: " + path);
 
             try
             {
@@ -50,13 +49,16 @@ namespace ConsoleSpa
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Before");
                 Console.WriteLine(ex.GetType().Name + ": " + ex);
-                return;
             }
             Console.WriteLine("Ready");
 
+            int i = 0;
+
             while (true)
             {
+                string answer = "";
                 string query = Console.ReadLine();
                 query += " " + Console.ReadLine();
 
@@ -85,13 +87,14 @@ namespace ConsoleSpa
                     {
                         QueryResult queryResult = QueryResult.GetInstance();
                         QueryProjector queryProjector = QueryProjector.GetInstance();
-                        Console.WriteLine(queryProjector.PrintResult());
+                        answer = queryProjector.PrintResult();
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("none");
+                        answer = "none";
                     }
                 }
+                Console.WriteLine(answer);
             }
 
             Console.WriteLine("Program exit.");
