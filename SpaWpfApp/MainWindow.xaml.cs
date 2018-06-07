@@ -58,7 +58,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                addLog("Source Code Parser: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("Source Code Parser: " + ex.GetType().Name + ": " + ex);
                 good = false;
                 return;
             }
@@ -72,7 +72,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                addLog("PKB Create: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("PKB Create: " + ex.GetType().Name + ": " + ex);
                 good = false;
                 return;
             }
@@ -91,7 +91,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                addLog("AST Create: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("AST Create: " + ex.GetType().Name + ": " + ex);
                 good = false;
                 return;
             }
@@ -103,7 +103,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                addLog("CFG Create: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("CFG Create: " + ex.GetType().Name + ": " + ex);
                 good = false;
                 return;
             }
@@ -121,7 +121,7 @@ namespace SpaWpfApp
             }
             catch (Exception ex)
             {
-                addLog("PQL Parser: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("PQL Parser: " + ex.GetType().Name + ": " + ex);
                 good = false;
                 return;
             }
@@ -145,7 +145,7 @@ namespace SpaWpfApp
             }
             catch (NoResultsException ex)
             {
-                addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex.Message);
+                addLog("Q Evaluator: " + ex.GetType().Name + ": " + ex);
                 good = false;
             }
             finally

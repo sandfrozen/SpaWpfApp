@@ -23,7 +23,6 @@ namespace ConsoleSpa
             {
                 Console.WriteLine("No parameter with path to file");
                 Console.WriteLine("Program exit.");
-                Console.ReadKey();
                 return;
             }
 
@@ -48,12 +47,10 @@ namespace ConsoleSpa
 
                 CfgManager.GetInstance().GenerateStructure(SourceCode, pkb);
                 Console.WriteLine("CFG ok");
-
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.GetType().Name + ": " + e.Message);
-                Console.ReadKey();
+                Console.WriteLine(ex.GetType().Name + ": " + ex);
                 return;
             }
             Console.WriteLine("Ready");
@@ -67,9 +64,9 @@ namespace ConsoleSpa
                 {
                     query = QueryPreProcessor.GetInstance().Parse(query);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine(e.GetType().Name + ": " + e.Message);
+                    Console.WriteLine(ex.GetType().Name + ": " + ex);
                     continue;
                 }
 
@@ -78,7 +75,7 @@ namespace ConsoleSpa
                     List<Condition> conditionsList = QueryPreProcessor.GetInstance().conditionsList;
                     QueryEvaluator.GetInstance().Evaluate(conditionsList);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
 
                 }
@@ -90,7 +87,7 @@ namespace ConsoleSpa
                         QueryProjector queryProjector = QueryProjector.GetInstance();
                         Console.WriteLine(queryProjector.PrintResult());
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         Console.WriteLine("none");
                     }
@@ -98,7 +95,6 @@ namespace ConsoleSpa
             }
 
             Console.WriteLine("Program exit.");
-            Console.ReadKey();
             return;
         }
     }
