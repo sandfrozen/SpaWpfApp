@@ -208,7 +208,10 @@ namespace SpaWpfApp.Ast
                         {
                             foreach (var awi in allCalls)
                             {
-                                AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)awi.indexOfName), allWhileIfAssigns);
+                                if(awi.programLine >= lineNumberFirst && awi.programLine <= lineNumberLast)
+                                {
+                                    AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)awi.indexOfName), allWhileIfAssigns);
+                                }
                             }
                         }
 
