@@ -288,9 +288,14 @@ namespace SpaWpfApp.Ast
 
 
             // create subTree of entire expression
+            int indexOfSemiColon = -1;
+            for(int i=0; i<lineWords.Length; i++)
+            {
+                if (lineWords[i].Contains(";")) { indexOfSemiColon = i; break; }
+            }
             TNode tmpUpNode = null, tmpActualNode = null, tmpRightNode = null;
             List<ExprExtraNode> ListExpr = new List<ExprExtraNode>();
-            for (int i = 2; i < lineWords.Length && lineWords[i][0] != 125; i += 2)
+            for (int i = 2; i < indexOfSemiColon && lineWords[i][0] != 125; i += 2)
             {
                 if (lineWords[i + 1].Equals(ConvertEnumToSign(SignEnum.Times)))
                 {
@@ -333,7 +338,8 @@ namespace SpaWpfApp.Ast
                     i += 2;
                 }
 
-                if (i < lineWords.Length)
+                if (i < indexOfSemiColon)
+                //if (i < lineWords.Length)
                 {
                     if (WordIsConstant(lineWords[i]))
                     {
