@@ -9,13 +9,7 @@ namespace SpaWpfApp.PkbNew
     internal class Pkb : PkbAPI
     {
 
-        public int numberOfLines
-        {
-            get
-            {
-                return ModifiesTable.Count != 0 ? ModifiesTable.ElementAt(0).LinesCount() : -1;
-            }
-        }
+        public int numberOfLines { get; set; }
         private List<string> ProcTable;   // [proc]
         private List<string> VarTable;    // [var ]
 
@@ -120,15 +114,17 @@ namespace SpaWpfApp.PkbNew
         #region VarTable
         public void InsertVar(string var, int currentLine)
         {
+            this.numberOfLines = currentLine;
+
             if (!VarTable.Contains(var))
             {
                 VarTable.Add(var);
                 InsertVarToModifiesAndUses(VarTable.IndexOf(var), var);
             }
-            InsertNewLines(currentLine);
+            InsertNewLinesToModifiesAndUses(currentLine);
         }
 
-        private void InsertNewLines(int currentLine)
+        private void InsertNewLinesToModifiesAndUses(int currentLine)
         {
             for (int i = 0; i < ModifiesTable.Count; i++)
             {
@@ -165,6 +161,9 @@ namespace SpaWpfApp.PkbNew
         #region CallsTable
         public void SetCalls(String proc1, String proc2, int line)
         {
+            this.numberOfLines = line;
+            InsertNewLinesToModifiesAndUses(line);
+
             int proc1Index = GetProcIndex(proc1);
             int proc2Index = GetProcIndex(proc2);
             if (proc1Index > -1 && proc2Index > -1)
