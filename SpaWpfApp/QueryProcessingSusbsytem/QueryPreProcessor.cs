@@ -44,9 +44,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             conditionsList = new List<Condition>();
             relationsReference = new Dictionary<string, Action> {
                 { Relation.Modifies, CheckModifies},
-                { Relation.ModifiesX, CheckModifies},
                 { Relation.Uses, CheckModifies},
-                { Relation.UsesX, CheckModifies},
                 { Relation.Calls, CheckModifies},
                 { Relation.CallsX, CheckModifies},
                 { Relation.Parent, CheckModifies},
@@ -491,7 +489,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 switch (relRef)
                 {
                     case Relation.Modifies:
-                    case Relation.ModifiesX:
                         if (!Relation.ModifiesArgs1.Contains(arg1type))
                         {
                             throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");
@@ -502,7 +499,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                         break;
                     case Relation.Uses:
-                    case Relation.UsesX:
                         if (!Relation.UsesArgs1.Contains(arg1type))
                         {
                             throw new QueryException("In " + relRef + " you cannot use: " + arg1type + " as first argument");

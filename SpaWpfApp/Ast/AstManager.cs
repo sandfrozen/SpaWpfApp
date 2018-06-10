@@ -25,7 +25,7 @@ namespace SpaWpfApp.Ast
     public class AstManager : AstAPI
     {
         public List<TNode> NodeList { get; set; }
-        private List<TNode> NodeWithLineNumberList;
+        private List<TNode> NodeWithLineNumberList; // except procedure, variable, constant
         private List<TNode> WhileList, IfList, AssignList, CallList, ProcedureList, ConstantList, VariableList, StmtLstList;
         private TNode[] FollowsTable;
         private TNode[] ParentTable;
@@ -137,99 +137,51 @@ namespace SpaWpfApp.Ast
             this.lastProgramLineNumber = programLineNumber;
         }
 
-        internal List<TNode> GetAllWhileIfAssignsUnder(TNode UpNodeX, string candidatesType)
+        internal List<TNode> GetAllWhileIfAssignsUnder(TNode UpNodeX)
         {
             List<TNode> resultList = new List<TNode>();
-            List<TNode> tmpAssigns = new List<TNode>();
-            List<TNode> tmpStmt = new List<TNode>();
 
-            if (candidatesType.ToLower() == Entity.prog_line) { candidatesType = Enum.GetName(typeof(TNodeTypeEnum), UpNodeX.type); }
-            switch (candidatesType.ToLower())
+            GetAllWhileIfAssignsUnderRecurere(UpNodeX, ref resultList);
+
+            return resultList.Count() > 0 ? resultList : null;
+        }
+
+        private void GetAllWhileIfAssignsUnderRecurere(TNode UpNodeX, ref List<TNode> resultList)
+        {
+            switch (UpNodeX.type)
             {
-                case Entity.assign:
+                case TNodeTypeEnum.Assign:
                     resultList.Add(UpNodeX);
-                    return resultList;
-                case Entity._if:
-                case Entity._while:
-                case Entity.stmt:
+                    break;
+                case TNodeTypeEnum.If:
+                case TNodeTypeEnum.While:
                     {
                         resultList.Add(UpNodeX);
-
-                        tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
-                        if (tmpAssigns != null)
+                        var children = GetChildren(UpNodeX, Entity._);
+                        foreach (var child in children)
                         {
-                            foreach (var ta in tmpAssigns)
-                            {
-                                if (!resultList.Contains(ta)) { resultList.Add(ta); }
-                            }
+                            GetAllAssignUnderRecurere(child, ref resultList);
                         }
-
-                        tmpStmt = GetChildrenXOfType(UpNodeX, Entity.stmt);
-                        if (tmpStmt != null)
-                        {
-                            foreach (var ts in tmpStmt)
-                            {
-                                if (!resultList.Contains(ts)) { resultList.Add(ts); }
-                            }
-                        }
-
-                        var tmpCalls = GetChildrenXOfType(UpNodeX, Entity.call);
-                        if (tmpCalls != null)
-                        {
-                            var allWhileIfAssigns = GetAllWhileIfAsigns();
-                            foreach (var tc in tmpCalls)
-                            {
-                                AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)tc.indexOfName), allWhileIfAssigns);
-                            }
-                        }
-
-
-                        return resultList;
                     }
                     break;
-
-                case Entity.procedure:
+                case TNodeTypeEnum.Procedure:
+                case TNodeTypeEnum.Call:
                     {
-                        var allWhileIfAssigns = GetAllWhileIfAsigns();
+                        var allCandidates = GetAllNodesWithLineNumbers();
                         var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == UpNodeX.indexOfName).First();
                         int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
                         int lineNumberLast = cfgProcedure.lastProgramLineNumber;
 
-                        foreach (var awi in allWhileIfAssigns)
+                        foreach (var a in allCandidates)
                         {
-                            if (awi.programLine >= lineNumberFirst && awi.programLine <= lineNumberLast && !resultList.Contains(awi))
+                            if (a.programLine >= lineNumberFirst && a.programLine <= lineNumberLast)
                             {
-                                resultList.Add(awi);
+                                GetAllAssignUnderRecurere(a, ref resultList);
                             }
                         }
-
-                        var allCalls = GetNodes(Entity.call);
-                        if(allCalls != null)
-                        {
-                            foreach (var awi in allCalls)
-                            {
-                                if(awi.programLine >= lineNumberFirst && awi.programLine <= lineNumberLast)
-                                {
-                                    AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)awi.indexOfName), allWhileIfAssigns);
-                                }
-                            }
-                        }
-
-                        return resultList;
-                    }
-                    break;
-
-                case Entity.call:
-                    {
-                        var allWhileIfAssigns = GetAllWhileIfAsigns();
-                        AddWhileIfAssignUnderCall(ref resultList, Pkb.GetProcName((int)UpNodeX.indexOfName), allWhileIfAssigns);
-
-                        return resultList;
                     }
                     break;
             }
-
-            return null;
         }
 
         private void AddWhileIfAssignUnderCall(ref List<TNode> resultList, string procName, List<TNode> allWhileIfAssigns)
@@ -304,9 +256,9 @@ namespace SpaWpfApp.Ast
                 if (lineWords[i].Contains(";")) { indexOfSemiColon = i; break; }
             }
             TNode tmp = null;
-            for (int i = 2; i < indexOfSemiColon;  i++)
+            for (int i = 2; i < indexOfSemiColon; i++)
             {
-                if(!lineWords[i].Equals(ConvertEnumToSign(SignEnum.Times)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Minus)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Plus)))
+                if (!lineWords[i].Equals(ConvertEnumToSign(SignEnum.Times)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Minus)) && !lineWords[i].Equals(ConvertEnumToSign(SignEnum.Plus)))
                 {
                     if (WordIsConstant(lineWords[i]))
                     {
@@ -351,66 +303,66 @@ namespace SpaWpfApp.Ast
             //            CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpUpNode);
             //            CreateLink(TLinkTypeEnum.FirstChild, tmpUpNode, tmpRightNode);
 
-                //            //create P
-                //            if (WordIsConstant(lineWords[i + 2]))
-                //            {
-                //                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i + 2]), programLineNumber);
-                //            }
-                //            else
-                //            {
-                //                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]), null, programLineNumber);
-                //            }
-                //            CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
-                //            CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
+            //            //create P
+            //            if (WordIsConstant(lineWords[i + 2]))
+            //            {
+            //                tmpActualNode = CreateTNode(TNodeTypeEnum.Constant, null, null, Int32.Parse(lineWords[i + 2]), programLineNumber);
+            //            }
+            //            else
+            //            {
+            //                tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i + 2]), null, programLineNumber);
+            //            }
+            //            CreateLink(TLinkTypeEnum.Up, tmpActualNode, tmpUpNode);
+            //            CreateFirstChildOrRightSiblingLink(tmpUpNode, tmpActualNode);
 
-                //            tmpRightNode = tmpUpNode;
-                //            i += 2;
-                //        }
-                //        ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
-                //        i += 2;
-                //    }
+            //            tmpRightNode = tmpUpNode;
+            //            i += 2;
+            //        }
+            //        ListExpr.Add(new ExprExtraNode(tmpUpNode, ConvertSignToEnum(lineWords[i + 1][0])));
+            //        i += 2;
+            //    }
 
-                //    if (i < indexOfSemiColon)
-                //    //if (i < lineWords.Length)
-                //    {
-                //        if (WordIsConstant(lineWords[i]))
-                //        {
-                //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, null, Int32.Parse(lineWords[i]), programLineNumber);
-                //        }
-                //        else
-                //        {
-                //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
-                //        }
+            //    if (i < indexOfSemiColon)
+            //    //if (i < lineWords.Length)
+            //    {
+            //        if (WordIsConstant(lineWords[i]))
+            //        {
+            //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, null, Int32.Parse(lineWords[i]), programLineNumber);
+            //        }
+            //        else
+            //        {
+            //            tmpActualNode = CreateTNode(TNodeTypeEnum.Variable, null, Pkb.GetVarIndex(lineWords[i]), null, programLineNumber);
+            //        }
 
-                //        if(lineWords[i][0] != 40 && lineWords[i][0] != 41)
-                //        {
-                //            ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
-                //        }
-                //    }
-                //}
+            //        if(lineWords[i][0] != 40 && lineWords[i][0] != 41)
+            //        {
+            //            ListExpr.Add(new ExprExtraNode(tmpActualNode, ConvertSignToEnum(lineWords[i + 1][0])));
+            //        }
+            //    }
+            //}
 
-                //tmpRightNode = ListExpr[0].TNode;
-                //if (ListExpr.Count() > 1)
-                //{
-                //    for (int i = 0; i < ListExpr.Count(); i++)
-                //    {
-                //        if (ListExpr[i].sign != SignEnum.Semicolon)
-                //        {
-                //            tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null, null, programLineNumber);
-                //            CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
-                //            CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
-                //            CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
-                //            CreateLink(TLinkTypeEnum.RightSibling, tmpRightNode, ListExpr[i + 1].TNode);
+            //tmpRightNode = ListExpr[0].TNode;
+            //if (ListExpr.Count() > 1)
+            //{
+            //    for (int i = 0; i < ListExpr.Count(); i++)
+            //    {
+            //        if (ListExpr[i].sign != SignEnum.Semicolon)
+            //        {
+            //            tmpActualNode = CreateTNode((TNodeTypeEnum)Enum.Parse(typeof(TNodeTypeEnum), Enum.GetName(typeof(SignEnum), ListExpr[i].sign)), null, null, null, programLineNumber);
+            //            CreateLink(TLinkTypeEnum.Up, tmpRightNode, tmpActualNode);
+            //            CreateLink(TLinkTypeEnum.Up, ListExpr[i + 1].TNode, tmpActualNode);
+            //            CreateLink(TLinkTypeEnum.FirstChild, tmpActualNode, tmpRightNode);
+            //            CreateLink(TLinkTypeEnum.RightSibling, tmpRightNode, ListExpr[i + 1].TNode);
 
-                //            tmpRightNode = tmpActualNode;
-                //        }
-                //    }
+            //            tmpRightNode = tmpActualNode;
+            //        }
+            //    }
 
-                //    ListExpr.Clear();
-                //}
+            //    ListExpr.Clear();
+            //}
 
-                //CreateLink(TLinkTypeEnum.Up, tmpRightNode, actualNode);
-                //CreateLink(TLinkTypeEnum.RightSibling, leftSideOfAssignNode, tmpRightNode);
+            //CreateLink(TLinkTypeEnum.Up, tmpRightNode, actualNode);
+            //CreateLink(TLinkTypeEnum.RightSibling, leftSideOfAssignNode, tmpRightNode);
         }
         private void BuildCall(ref TNode currentUpNode, ref TNode actualNode, ref int programLineNumber, string[] lineWords)
         {
@@ -581,80 +533,51 @@ namespace SpaWpfApp.Ast
             }
         }
 
-        internal List<TNode> GetAllAssignUnder(TNode UpNodeX, string candidatesType)
+        internal List<TNode> GetAllAssignUnder(TNode UpNodeX)
         {
             List<TNode> resultList = new List<TNode>();
-            List<TNode> tmpAssigns = new List<TNode>();
 
-            
+            GetAllAssignUnderRecurere(UpNodeX, ref resultList);
 
-            if (candidatesType.ToLower() == Entity.prog_line) { candidatesType = Enum.GetName(typeof(TNodeTypeEnum), UpNodeX.type); }
-            switch (candidatesType.ToLower())
+            return resultList.Count() > 0 ? resultList : null;
+        }
+
+        private void GetAllAssignUnderRecurere(TNode UpNodeX, ref List<TNode> resultList)
+        {
+            switch (UpNodeX.type)
             {
-                case Entity.assign:
+                case TNodeTypeEnum.Assign:
                     resultList.Add(UpNodeX);
-                    return resultList;
-                case Entity._if:
-                case Entity._while:
-                case Entity.stmt:
-                case Entity._:
-                case Entity.prog_line:
+                    break;
+                case TNodeTypeEnum.If:
+                case TNodeTypeEnum.While:
                     {
-                        tmpAssigns = GetChildrenXOfType(UpNodeX, Entity.assign);
-                        if (tmpAssigns != null)
+                        var children = GetChildren(UpNodeX, Entity._);
+                        foreach (var child in children)
                         {
-                            foreach (var ta in tmpAssigns)
-                            {
-                                if (!resultList.Contains(ta)) { resultList.Add(ta); }
-                            }
+                            GetAllAssignUnderRecurere(child, ref resultList);
                         }
-
-                        var tmpCalls = GetChildrenXOfType(UpNodeX, Entity.call);
-                        if (tmpCalls != null)
-                        {
-                            var allAssigns = GetAllAssigns();
-                            foreach (var tc in tmpCalls)
-                            {
-                                AddAssignUnderCall(ref resultList, Pkb.GetProcName((int)tc.indexOfName), allAssigns);
-                            }
-                        }
-
-
-                        return resultList;
                     }
                     break;
 
-                case Entity.procedure:
+                case TNodeTypeEnum.Procedure:
+                case TNodeTypeEnum.Call:
                     {
-                        var allAssigns = GetAllAssigns();
+                        var allCandidates = GetAllNodesWithLineNumbers();
                         var cfgProcedure = CfgManager.GetInstance().CfgList.Where(x => x.IndexOfProcedureName == UpNodeX.indexOfName).First();
                         int lineNumberFirst = cfgProcedure.GNodeList.First().programLineList[0];
                         int lineNumberLast = cfgProcedure.lastProgramLineNumber;
 
-                        foreach (var a in allAssigns)
+                        foreach (var a in allCandidates)
                         {
-                            if (a.programLine >= lineNumberFirst && a.programLine <= lineNumberLast && !resultList.Contains(a))
+                            if (a.programLine >= lineNumberFirst && a.programLine <= lineNumberLast)
                             {
-                                resultList.Add(a);
+                                GetAllAssignUnderRecurere(a, ref resultList);
                             }
-
                         }
-
-                        return resultList;
-                    }
-                    break;
-
-                case Entity.call:
-                    {
-                        var allAssigns = GetAllAssigns();
-                        AddAssignUnderCall(ref resultList, Pkb.GetProcName((int)UpNodeX.indexOfName), allAssigns);
-
-                        return resultList;
                     }
                     break;
             }
-
-            return null;
         }
 
         private List<TNode> GetChildrenXOfType(TNode iw, string type)
@@ -1039,7 +962,18 @@ namespace SpaWpfApp.Ast
             {
                 return null;
             }
+        }
 
+        public TNode GetParent(TNode p_child)
+        {
+            TNode findedParent;
+
+            if (p_child.programLine is null) { return null; }
+
+            findedParent = ParentTable[(int)p_child.programLine - 1];
+            if (findedParent is null) { return null; }
+
+            return findedParent;
         }
 
         public List<TNode> GetParentX(TNode p_child, string p_father)
@@ -1070,6 +1004,30 @@ namespace SpaWpfApp.Ast
             return parents.Count() > 0 ? parents : null;
         }
 
+        public List<TNode> GetParentX(TNode p_child)
+        {
+            List<TNode> parents = new List<TNode>();
+            TNode findedParent;
+
+            if (p_child.programLine is null)
+            {
+                return null;
+            }
+            if (((int)p_child.programLine - 1) < 0 || ((int)p_child.programLine - 1) > (ParentTable.Length - 1))
+            {
+                return null;
+            }
+
+            findedParent = ParentTable[(int)p_child.programLine - 1];
+            while (findedParent != null)
+            {
+                parents.Add(findedParent);
+                findedParent = ParentTable[(int)findedParent.programLine - 1];
+            }
+
+            return parents.Count() > 0 ? parents : null;
+        }
+
         public List<TNode> GetChildren(TNode p_father, string p_child)
         {
             List<TNodeTypeEnum> acceptableType = DetermineAcceptableTypes(p_child);
@@ -1080,13 +1038,38 @@ namespace SpaWpfApp.Ast
                 return null;
             }
 
-            for (int i = 0; i < ParentTable.Length; i++)
+            TNode tmp = p_father.firstChild.rightSibling.firstChild;
+
+            while (tmp != null)
             {
-                if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
+                if (acceptableType.Contains(tmp.type))
                 {
-                    children.Add(FindNode(i + 1));
+                    children.Add(tmp);
+                }
+                tmp = tmp.rightSibling;
+            }
+
+            if (p_father.type == TNodeTypeEnum.If)
+            {
+                tmp = p_father.firstChild.rightSibling.rightSibling.firstChild;
+                while (tmp != null)
+                {
+                    if (acceptableType.Contains(tmp.type))
+                    {
+                        children.Add(tmp);
+                    }
+                    tmp = tmp.rightSibling;
                 }
             }
+
+            //konradTestVersion
+            //for (int i = 0; i < ParentTable.Length; i++)
+            //{
+            //    if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
+            //    {
+            //        children.Add(FindNode(i + 1));
+            //    }
+            //}
 
             return children.Count() > 0 ? children : null;
         }
@@ -1110,7 +1093,7 @@ namespace SpaWpfApp.Ast
         {
             if (OutOfRange(p1) || OutOfRange(p2)) { return false; }
 
-            return ParentTable[p2 - 1] == NodeList.Where(x => x.programLine == p1).FirstOrDefault() ? true : false;
+            return ParentTable[p2 - 1] == NodeWithLineNumberList.Where(x => x.programLine == p1).FirstOrDefault() ? true : false;
         }
 
         public bool IsParentX(int p1, int p2)
@@ -1123,7 +1106,7 @@ namespace SpaWpfApp.Ast
 
             while (parent != null)
             {
-                if (parent == NodeList.Where(x => x.programLine == p1).FirstOrDefault())
+                if (parent == NodeWithLineNumberList.Where(x => x.programLine == p1).FirstOrDefault())
                 {
                     return true;
                 }
@@ -1214,7 +1197,7 @@ namespace SpaWpfApp.Ast
         {
             if (OutOfRange(p1) || OutOfRange(p2)) { return false; }
 
-            return FollowsTable[p1 - 1] == NodeList.Where(x => x.programLine == p2).FirstOrDefault() ? true : false;
+            return FollowsTable[p1 - 1] == NodeWithLineNumberList.Where(x => x.programLine == p2).FirstOrDefault() ? true : false;
         }
 
         public bool IsFollowsX(int p1, int p2)
@@ -1223,7 +1206,7 @@ namespace SpaWpfApp.Ast
 
             TNode toTmp, to;
 
-            to = NodeList.Where(x => x.programLine == p2).FirstOrDefault();
+            to = NodeWithLineNumberList.Where(x => x.programLine == p2).FirstOrDefault();
             toTmp = FollowsTable[p1 - 1];
 
             while (toTmp != null)
@@ -1306,41 +1289,66 @@ namespace SpaWpfApp.Ast
 
         private void FindAllChildrenS(ref List<TNode> children, TNode p_father, List<TNodeTypeEnum> acceptableType)
         {
-            if(p_father is null)
+            if (p_father is null)
             {
                 return;
             }
 
-            TNode tmp = p_father.firstChild;
-            if (tmp is null)
+            TNode tmp = p_father.firstChild.rightSibling.firstChild;
+
+            while (tmp != null)
             {
-                return;
-            }
-            do
-            {
-                if (acceptableType.Contains(tmp.type) && !children.Contains(tmp))
+                if (acceptableType.Contains(tmp.type))
                 {
                     children.Add(tmp);
                 }
-                if (tmp.type != TNodeTypeEnum.Assign)
+
+                if (tmp.type == TNodeTypeEnum.While || tmp.type == TNodeTypeEnum.If)
                 {
                     FindAllChildrenS(ref children, tmp, acceptableType);
                 }
+
                 tmp = tmp.rightSibling;
             }
-            while (tmp != null);
 
-            //for (int i = 0; i < ParentTable.Length; i++)
+            if (p_father.type == TNodeTypeEnum.If)
+            {
+                tmp = p_father.firstChild.rightSibling.rightSibling;
+                while (tmp != null)
+                {
+                    if (acceptableType.Contains(tmp.type))
+                    {
+                        children.Add(tmp);
+                    }
+
+                    if (tmp.type == TNodeTypeEnum.While || tmp.type == TNodeTypeEnum.If)
+                    {
+                        FindAllChildrenS(ref children, tmp, acceptableType);
+                    }
+
+                    tmp = tmp.rightSibling;
+                }
+            }
+
+            //konradTestVersion
+            //TNode tmp = p_father.firstChild;
+            //if (tmp is null)
             //{
-            //    if (ParentTable[i] == p_father && acceptableType.Contains(FindNode(i + 1).type))
-            //    {
-            //        if (!children.Contains(NodeList.Where(x => x.programLine == i + 1).FirstOrDefault()))
-            //        {
-            //            children.Add(FindNode(i + 1));
-            //        }
-            //        FindAllChildrenS(ref children, NodeList.Where(x => x.programLine == i + 1).FirstOrDefault(), acceptableType);
-            //    }
+            //    return;
             //}
+            //do
+            //{
+            //    if (acceptableType.Contains(tmp.type) && !children.Contains(tmp))
+            //    {
+            //        children.Add(tmp);
+            //    }
+            //    if (tmp.type != TNodeTypeEnum.Assign)
+            //    {
+            //        FindAllChildrenS(ref children, tmp, acceptableType);
+            //    }
+            //    tmp = tmp.rightSibling;
+            //}
+            //while (tmp != null);
         }
         #endregion
 
@@ -1380,7 +1388,7 @@ namespace SpaWpfApp.Ast
 
         public TNode FindNode(int programLineNumber)
         {
-            TNode result = NodeList.Where(x => x.programLine == programLineNumber).FirstOrDefault();
+            TNode result = NodeWithLineNumberList.Where(x => x.programLine == programLineNumber).FirstOrDefault();
 
             return result;
         }
@@ -1398,22 +1406,22 @@ namespace SpaWpfApp.Ast
                 fathers.Add(i);
             }
 
-            return fathers.Count() > 0 ? DeepCopy(fathers): null;
+            return fathers.Count() > 0 ? DeepCopy(fathers) : null;
         }
 
         internal List<TNode> GetAllWhile()
         {
-            return WhileList.Count() > 0 ? DeepCopy(WhileList): null;
+            return WhileList.Count() > 0 ? DeepCopy(WhileList) : null;
         }
 
         internal List<TNode> GetAllIf()
         {
-            return IfList.Count() > 0 ? DeepCopy(IfList): null;
+            return IfList.Count() > 0 ? DeepCopy(IfList) : null;
         }
 
         internal List<TNode> GetAllAssigns()
         {
-            return AssignList.Count() > 0 ? DeepCopy(AssignList): null;
+            return AssignList.Count() > 0 ? DeepCopy(AssignList) : null;
         }
 
         internal List<TNode> GetAllNodesWithLineNumbers()
@@ -1462,7 +1470,7 @@ namespace SpaWpfApp.Ast
 
                 case "procAndCalls":
                     var result = new List<TNode>();
-                    foreach(var  p in ProcedureList) { result.Add(p); }
+                    foreach (var p in ProcedureList) { result.Add(p); }
                     if (CallList != null) { foreach (var c in CallList) { result.Add(c); } }
                     return result;
             }

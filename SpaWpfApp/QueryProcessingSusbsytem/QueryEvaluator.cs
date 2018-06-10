@@ -141,16 +141,18 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             HandleBooleanReturn();
         }
 
+
+
         private void CallsX(Relation relation)
         {
-            List<TNode> candidateForCalling, candidateForCalled;
+            List<TNode> candidates, candidates2;
             List<TNode> resultList = new List<TNode>();
             List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
 
             if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                bool result = astManager.GetNodes(Entity.call).Any();
+                bool result = astManager.GetNodes(Entity.call) is null ? false : true;
 
                 UpdateResultTable(result);
                 return;
@@ -158,12 +160,15 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
             {
                 var calls = astManager.GetNodes(Entity.call);
-                foreach (var c in calls)
+                if (calls != null)
                 {
-                    if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                    foreach (var c in calls)
                     {
-                        UpdateResultTable(true);
-                        return;
+                        if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
                     }
                 }
                 UpdateResultTable(false);
@@ -171,25 +176,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             }
             else if (relation.arg1type == Entity._ && relation.arg2type == Entity.procedure)
             {
-
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
                 var calls = astManager.GetNodes(Entity.call);
-                foreach (var c in calls)
+                if (calls != null)
                 {
-                    foreach (var can in candidateForCalled)
+                    foreach (var c in calls)
                     {
-                        if (c.indexOfName == can.indexOfName && !resultList.Contains(can))
+                        foreach (var can in candidates2)
                         {
-                            resultList.Add(can);
-                            break;
+                            if (c.indexOfName == can.indexOfName && !resultList.Contains(can))
+                            {
+                                resultList.Add(can);
+                            }
                         }
                     }
                 }
@@ -205,7 +211,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             else if (relation.arg1type == Entity._string && relation.arg2type == Entity._string)
             {
                 Boolean result = false;
-                CheckIfCallsX(relation.arg1.Trim('"'), relation.arg2.Trim('"'), ref result);
+                CallsXCheckIfCalls(relation.arg1.Trim('"'), relation.arg2.Trim('"'), ref result);
 
                 UpdateResultTable(result);
                 return;
@@ -214,19 +220,27 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                var calls = pkb.GetCalled(relation.arg1.Trim('"'));
-                foreach (var c in calls)
+                if(candidates2 is null)
                 {
-                    foreach (var can in candidateForCalled)
+                    UpdateResultTable(null, relation.arg2);
+                    return;
+                }
+
+                Boolean result;
+                foreach (var p in candidates2)
+                {
+                    result = false;
+                    CallsXCheckIfCalls(relation.arg1.Trim('"'), pkb.GetProcName((int)p.indexOfName), ref result);
+                    if (result && !resultList.Contains(p))
                     {
-                        CheckIfCallsX(relation.arg1.Trim('"'), pkb.GetProcName((int)can.indexOfName), ref resultList, can);
+                        resultList.Add(p);
                     }
                 }
                 UpdateResultTable(resultList, relation.arg2);
@@ -235,20 +249,20 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
+                    candidates = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                if (candidateForCalling is null)
+                if (candidates is null)
                 {
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
 
-                foreach (var c in candidateForCalling)
+                foreach (var c in candidates)
                 {
                     if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any() && !resultList.Contains(c))
                     {
@@ -263,22 +277,28 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
+                    candidates = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                if (candidateForCalling is null)
+                if (candidates is null)
                 {
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
 
-                foreach (var c in candidateForCalling)
+                Boolean result;
+                foreach (var c in candidates)
                 {
-                    CheckIfCallsX(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"'), ref resultList, c);
+                    result = false;
+                    CallsXCheckIfCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"'), ref result);
+                    if(result && !resultList.Contains(c))
+                    {
+                        resultList.Add(c);
+                    }
                 }
 
                 UpdateResultTable(resultList, relation.arg1);
@@ -288,45 +308,61 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
+                    candidates = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
-                }
-
-                if (candidateForCalling is null)
-                {
-                    UpdateResultTable(null, relation.arg1);
-                    return;
+                    candidates = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
 
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                if (candidateForCalled is null)
+                if (candidates is null || candidates2 is null)
                 {
-                    UpdateResultTable(null, relation.arg2);
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
                     return;
                 }
 
-                foreach (var c1 in candidateForCalling)
+                Boolean result;
+                foreach (var c1 in candidates)
                 {
-                    foreach (var c2 in candidateForCalled)
+                    foreach (var c2 in candidates2)
                     {
-                        CheckIfCallsX(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName), ref resultListTuple, c1, c2);
+                        result = false;
+                        CallsXCheckIfCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName), ref result);
+                        if(result && !resultListTuple.Contains((c1, c2)))
+                        {
+                            resultListTuple.Add((c1, c2));
+                        }
                     }
                 }
 
                 UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;
+            }
+        }
+
+        private void CallsXCheckIfCalls(string name1, string name2, ref bool result)
+        {
+            var calls = pkb.GetCalled(name1);
+
+            foreach (var c in calls)
+            {
+                if (c == name2)
+                {
+                    result = true;
+                    return;
+                }
+
+                CallsXCheckIfCalls(c, name2, ref result);
             }
         }
 
@@ -374,222 +410,240 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         private void Calls(Relation relation)
         {
-            List<TNode> candidateForCalling, candidateForCalled;
+            List<TNode> candidates, candidates2;
             List<TNode> resultList = new List<TNode>();
             List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
-
-            if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            #region Calls(_, )
+            if (relation.arg1type == Entity._)
             {
-                bool result = astManager.GetNodes(Entity.call).Any();
-
-                UpdateResultTable(result);
-                return;
-            }
-            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
-            {
-                var calls = astManager.GetNodes(Entity.call);
-                foreach (var c in calls)
+                if (relation.arg2type == Entity._)
                 {
-                    if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                    bool result = astManager.GetNodes(Entity.call) is null ? false : true;
+                    UpdateResultTable(result);
+                    return;
+                }
+
+                if (relation.arg2type == Entity._string)
+                {
+                    var calls = astManager.GetNodes(Entity.call);
+                    if (calls is null) { UpdateResultTable(false); return; }
+
+                    foreach (var c in calls)
+                    {
+                        if (c.indexOfName == pkb.GetProcIndex(relation.arg2.Trim('"')))
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.procedure)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    }
+                    else
+                    {
+                        candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    }
+
+                    var calls = astManager.GetNodes(Entity.call);
+                    if (calls is null || candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+
+                    foreach (var c in calls)
+                        foreach (var p in candidates2)
+                        {
+                            if (c.indexOfName == p.indexOfName)
+                            {
+                                resultList.Add(p);
+                            }
+                        }
+
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+            }
+            #endregion
+
+            #region Calls(string, )
+            if (relation.arg1type == Entity._string)
+            {
+                var indexOfProcedure = pkb.GetProcIndex(relation.arg1.Trim('"'));
+                TNode procedure = null;
+                if (indexOfProcedure != -1)
+                {
+                    procedure = astManager.GetNodes(Entity.procedure).Where(p => p.indexOfName == indexOfProcedure).FirstOrDefault();
+                }
+
+
+                if (relation.arg2type == Entity._)
+                {
+                    if (procedure is null) { UpdateResultTable(false); return; }
+
+                    if (indexOfProcedure != -1)
+                    {
+                        var proc = pkb.GetCalled(relation.arg1.Trim('"'));
+                        if (proc.Any())
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity._string)
+                {
+                    if (pkb.IsCalls(relation.arg1, relation.arg2) != -1)
                     {
                         UpdateResultTable(true);
                         return;
                     }
-                }
-                UpdateResultTable(false);
-                return;
-            }
-            else if (relation.arg1type == Entity._ && relation.arg2type == Entity.procedure)
-            {
 
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
-                {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
-                }
-                else
-                {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    UpdateResultTable(false);
+                    return;
                 }
 
-                var calls = astManager.GetNodes(Entity.call);
-                foreach (var c in calls)
+                if (relation.arg2type == Entity.procedure)
                 {
-                    foreach (var can in candidateForCalled)
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                     {
-                        if (c.indexOfName == can.indexOfName && !resultList.Contains(can))
+                        candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    }
+                    else
+                    {
+                        candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    }
+
+                    if (procedure is null || candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+
+                    foreach (var p in candidates2)
+                    {
+                        if (pkb.IsCalls(relation.arg1.Trim('"'), pkb.GetProcName((int)p.indexOfName)) != -1)
                         {
-                            resultList.Add(can);
-                            break;
+                            resultList.Add(p);
                         }
                     }
-                }
 
-                UpdateResultTable(resultList, relation.arg2);
-            }
-            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._)
-            {
-                Boolean result = pkb.GetCalled(relation.arg1.Trim('"')).Any();
-                UpdateResultTable(result);
-                return;
-            }
-            else if (relation.arg1type == Entity._string && relation.arg2type == Entity._string)
-            {
-                Boolean result = pkb.IsCalls(relation.arg1.Trim('"'), relation.arg2.Trim('"')) != -1 ? true : false;
-                UpdateResultTable(result);
-                return;
-            }
-            else if (relation.arg1type == Entity._string && relation.arg2type == Entity.procedure)
-            {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
-                {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
-                else
-                {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
-                }
+            }
+            #endregion
 
-                var calls = pkb.GetCalled(relation.arg1.Trim('"'));
-                foreach (var c in calls)
-                {
-                    foreach (var can in candidateForCalled)
-                    {
-                        if (c == pkb.GetProcName((int)can.indexOfName))
-                        {
-                            resultList.Add(can);
-                            break;
-                        }
-                    }
-                }
-                UpdateResultTable(resultList, relation.arg2);
-            }
-            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity._)
+            #region Calls(p, )
+            if (relation.arg1type == Entity.procedure)
             {
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
                 {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
+                    candidates = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
                 }
                 else
                 {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    candidates = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                if (candidateForCalling is null)
-                {
-                    UpdateResultTable(null, relation.arg1);
-                    return;
-                }
 
-                foreach (var c in candidateForCalling)
+                if (relation.arg2type == Entity._)
                 {
-                    if (pkb.GetCalled(pkb.GetProcName((int)c.indexOfName)).Any() && !resultList.Contains(c))
+                    if (candidates is null) { UpdateResultTable(null, relation.arg1); return; }
+
+                    foreach (var p in candidates)
                     {
-                        resultList.Add(c);
-                    }
-                }
-
-                UpdateResultTable(resultList, relation.arg1);
-                return;
-            }
-            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity._string)
-            {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
-                {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
-                }
-                else
-                {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
-                }
-
-                if (candidateForCalling is null)
-                {
-                    UpdateResultTable(null, relation.arg1);
-                    return;
-                }
-
-                foreach (var c in candidateForCalling)
-                {
-                    if (pkb.IsCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"')) != -1 ? true : false && !resultList.Contains(c))
-                    {
-                        resultList.Add(c);
-                    }
-                }
-
-                UpdateResultTable(resultList, relation.arg1);
-                return;
-            }
-            else if (relation.arg1type == Entity.procedure && relation.arg2type == Entity.procedure)
-            {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1.Trim('"')))
-                {
-                    candidateForCalling = DeepCopy(queryResult.GetNodes(relation.arg1.Trim('"')));
-                }
-                else
-                {
-                    candidateForCalling = DeepCopy(astManager.GetNodes(Entity.procedure));
-                }
-
-                if (candidateForCalling is null)
-                {
-                    UpdateResultTable(null, relation.arg1);
-                    return;
-                }
-
-
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
-                {
-                    candidateForCalled = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
-                }
-                else
-                {
-                    candidateForCalled = DeepCopy(astManager.GetNodes(Entity.procedure));
-                }
-
-                if (candidateForCalled is null)
-                {
-                    UpdateResultTable(null, relation.arg2);
-                    return;
-                }
-
-                foreach (var c1 in candidateForCalling)
-                {
-                    foreach (var c2 in candidateForCalled)
-                    {
-                        if (pkb.IsCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName)) != -1 ? true : false && !resultListTuple.Contains((c1, c2)))
+                        var calls = pkb.GetCalled(pkb.GetProcName((int)p.indexOfName));
+                        if (calls.Any())
                         {
-                            resultListTuple.Add((c1, c2));
+                            resultList.Add(p);
                         }
                     }
+
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
                 }
 
-                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
-                return;
+                if (relation.arg2type == Entity._string)
+                {
+                    if (candidates is null) { UpdateResultTable(null, relation.arg1); return; }
+
+                    foreach (var p in candidates)
+                    {
+                        var calls = pkb.GetCalled(pkb.GetProcName((int)p.indexOfName));
+                        foreach (var c in calls)
+                        {
+                            if (c == relation.arg2.Trim('"'))
+                            {
+                                resultList.Add(p);
+                            }
+                        }
+                    }
+
+                    UpdateResultTable(resultList, relation.arg1);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.procedure)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    }
+                    else
+                    {
+                        candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
+                    }
+
+                    if (candidates is null || candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
+
+                    foreach (var p in candidates)
+                        foreach (var p2 in candidates2)
+                        {
+                            if (pkb.IsCalls(pkb.GetProcName((int)p.indexOfName), pkb.GetProcName((int)p2.indexOfName)) != -1 && !resultListTuple.Contains((p, p2)))
+                            {
+                                resultListTuple.Add((p, p2));
+                            }
+                        }
+
+                    UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                    return;
+                }
             }
+            #endregion            
         }
+
+
+
+
 
         private void Uses(Relation relation)
         {
-            List<TNode> candidates = null, candidates2;
+            List<TNode> candidates, candidates2;
             List<TNode> resultList = new List<TNode>();
             List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
+            #region Uses(_, )
             if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
-                var allWhileIfAssigns = astManager.GetAllWhileIfAsigns();
-                if (allWhileIfAssigns != null)
+                var allIfWhileAssigns = astManager.GetAllWhileIfAsigns();
+                if (allIfWhileAssigns != null)
                 {
-                    foreach (var wia in allWhileIfAssigns)
+                    foreach (var aiw in allIfWhileAssigns)
                     {
-                        switch (wia.type)
+                        switch (aiw.type)
                         {
-                            case Enums.TNodeTypeEnum.If:
-                            case Enums.TNodeTypeEnum.While:
+                            case TNodeTypeEnum.If:
+                            case TNodeTypeEnum.While:
                                 UpdateResultTable(true);
                                 return;
-                            case Enums.TNodeTypeEnum.Assign:
-                                if (Regex.IsMatch(wia.info, @"[a-zA-Z]"))
+                            case TNodeTypeEnum.Assign:
+                                if (Regex.IsMatch(aiw.info, @"[a-zA-Z]"))
                                 {
                                     UpdateResultTable(true);
                                     return;
@@ -598,31 +652,109 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                     }
                 }
+                UpdateResultTable(false);
+                return;
             }
 
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity.variable)
+            {
+                var allIfWhileAssigns = astManager.GetAllWhileIfAsigns();
+
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidates = queryResult.GetNodes(relation.arg2);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (allIfWhileAssigns != null && candidates != null)
+                {
+                    foreach (var aiw in allIfWhileAssigns)
+                        foreach (var c in candidates)
+                        {
+                            switch (aiw.type)
+                            {
+                                case TNodeTypeEnum.If:
+                                case TNodeTypeEnum.While:
+                                    if (aiw.firstChild.indexOfName == c.indexOfName && !resultList.Contains(c))
+                                    {
+                                        resultList.Add(c);
+                                        break;
+                                    }
+                                    break;
+                                case TNodeTypeEnum.Assign:
+                                    if (CInfoContainsVarable(aiw.info, pkb.GetVarName((int)c.indexOfName)) && !resultList.Contains(c))
+                                    {
+                                        resultList.Add(c);
+                                        break;
+                                    }
+                                    break;
+                            }
+                        }
+                }
+
+                UpdateResultTable(resultList, relation.arg2);
+                return;
+            }
+
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
+            {
+                var allIfWhileAssigns = astManager.GetAllWhileIfAsigns();
+
+                if (allIfWhileAssigns != null)
+                {
+                    foreach (var aiw in allIfWhileAssigns)
+                    {
+                        switch (aiw.type)
+                        {
+                            case TNodeTypeEnum.If:
+                            case TNodeTypeEnum.While:
+                                if (aiw.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                            case TNodeTypeEnum.Assign:
+                                if (CInfoContainsVarable(aiw.info, relation.arg2.Trim('"')))
+                                {
+                                    UpdateResultTable(true);
+                                    return;
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                UpdateResultTable(false);
+                return;
+            }
+            #endregion
+
+            #region Uses(int, )
             if (relation.arg1type == Entity._int)
             {
                 TNode tnode = astManager.FindNode(Int32.Parse(relation.arg1));
                 candidates = new List<TNode>();
-                candidates.Add(tnode);
-                if (tnode.type != Enums.TNodeTypeEnum.Assign)
-                {
-                    candidates = astManager.GetAllWhileIfAssignsUnder(tnode, Enum.GetName(typeof(Enums.TNodeTypeEnum), tnode.type));
-                }
+                candidates = astManager.GetAllWhileIfAssignsUnder(tnode);
 
-                if (candidates is null || (candidates != null && !candidates.Any())) { UpdateResultTable(false); return; }
 
                 if (relation.arg2type == Entity._)
                 {
+                    if (candidates is null) { UpdateResultTable(false); return; }
+
                     foreach (var c in candidates)
                     {
                         switch (c.type)
                         {
-                            case Enums.TNodeTypeEnum.If:
-                            case Enums.TNodeTypeEnum.While:
+                            case TNodeTypeEnum.If:
+                            case TNodeTypeEnum.While:
                                 UpdateResultTable(true);
                                 return;
-                            case Enums.TNodeTypeEnum.Assign:
+
+                            case TNodeTypeEnum.Assign:
                                 if (Regex.IsMatch(c.info, @"[a-zA-Z]"))
                                 {
                                     UpdateResultTable(true);
@@ -633,24 +765,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     UpdateResultTable(false);
                     return;
-
                 }
 
                 if (relation.arg2type == Entity._string)
                 {
+
+                    if (candidates is null) { UpdateResultTable(false); return; }
+
                     foreach (var c in candidates)
                     {
                         switch (c.type)
                         {
-                            case Enums.TNodeTypeEnum.If:
-                            case Enums.TNodeTypeEnum.While:
+                            case TNodeTypeEnum.If:
+                            case TNodeTypeEnum.While:
                                 if (c.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
                                 {
                                     UpdateResultTable(true);
                                     return;
                                 }
                                 break;
-                            case Enums.TNodeTypeEnum.Assign:
+                            case TNodeTypeEnum.Assign:
                                 if (CInfoContainsVarable(c.info, relation.arg2.Trim('"')))
                                 {
                                     UpdateResultTable(true);
@@ -659,7 +793,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                 break;
                         }
                     }
-
                     UpdateResultTable(false);
                     return;
                 }
@@ -668,30 +801,30 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                     {
-                        candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                        candidates2 = queryResult.GetNodes(relation.arg2);
                     }
                     else
                     {
-                        candidates2 = DeepCopy(astManager.GetNodes(Entity.variable));
+                        candidates2 = astManager.GetNodes(Entity.variable);
                     }
 
-                    if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
+                    if (candidates is null || candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
 
-                    foreach (var c in candidates)
+                    foreach (var a in candidates) // assignsIfWhile
                     {
-                        foreach (var v in candidates2)
+                        foreach (var v in candidates2) // variables
                         {
-                            switch (c.type)
+                            switch (a.type)
                             {
-                                case Enums.TNodeTypeEnum.If:
-                                case Enums.TNodeTypeEnum.While:
-                                    if (c.firstChild.indexOfName == v.indexOfName)
+                                case TNodeTypeEnum.If:
+                                case TNodeTypeEnum.While:
+                                    if (a.firstChild.indexOfName == v.indexOfName && !resultList.Contains(v))
                                     {
                                         resultList.Add(v);
                                     }
                                     break;
-                                case Enums.TNodeTypeEnum.Assign:
-                                    if (CInfoContainsVarable(c.info, pkb.GetVarName((int)v.indexOfName)))
+                                case TNodeTypeEnum.Assign:
+                                    if (CInfoContainsVarable(a.info, pkb.GetVarName((int)v.indexOfName)) && !resultList.Contains(v))
                                     {
                                         resultList.Add(v);
                                     }
@@ -702,313 +835,266 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     UpdateResultTable(resultList, relation.arg2);
                     return;
                 }
+            }
+            #endregion
 
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+            #region Uses(string, )
+            if (relation.arg1type == Entity._string)
+            {
+                var indexOfProcedure = pkb.GetProcIndex(relation.arg1.Trim('"'));
+                TNode procedure = null;
+                if (indexOfProcedure != -1)
                 {
-                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2.Trim('"')));
+                    procedure = astManager.GetNodes(Entity.procedure).Where(p => p.indexOfName == indexOfProcedure).FirstOrDefault();
                 }
-                else
-                {
-                    candidates2 = DeepCopy(astManager.GetNodes(Entity.variable));
-                }
 
-                if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
-
-                foreach (var a in candidates)
+                if (relation.arg2type == Entity._)
                 {
-                    foreach (var v in candidates2)
+                    if (procedure != null)
                     {
-                        if (v.indexOfName == a.firstChild.indexOfName && !resultList.Contains(v))
+                        var allWhileIfAssigns = astManager.GetAllWhileIfAssignsUnder(procedure);
+                        foreach (var aiw in allWhileIfAssigns)
                         {
-                            resultList.Add(v);
+                            switch (aiw.type)
+                            {
+                                case TNodeTypeEnum.If:
+                                case TNodeTypeEnum.While:
+                                    UpdateResultTable(true);
+                                    return;
+                                case TNodeTypeEnum.Assign:
+                                    if (Regex.IsMatch(aiw.info, @"[a-zA-Z]"))
+                                    {
+                                        UpdateResultTable(true);
+                                        return;
+                                    }
+                                    break;
+                            }
                         }
                     }
+                    UpdateResultTable(false);
+                    return;
                 }
-                UpdateResultTable(resultList, relation.arg2);
-                return;
-            }
 
-
-
-            if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
-            {
-                candidates = DeepCopy(queryResult.GetNodes(relation.arg1));
-            }
-            else
-            {
-                if (relation.arg1type != Entity._string)
+                if (relation.arg2type == Entity._string)
                 {
-                    candidates = DeepCopy(astManager.GetNodes(relation.arg1type));
-                }
-                else
-                {
-                    var procedures = new List<TNode>();
-                    var indexOfProcedure = pkb.GetProcIndex(relation.arg1);
-                    if (indexOfProcedure != -1)
+                    if (procedure != null)
                     {
-                        procedures = astManager.GetNodes("procAndCalls");
-                        if (procedures != null)
+                        var allAssignsIfWhile = astManager.GetAllWhileIfAssignsUnder(procedure);
+                        if (allAssignsIfWhile != null)
                         {
-                            candidates = new List<TNode>();
-                            foreach (var pc in procedures)
+                            foreach (var aiw in allAssignsIfWhile)
                             {
-                                if (pc.indexOfName == indexOfProcedure)
+                                switch (aiw.type)
                                 {
-                                    candidates.Add(pc);
+                                    case TNodeTypeEnum.If:
+                                    case TNodeTypeEnum.While:
+                                        if (aiw.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                                        {
+                                            UpdateResultTable(true);
+                                            return;
+                                        }
+                                        break;
+                                    case TNodeTypeEnum.Assign:
+                                        if (CInfoContainsVarable(aiw.info, relation.arg2.Trim('"')))
+                                        {
+                                            UpdateResultTable(true);
+                                            return;
+                                        }
+                                        break;
                                 }
                             }
                         }
                     }
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = queryResult.GetNodes(relation.arg2);
+                    }
+                    else
+                    {
+                        candidates2 = astManager.GetNodes(Entity.variable);
+                    }
+
+                    if (candidates2 is null || procedure is null) { UpdateResultTable(null, relation.arg2); return; }
+
+
+                    var allIfWhileAssigns = astManager.GetAllWhileIfAssignsUnder(procedure);
+                    if (allIfWhileAssigns != null)
+                    {
+                        foreach (var aiw in allIfWhileAssigns)
+                            foreach (var c in candidates2)
+                            {
+                                switch (aiw.type)
+                                {
+                                    case TNodeTypeEnum.If:
+                                    case TNodeTypeEnum.While:
+                                        if (aiw.firstChild.indexOfName == c.indexOfName && !resultList.Contains(c))
+                                        {
+                                            resultList.Add(c);
+                                            break;
+                                        }
+                                        break;
+                                    case TNodeTypeEnum.Assign:
+                                        if (CInfoContainsVarable(aiw.info, pkb.GetVarName((int)c.indexOfName)) && !resultList.Contains(c))
+                                        {
+                                            resultList.Add(c);
+                                            break;
+                                        }
+                                        break;
+                                }
+                            }
+                    }
+
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
             }
-            //if (candidates != null && relation.arg1type != Entity.assign) { candidates = astManager.GetAllAssignUnder(candidates, relation.arg1type); }
+            #endregion
 
-
-            if (candidates is null || (candidates != null && !candidates.Any()))
+            #region Uses(*, )
+            if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
             {
-                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
+                candidates = queryResult.GetNodes(relation.arg1);
+            }
+            else
+            {
+                candidates = astManager.GetNodes(relation.arg1type);
+            }
+
+            if (relation.arg2type == Entity._)
+            {
+                if (candidates is null)
                 {
-                    queryResult.SetDeclarationWasDeterminated(relation.arg1);
+                    UpdateResultTable(null, relation.arg1);
+                    return;
                 }
-                if (relation.arg2type != Entity._string && relation.arg2type != Entity._)
+
+                foreach (var c in candidates)
                 {
-                    queryResult.SetDeclarationWasDeterminated(relation.arg2);
+                    var allAssignsWhileIf = astManager.GetAllWhileIfAssignsUnder(c);
+                    if (allAssignsWhileIf != null)
+                    {
+                        foreach (var aiw in allAssignsWhileIf)
+                        {
+                            switch (aiw.type)
+                            {
+                                case TNodeTypeEnum.If:
+                                case TNodeTypeEnum.While:
+                                    if (!resultList.Contains(c)) { resultList.Add(c); break; }
+                                    break;
+                                case TNodeTypeEnum.Assign:
+                                    if (Regex.IsMatch(aiw.info, @"[a-zA-Z]") && !resultList.Contains(c))
+                                    {
+                                        resultList.Add(c);
+                                        break;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
                 }
-                if (relation.arg1type != Entity._string)
+                UpdateResultTable(resultList, relation.arg1);
+                return;
+            }
+
+            if (relation.arg2type == Entity._string)
+            {
+                if (candidates is null)
                 {
                     UpdateResultTable(null, relation.arg1);
                     return;
                 }
                 else
                 {
-                    UpdateResultTable(false);
-                    return;
-                }
-            }
-
-            if (relation.arg2type == Entity._)
-            {
-                if (relation.arg1type != Entity._string)
-                {
                     foreach (var c in candidates)
                     {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any() && !resultList.Contains(c))
+                        var allIfWhileAssigns = astManager.GetAllWhileIfAssignsUnder(c);
+                        if (allIfWhileAssigns != null)
                         {
-                            foreach (var wia in whileIfAssignsUnder)
+                            foreach (var aiw in allIfWhileAssigns)
                             {
-                                switch (wia.type)
+                                switch (aiw.type)
                                 {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        resultList.Add(c);
-                                        goto SkipRestOfThisLoopStep;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (Regex.IsMatch(wia.info, @"[a-zA-Z]"))
+                                    case TNodeTypeEnum.If:
+                                    case TNodeTypeEnum.While:
+                                        if (aiw.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
                                         {
                                             resultList.Add(c);
-                                            goto SkipRestOfThisLoopStep;
+                                            break;
                                         }
                                         break;
-                                }
-                            }
-
-                        }
-                        SkipRestOfThisLoopStep:;
-                    }
-                    UpdateResultTable(resultList, relation.arg1);
-                    return;
-                }
-                else
-                {
-                    foreach (var c in candidates)
-                    {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
-                        {
-                            foreach (var wia in whileIfAssignsUnder)
-                            {
-                                switch (wia.type)
-                                {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        UpdateResultTable(true); return;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (Regex.IsMatch(wia.info, @"[a-zA-Z]"))
-                                        {
-                                            UpdateResultTable(true); return;
-                                        }
-                                        break;
-                                }
-                            }
-
-                        }
-                    }
-
-                    UpdateResultTable(false);
-                    return;
-                }
-            }
-
-            if (relation.arg2type == Entity._string)
-            {
-                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
-                {
-                    foreach (var c in candidates)
-                    {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
-                        {
-                            foreach (var wia in whileIfAssignsUnder)
-                            {
-                                switch (wia.type)
-                                {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        if (wia.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
+                                    case TNodeTypeEnum.Assign:
+                                        if (CInfoContainsVarable(aiw.info, relation.arg2.Trim('"')) && !resultList.Contains(c))
                                         {
                                             resultList.Add(c);
-                                        }
-                                        break;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (CInfoContainsVarable(wia.info, relation.arg2.Trim('"')) && !resultList.Contains(c))
-                                        {
-                                            resultList.Add(c);
+                                            break;
                                         }
                                         break;
                                 }
                             }
-
                         }
                     }
-
-                    UpdateResultTable(resultList, relation.arg1);
-                    return;
                 }
-                else
-                {
-                    foreach (var c in candidates)
-                    {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (whileIfAssignsUnder != null && whileIfAssignsUnder.Any())
-                        {
-                            foreach (var wia in whileIfAssignsUnder)
-                            {
-                                switch (wia.type)
-                                {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        if (wia.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
-                                        {
-                                            UpdateResultTable(true); return;
-                                        }
-                                        break;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (CInfoContainsVarable(wia.info, relation.arg2.Trim('"')) && !resultList.Contains(c))
-                                        {
-                                            UpdateResultTable(true); return;
-                                        }
-                                        break;
-                                }
-                            }
-
-                        }
-                    }
-
-                    UpdateResultTable(false); return;
-                }
+                UpdateResultTable(resultList, relation.arg1);
+                return;
             }
 
             if (relation.arg2type == Entity.variable)
             {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
-                    candidates2 = DeepCopy(queryResult.GetNodes(relation.arg2));
+                    candidates2 = queryResult.GetNodes(relation.arg2);
                 }
                 else
                 {
-                    candidates2 = DeepCopy(astManager.GetNodes(relation.arg2type));
+                    candidates2 = astManager.GetNodes(Entity.variable);
                 }
 
-                if (candidates2 is null)
-                {
-                    if (relation.arg1type != Entity._string) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
-                    else { UpdateResultTable(null, relation.arg2); return; }
-                }
+                if (candidates2 is null || candidates is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
 
-                if (relation.arg1type != Entity._string && relation.arg1type != Entity._)
+                foreach (var c in candidates)
                 {
-                    foreach (var c in candidates)
+                    var allIfWhileAssigns = astManager.GetAllWhileIfAssignsUnder(c);
+                    if (allIfWhileAssigns != null)
                     {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        foreach (var wia in whileIfAssignsUnder)
-                        {
-                            foreach (var v in candidates2)
+                        foreach (var aiw in allIfWhileAssigns)
+                            foreach (var c2 in candidates2)
                             {
-                                switch (wia.type)
+                                switch (aiw.type)
                                 {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        if (wia.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
+                                    case TNodeTypeEnum.If:
+                                    case TNodeTypeEnum.While:
+                                        if (aiw.firstChild.indexOfName == c2.indexOfName && !resultListTuple.Contains((c, c2)))
                                         {
-                                            resultListTuple.Add((c, v));
+                                            resultListTuple.Add((c, c2));
+                                            break;
                                         }
                                         break;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (CInfoContainsVarable(wia.info, pkb.GetVarName((int)v.indexOfName)) && !resultListTuple.Contains((c, v)))
+                                    case TNodeTypeEnum.Assign:
+                                        if (CInfoContainsVarable(aiw.info, pkb.GetVarName((int)c2.indexOfName)) && !resultListTuple.Contains((c, c2)))
                                         {
-                                            resultListTuple.Add((c, v));
+                                            resultListTuple.Add((c, c2));
+                                            break;
                                         }
                                         break;
                                 }
                             }
-                        }
-
-
                     }
-
-                    UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
-                    return;
                 }
-                else
-                {
-                    foreach (var c in candidates)
-                    {
-                        var whileIfAssignsUnder = astManager.GetAllWhileIfAssignsUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        foreach (var wia in whileIfAssignsUnder)
-                        {
-                            foreach (var v in candidates2)
-                            {
-                                switch (wia.type)
-                                {
-                                    case Enums.TNodeTypeEnum.If:
-                                    case Enums.TNodeTypeEnum.While:
-                                        if (wia.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
-                                        {
-                                            resultList.Add(v);
-                                        }
-                                        break;
-                                    case Enums.TNodeTypeEnum.Assign:
-                                        if (CInfoContainsVarable(wia.info, pkb.GetVarName((int)v.indexOfName)) && !resultListTuple.Contains((c, v)))
-                                        {
-                                            resultList.Add(v);
-                                        }
-                                        break;
-                                }
-                            }
-                        }
 
-
-                    }
-
-                    UpdateResultTable(resultList, relation.arg2);
-                    return;
-                }
+                UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
+                return;
             }
+            #endregion
         }
-
         private bool CInfoContainsVarable(string info, string arg2)
         {
+            arg2 = arg2.Trim('"');
             if (info.Contains(arg2))
             {
                 int indexOfStart = info.IndexOf(arg2);
@@ -1480,6 +1566,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
         }
 
 
+
         private List<TNode> DeepCopy(List<TNode> listA)
         {
             List<TNode> copy = new List<TNode>();
@@ -1520,22 +1607,68 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             List<TNode> resultList = new List<TNode>();
             List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
+            #region Modifies(_, )
             if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
             {
                 if (astManager.GetAllAssigns() != null) { UpdateResultTable(true); }
+                else { UpdateResultTable(false); }
                 return;
             }
 
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity.variable)
+            {
+                var allAsigns = astManager.GetAllAssigns();
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                {
+                    candidates = queryResult.GetNodes(relation.arg2);
+                }
+                else
+                {
+                    candidates = astManager.GetNodes(relation.arg2type);
+                }
+                if (allAsigns != null && candidates != null)
+                {
+                    foreach (var c in candidates)
+                    {
+                        foreach (var a in allAsigns)
+                            if (a.firstChild.indexOfName == c.indexOfName && !resultList.Contains(c))
+                            {
+                                resultList.Add(c);
+                                break;
+                            }
+                    }
+                }
+
+                UpdateResultTable(resultList, relation.arg2);
+            }
+
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._string)
+            {
+                var allAsigns = astManager.GetAllAssigns();
+                if (allAsigns != null)
+                {
+                    int indexOfVariable = pkb.GetVarIndex(relation.arg2);
+                    foreach (var a in allAsigns)
+                    {
+                        if (a.firstChild.indexOfName == indexOfVariable)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+                }
+
+                UpdateResultTable(false);
+            }
+            #endregion
+
+
+            #region Modifies(int, )
             if (relation.arg1type == Entity._int)
             {
                 TNode tnode = astManager.FindNode(Int32.Parse(relation.arg1));
                 candidates = new List<TNode>();
-                candidates.Add(tnode);
-                if (tnode.type != Enums.TNodeTypeEnum.Assign)
-                {
-                    candidates = astManager.GetAllAssignUnder(tnode, Enum.GetName(typeof(Enums.TNodeTypeEnum), tnode.type));
-                }
-
+                candidates = astManager.GetAllAssignUnder(tnode);
                 if (candidates is null || (candidates != null && !candidates.Any())) { UpdateResultTable(false); return; }
 
                 if (relation.arg2type == Entity._)
@@ -1559,7 +1692,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                     {
-                        candidates2 = queryResult.GetNodes(relation.arg2.Trim('"'));
+                        candidates2 = queryResult.GetNodes(relation.arg2);
                     }
                     else
                     {
@@ -1568,9 +1701,9 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
                     if (candidates2 is null) { UpdateResultTable(null, relation.arg2); return; }
 
-                    foreach (var a in candidates)
+                    foreach (var a in candidates) // assigns
                     {
-                        foreach (var v in candidates2)
+                        foreach (var v in candidates2) // variables
                         {
                             if (v.indexOfName == a.firstChild.indexOfName && !resultList.Contains(v))
                             {
@@ -1582,9 +1715,82 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     return;
                 }
             }
+            #endregion
+
+            #region Modifies(string, )
+            if (relation.arg1type == Entity._string)
+            {
+                var indexOfProcedure = pkb.GetProcIndex(relation.arg1.Trim('"'));
+                TNode procedure = null;
+                if (indexOfProcedure != -1)
+                {
+                    procedure = astManager.GetNodes(Entity.procedure).Where(p => p.indexOfName == indexOfProcedure).FirstOrDefault();
+                }
+
+                if (relation.arg2type == Entity._)
+                {
+                    if (procedure != null)
+                    {
+                        if (astManager.GetAllAssignUnder(procedure) != null)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+
+                    }
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity._string)
+                {
+                    if (procedure != null)
+                    {
+                        var allAssigns = astManager.GetAllAssignUnder(procedure);
+                        foreach (var a in allAssigns)
+                        {
+                            if (a.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')))
+                            {
+                                UpdateResultTable(true);
+                                break;
+                            }
+                        }
+                    }
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                if (relation.arg2type == Entity.variable)
+                {
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
+                    {
+                        candidates2 = queryResult.GetNodes(relation.arg2);
+                    }
+                    else
+                    {
+                        candidates2 = astManager.GetNodes(Entity.variable);
+                    }
+
+                    if (candidates2 is null || procedure is null) { UpdateResultTable(null, relation.arg2); return; }
 
 
+                    var allAssigns = astManager.GetAllAssignUnder(procedure);
+                    foreach (var a in allAssigns)
+                        foreach (var c2 in candidates2)
+                        {
+                            if (a.firstChild.indexOfName == c2.indexOfName && !resultList.Contains(c2))
+                            {
+                                resultList.Add(c2);
+                            }
+                        }
 
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
+                }
+            }
+            #endregion
+
+            #region Modifies(*, )
             if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg1))
             {
                 candidates = queryResult.GetNodes(relation.arg1);
@@ -1593,84 +1799,22 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 candidates = astManager.GetNodes(relation.arg1type);
             }
-            //if (candidates != null && relation.arg1type != Entity.assign) { candidates = astManager.GetAllAssignUnder(candidates, relation.arg1type); }
-
-
-
-            if (relation.arg1type == Entity._)
-            {
-                if (candidates is null)
-                {
-                    if (relation.arg2type == Entity._string) { UpdateResultTable(false); return; }
-                    else { UpdateResultTable(null, relation.arg2); return; }
-                }
-
-                if (relation.arg2type == Entity._string)
-                {
-                    foreach (var c in candidates)
-                    {
-                        var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        if (assignsUnder != null)
-                        {
-                            UpdateResultTable(true);
-                            return;
-                        }
-                    }
-
-                    UpdateResultTable(false);
-                    return;
-                }
-
-                if (relation.arg2type == Entity.variable)
-                {
-                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
-                    {
-                        candidates2 = queryResult.GetNodes(relation.arg2);
-                    }
-                    else
-                    {
-                        candidates2 = astManager.GetNodes(relation.arg2type);
-                    }
-
-                    if (candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
-
-                    foreach (var c in candidates)
-                    {
-                        var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                        foreach (var au in assignsUnder)
-                        {
-                            foreach (var v in candidates2)
-                            {
-                                if (au.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
-                                {
-                                    resultList.Add(v);
-                                }
-                            }
-                        }
-
-
-                    }
-
-                    UpdateResultTable(resultList, relation.arg2);
-                    return;
-                }
-            }
-
-            if (candidates is null)
-            {
-                UpdateResultTable(null, relation.arg2);
-                return;
-            }
-
 
             if (relation.arg2type == Entity._)
             {
+                if (candidates is null)
+                {
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+
                 foreach (var c in candidates)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                    if (assignsUnder != null && assignsUnder.Any() && !resultList.Contains(c))
+                    var allAssigns = astManager.GetAllAssignUnder(c);
+                    foreach (var a in allAssigns)
                     {
                         resultList.Add(c);
+                        break;
                     }
                 }
                 UpdateResultTable(resultList, relation.arg1);
@@ -1679,14 +1823,19 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
             if (relation.arg2type == Entity._string)
             {
-                foreach (var c in candidates)
+                if (candidates is null)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                    if (assignsUnder != null)
+                    UpdateResultTable(null, relation.arg1);
+                    return;
+                }
+                else
+                {
+                    foreach (var c in candidates)
                     {
-                        foreach (var au in assignsUnder)
+                        var allAssigns = astManager.GetAllAssignUnder(c);
+                        foreach (var a in allAssigns)
                         {
-                            if (au.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
+                            if (a.firstChild.indexOfName == pkb.GetVarIndex(relation.arg2.Trim('"')) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
                                 break;
@@ -1694,45 +1843,44 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         }
                     }
                 }
-
                 UpdateResultTable(resultList, relation.arg1);
                 return;
             }
 
             if (relation.arg2type == Entity.variable)
             {
-                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2.Trim('"')))
                 {
                     candidates2 = queryResult.GetNodes(relation.arg2);
                 }
                 else
                 {
-                    candidates2 = astManager.GetNodes(relation.arg2type);
+                    candidates2 = astManager.GetNodes(Entity.variable);
                 }
 
-                if (candidates2 is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
+                if (candidates2 is null || candidates is null) { UpdateResultTable(null, relation.arg1, relation.arg2); return; }
 
                 foreach (var c in candidates)
                 {
-                    var assignsUnder = astManager.GetAllAssignUnder(c, Enum.GetName(typeof(TNodeTypeEnum), c.type));
-                    foreach (var au in assignsUnder)
-                    {
-                        foreach (var v in candidates2)
+                    var allAssigns = astManager.GetAllAssignUnder(c);
+                    foreach (var a in allAssigns)
+                        foreach (var c2 in candidates2)
                         {
-                            if (au.firstChild.indexOfName == v.indexOfName && !resultListTuple.Contains((c, v)))
+                            if (a.firstChild.indexOfName == c2.indexOfName && !resultListTuple.Contains((a, c2)))
                             {
-                                resultListTuple.Add((c, v));
+                                resultListTuple.Add((c, c2));
                             }
                         }
-                    }
-
-
                 }
 
                 UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;
             }
+            #endregion
         }
+
+
+
 
 
         private void NextX(Relation relation)
@@ -2316,6 +2464,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 #endregion
             }
         }
+
 
 
 
@@ -2979,7 +3128,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     }
                     else
                     {
-                        var result = astManager.GetParent(child, relation.arg1);
+                        var result = astManager.GetParent(child);
                         UpdateResultTable(result != null ? true : false);
                         return;
                     }
@@ -3029,49 +3178,31 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     fathers = astManager.GetAllParents();
 
-                    if (fathers != null)
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                     {
-                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
-                        {
-                            candidateForChildren = queryResult.GetNodes(relation.arg2);
-                            if (candidateForChildren != null)
-                            {
-                                foreach (var father in fathers)
-                                {
-                                    foreach (var child in candidateForChildren)
-                                    {
-                                        if (astManager.IsParent((int)father.programLine, (int)child.programLine))
-                                        {
-                                            resultList.Add(child);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            foreach (var father in fathers)
-                            {
-                                tmpResult = astManager.GetChildren(father, relation.arg2);
-                                if (tmpResult != null)
-                                {
-                                    foreach (var child in tmpResult)
-                                    {
-                                        resultList.Add(child);
-                                    }
-                                }
-                            }
-                        }
-
-                        UpdateResultTable(resultList, relation.arg2);
-                        return;
+                        candidateForChildren = queryResult.GetNodes(relation.arg2);
                     }
                     else
+                    {
+                        candidateForChildren = astManager.GetNodes(relation.arg2type);
+                    }
+
+                    if (fathers is null || candidateForChildren is null)
                     {
                         UpdateResultTable(null, relation.arg2);
                         return;
                     }
 
+                    foreach (var c in candidateForChildren)
+                    {
+                        if (astManager.GetParent(c) != null)
+                        {
+                            resultList.Add(c);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
                 #endregion
 
@@ -3143,31 +3274,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
                     candidateForChildren = queryResult.GetNodes(relation.arg2);
-                    if (candidateForChildren != null)
-                    {
-                        for (int i = 0; i < candidateForFather.Count(); i++)
-                        {
-                            if (astManager.IsParent((int)candidateForFather[i].programLine, (int)candidateForChildren[i].programLine))
-                            {
-                                resultListTuple.Add((candidateForFather[i], candidateForChildren[i]));
-                            }
-                        }
-                    }
                 }
                 else
                 {
-                    foreach (var father in candidateForFather)
+                    candidateForChildren = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (candidateForFather is null || candidateForChildren is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                    return;
+                }
+
+                foreach (var father in candidateForFather)
+                    foreach (var child in candidateForChildren)
                     {
-                        tmpResult = astManager.GetChildren(father, relation.arg2);
-                        if (tmpResult != null)
+                        if (astManager.IsParent((int)father.programLine, (int)child.programLine))
                         {
-                            foreach (var child in tmpResult)
-                            {
-                                resultListTuple.Add((father, child));
-                            }
+                            resultListTuple.Add((father, child));
                         }
                     }
-                }
 
                 UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;
@@ -3326,49 +3452,32 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     fathers = astManager.GetAllParents();
 
-                    if (fathers != null)
-                    {
-                        if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
-                        {
-                            candidateForChildren = queryResult.GetNodes(relation.arg2);
-                            if (candidateForChildren != null)
-                            {
-                                foreach (var father in fathers)
-                                {
-                                    foreach (var child in candidateForChildren)
-                                    {
-                                        if (astManager.IsParentX((int)father.programLine, (int)child.programLine))
-                                        {
-                                            resultList.Add(child);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            foreach (var father in fathers)
-                            {
-                                tmpResult = astManager.GetChildrenX(father, relation.arg2);
-                                if (tmpResult != null)
-                                {
-                                    foreach (var child in tmpResult)
-                                    {
-                                        resultList.Add(child);
-                                    }
-                                }
-                            }
-                        }
 
-                        UpdateResultTable(resultList, relation.arg2);
-                        return;
+                    if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
+                    {
+                        candidateForChildren = queryResult.GetNodes(relation.arg2);
                     }
                     else
+                    {
+                        candidateForChildren = astManager.GetNodes(relation.arg2type);
+                    }
+
+                    if (fathers is null || candidateForChildren is null)
                     {
                         UpdateResultTable(null, relation.arg2);
                         return;
                     }
 
+                    foreach (var child in candidateForChildren)
+                    {
+                        if (astManager.GetParentX(child) != null)
+                        {
+                            resultList.Add(child);
+                        }
+                    }
+
+                    UpdateResultTable(resultList, relation.arg2);
+                    return;
                 }
                 #endregion
 
@@ -3440,38 +3549,34 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
                     candidateForChildren = queryResult.GetNodes(relation.arg2);
-                    if (candidateForChildren != null)
-                    {
-                        foreach (var c in candidateForFather)
-                            foreach (var c2 in candidateForChildren)
-                            {
-                                if (astManager.IsParentX((int)c.programLine, (int)c2.programLine))
-                                {
-                                    resultListTuple.Add((c, c2));
-                                }
-                            }
-                    }
                 }
                 else
                 {
-                    foreach (var father in candidateForFather)
+                    candidateForChildren = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (candidateForFather is null || candidateForChildren is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                    return;
+                }
+
+                foreach (var father in candidateForFather)
+                    foreach (var child in candidateForChildren)
                     {
-                        tmpResult = astManager.GetChildrenX(father, relation.arg2);
-                        if (tmpResult != null)
+                        if (astManager.IsParentX((int)father.programLine, (int)child.programLine))
                         {
-                            foreach (var child in tmpResult)
-                            {
-                                resultListTuple.Add((father, child));
-                            }
+                            resultListTuple.Add((father, child));
                         }
                     }
-                }
 
                 UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;
                 #endregion
             }
         }
+
+
 
 
         public void UpdateResultTable(List<(TNode, TNode)> resultListTuple, string firstArgument, string secondArgument)

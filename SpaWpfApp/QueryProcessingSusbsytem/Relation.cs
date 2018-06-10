@@ -31,12 +31,10 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         // const means static
         public const string Modifies = "Modifies";
-        public const string ModifiesX = "Modifies*";
         public static List<string> ModifiesArgs1 = new List<string> { Entity._int, Entity.stmt, Entity.assign, Entity.procedure, Entity.prog_line, Entity._string, Entity._while, Entity._if, Entity.call, Entity._ };
         public static List<string> ModifiesArgs2 = new List<string> { Entity.variable, Entity._string, Entity._ };
 
         public const string Uses = "Uses";
-        public const string UsesX = "Uses*";
         public static List<string> UsesArgs1 = new List<string> { Entity.stmt, Entity.procedure, Entity._int, Entity._string, Entity.prog_line, Entity.assign, Entity._, Entity._if, Entity._while, Entity.call };
         public static List<string> UsesArgs2 = new List<string> { Entity.variable, Entity._, Entity._string };
 
