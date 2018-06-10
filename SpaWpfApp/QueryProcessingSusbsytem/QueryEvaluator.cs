@@ -1982,7 +1982,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             {
                 TNode to = astManager.FindNode(Int32.Parse(relation.arg2));
 
-                #region Next(_, int)
+                #region NextX(_, int)
                 if (relation.arg1type == Entity._)
                 {
                     if (to is null)
@@ -2062,7 +2062,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                         if (cfgManager.IsNextX((int)from.programLine, (int)to.programLine))
                                         {
                                             resultList.Add(to);
-                                            break;
                                         }
                                     }
                                 }
@@ -2152,13 +2151,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidateForTo = queryResult.GetNodes(relation.arg2);
                     if (candidateForTo != null)
                     {
-                        for (int i = 0; i < candidateForFrom.Count(); i++)
-                        {
-                            if (cfgManager.IsNextX((int)candidateForFrom[i].programLine, (int)candidateForTo[i].programLine))
+                        foreach (var c in candidateForFrom)
+                            foreach (var c2 in candidateForTo)
                             {
-                                resultListTuple.Add((candidateForFrom[i], candidateForTo[i]));
+                                if (cfgManager.IsNextX((int)c.programLine, (int)c2.programLine))
+                                {
+                                    resultListTuple.Add((c, c2));
+                                }
                             }
-                        }
                     }
                 }
                 else

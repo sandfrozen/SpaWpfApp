@@ -552,6 +552,7 @@ namespace SpaWpfApp.Ast
                 case TNodeTypeEnum.If:
                 case TNodeTypeEnum.While:
                     {
+                        resultList.Add(UpNodeX);
                         var children = GetChildren(UpNodeX, Entity._);
                         foreach (var child in children)
                         {

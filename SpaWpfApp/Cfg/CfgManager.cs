@@ -495,11 +495,14 @@ namespace SpaWpfApp.Cfg
             if (OutOfRange(p1) || OutOfRange(p2)) { return false; }
             List<TNode> nextList = this.Next(AstManager.GetInstance().FindNode(p1), p2.ToString());
 
-            foreach (var v in nextList)
+            if(nextList != null)
             {
-                if (v.programLine == p2)
+                foreach (var v in nextList)
                 {
-                    return true;
+                    if (v.programLine == p2)
+                    {
+                        return true;
+                    }
                 }
             }
 
