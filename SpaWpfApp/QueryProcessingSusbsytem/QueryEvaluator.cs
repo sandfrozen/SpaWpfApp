@@ -227,7 +227,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     candidates2 = DeepCopy(astManager.GetNodes(Entity.procedure));
                 }
 
-                if(candidates2 is null)
+                if (candidates2 is null)
                 {
                     UpdateResultTable(null, relation.arg2);
                     return;
@@ -295,7 +295,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 {
                     result = false;
                     CallsXCheckIfCalls(pkb.GetProcName((int)c.indexOfName), relation.arg2.Trim('"'), ref result);
-                    if(result && !resultList.Contains(c))
+                    if (result && !resultList.Contains(c))
                     {
                         resultList.Add(c);
                     }
@@ -338,7 +338,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                     {
                         result = false;
                         CallsXCheckIfCalls(pkb.GetProcName((int)c1.indexOfName), pkb.GetProcName((int)c2.indexOfName), ref result);
-                        if(result && !resultListTuple.Contains((c1, c2)))
+                        if (result && !resultListTuple.Contains((c1, c2)))
                         {
                             resultListTuple.Add((c1, c2));
                         }
@@ -2307,7 +2307,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                             if (cfgManager.IsNext((int)c.programLine, Int32.Parse(relation.arg2)) && !resultList.Contains(c))
                             {
                                 resultList.Add(c);
-                                break;
                             }
                         }
                     }
@@ -2348,7 +2347,6 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                                         if (cfgManager.IsNext((int)from.programLine, (int)to.programLine))
                                         {
                                             resultList.Add(to);
-                                            break;
                                         }
                                     }
                                 }
@@ -2433,31 +2431,26 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                 if (queryResult.HasRecords() && queryResult.DeclarationWasDeterminated(relation.arg2))
                 {
                     candidateForTo = queryResult.GetNodes(relation.arg2);
-                    if (candidateForTo != null)
-                    {
-                        for (int i = 0; i < candidateForFrom.Count(); i++)
-                        {
-                            if (cfgManager.IsNext((int)candidateForFrom[i].programLine, (int)candidateForTo[i].programLine))
-                            {
-                                resultListTuple.Add((candidateForFrom[i], candidateForTo[i]));
-                            }
-                        }
-                    }
                 }
                 else
                 {
-                    foreach (var from in candidateForFrom)
+                    candidateForTo = astManager.GetNodes(relation.arg2type);
+                }
+
+                if (candidateForFrom is null || candidateForTo is null)
+                {
+                    UpdateResultTable(null, relation.arg1, relation.arg2);
+                }
+
+                foreach (var c in candidateForFrom)
+                    foreach (var c2 in candidateForTo)
                     {
-                        List<TNode> tmp = cfgManager.Next(from, relation.arg2);
-                        if (tmp != null)
+                        if (cfgManager.IsNext((int)c.programLine, (int)c2.programLine))
                         {
-                            foreach (var to in tmp)
-                            {
-                                resultListTuple.Add((from, to));
-                            }
+                            resultListTuple.Add((c, c2));
                         }
                     }
-                }
+
 
                 UpdateResultTable(resultListTuple, relation.arg1, relation.arg2);
                 return;

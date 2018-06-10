@@ -448,7 +448,8 @@ namespace SpaWpfApp.Cfg
                     }
                 }
             }
-            else if (actual.previousGNodeList != null)
+
+            if (actual.previousGNodeList != null && !resultList.Any())
             {
                 foreach (var nodePrevious in actual.previousGNodeList)
                 {
