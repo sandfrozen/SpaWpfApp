@@ -159,7 +159,8 @@ namespace SpaWpfApp
                     resultRichTextBox.Document.Blocks.Add(new Paragraph(new Run(queryProjector.PrintResult())));
                     addLog("Q Evaluator: Result: ok, check Result window");
                 }
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 addLog("FATAL ERROR: " + ex.GetType().Name + ": " + ex);
             }
