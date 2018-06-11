@@ -60,7 +60,7 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
 
         public const string Affects = "Affects";
         public const string AffectsX = "Affects*";
-        public static List<string> AffectsArgs1 = new List<string> { Entity._int, Entity.assign };
-        public static List<string> AffectsArgs2 = new List<string> { Entity._int, Entity.assign };
+        public static List<string> AffectsArgs1 = new List<string> { Entity._int, Entity.stmt, Entity.assign, Entity.prog_line, Entity._while, Entity._if, Entity.call, Entity._ };
+        public static List<string> AffectsArgs2 = new List<string> { Entity._int, Entity.stmt, Entity.assign, Entity.prog_line, Entity._while, Entity._if, Entity.call, Entity._ };
     }
 }

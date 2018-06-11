@@ -123,6 +123,14 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
                         case Relation.CallsX:
                             CallsX(relation);
                             break;
+
+                        case Relation.Affects:
+                            Affects(relation);
+                            break;
+
+                        case Relation.AffectsX:
+                            Affects(relation);
+                            break;
                     }
                 }
                 else if (condition is Pattern)
@@ -141,7 +149,166 @@ namespace SpaWpfApp.QueryProcessingSusbsytem
             HandleBooleanReturn();
         }
 
+        private void Affects(Relation relation)
+        {
+            List<TNode> candidates, candidates2;
+            List<TNode> resultList = new List<TNode>();
+            List<(TNode, TNode)> resultListTuple = new List<(TNode, TNode)>();
 
+            if (relation.arg1type == Entity._ && relation.arg2type == Entity._)
+            {
+                candidates = astManager.GetAllAssigns();
+                candidates2 = astManager.GetAllAssigns();
+
+                if(candidates is null || candidates2 is null)
+                {
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                foreach(var c in candidates)
+                    foreach(var c2 in candidates2)
+                    {
+                        if(UsesModifiedVariable(c2, c.firstChild)
+                            && InTheSameProcedure((int)c.programLine, (int)c2.programLine)
+                            && cfgManager.IsNextX((int)c.programLine, (int)c2.programLine)
+                            /*&& NothingBeetwenModifiedVariable((int)c.indexOfName, (int)c2.)*/)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                UpdateResultTable(false);
+                return;
+            }
+            else if (relation.arg1type == Entity._ && relation.arg2type == Entity._int)
+            {
+                candidates = astManager.GetAllAssigns();
+                candidates2 = astManager.GetAllAssignUnder(astManager.FindNode(Int32.Parse(relation.arg2)));
+
+                if (candidates is null || candidates2 is null)
+                {
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                foreach (var c in candidates)
+                    foreach (var c2 in candidates2)
+                    {
+                        if (UsesModifiedVariable(c2, c.firstChild)
+                            && InTheSameProcedure((int)c.programLine, (int)c2.programLine)
+                            && cfgManager.IsNextX((int)c.programLine, (int)c2.programLine)
+                            /*&& NothingBeetwenModifiedVariable((int)c.indexOfName, (int)c2.)*/)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                UpdateResultTable(false);
+                return;
+            }
+            else if (relation.arg1type == Entity._int && relation.arg2type == Entity._int)
+            {
+                candidates = astManager.GetAllAssignUnder(astManager.FindNode(Int32.Parse(relation.arg1)));
+                candidates2 = astManager.GetAllWhileIfAssignsUnder(astManager.FindNode(Int32.Parse(relation.arg2)));
+
+                if (candidates is null || candidates2 is null)
+                {
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                foreach (var c in candidates)
+                    foreach (var c2 in candidates2)
+                    {
+                        if (UsesModifiedVariable(c2, c.firstChild)
+                            && InTheSameProcedure((int)c.programLine, (int)c2.programLine)
+                            && cfgManager.IsNextX((int)c.programLine, (int)c2.programLine)
+                            /*&& NothingBeetwenModifiedVariable((int)c.indexOfName, (int)c2.)*/)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                UpdateResultTable(false);
+                return;
+            }
+            else if (relation.arg1type == Entity._int && relation.arg2type == Entity._)
+            {
+                candidates = astManager.GetAllAssignUnder(astManager.FindNode(Int32.Parse(relation.arg1)));
+                candidates2 = astManager.GetAllWhileIfAsigns();
+
+                if (candidates is null || candidates2 is null)
+                {
+                    UpdateResultTable(false);
+                    return;
+                }
+
+                foreach (var c in candidates)
+                    foreach (var c2 in candidates2)
+                    {
+                        if (UsesModifiedVariable(c2, c.firstChild)
+                            && InTheSameProcedure((int)c.programLine, (int)c2.programLine)
+                            && cfgManager.IsNextX((int)c.programLine, (int)c2.programLine)
+                            /*&& NothingBeetwenModifiedVariable((int)c.indexOfName, (int)c2.)*/)
+                        {
+                            UpdateResultTable(true);
+                            return;
+                        }
+                    }
+
+                UpdateResultTable(false);
+                return;
+            }
+        }
+
+
+        private bool UsesModifiedVariable(TNode c2, TNode firstChild)
+        {
+            switch (c2.type)
+            {
+                case TNodeTypeEnum.Assign:
+                    if (CInfoContainsVarable(c2.info, pkb.GetVarName((int)firstChild.indexOfName)))
+                    {
+                        return true;
+                    }
+                    break;
+                case TNodeTypeEnum.If:
+                case TNodeTypeEnum.While:
+                    if (c2.firstChild.indexOfName == firstChild.indexOfName)
+                    {
+                        return true;
+                    }
+                    break;
+            }
+           
+
+            return false;
+        }
+
+        private bool InTheSameProcedure(int a1ln, int a2ln)
+        {
+            var cfgs = cfgManager.CfgList;
+            int a1Cfg = -1, a2Cfg = -1;
+
+            for(int i=0; i<cfgs.Count(); i++)
+            {
+                if(a1ln >= cfgs[i].GNodeList.First().programLineList[0] && a1ln <= cfgs[0].lastProgramLineNumber)
+                {
+                    a1Cfg = i;
+                }
+
+                if (a2ln >= cfgs[i].GNodeList.First().programLineList[0] && a2ln <= cfgs[0].lastProgramLineNumber)
+                {
+                    a2Cfg = i;
+                }
+            }
+
+            return a1Cfg == a2Cfg ? true : false;
+        }
 
         private void CallsX(Relation relation)
         {

@@ -199,6 +199,9 @@ namespace SpaWpfApp.Cfg
                 }
             }
         }
+
+
+
         private void BuildElse(string[] sourceCodeLines, ref int i, ref GNode currentPreviousNode, ref GNode actualNode, ref ProcedureCfg actualCfgStructure, ref int programLineNumber, ref int howManyStatementsEnd)
         {
             string[] lineWords;
@@ -379,6 +382,104 @@ namespace SpaWpfApp.Cfg
             }
 
             return resultList.Count > 0 ? resultList : null;
+        }
+
+        internal List<List<int>> IsNextXSpecial(int fromInt, int toInt)
+        {
+            if(OutOfRange(fromInt) || OutOfRange(toInt)) { return null; }
+
+            List<List<int>> flows = new List<List<int>>();
+            List<int> actualFlow = new List<int>();
+
+            ProcedureCfg cfg = FindCfg(fromInt);
+            List<int>[] visitorsTable = new List<int>[cfg.GNodeList.Count()];
+            for (int i = 0; i < visitorsTable.Length; i++) { visitorsTable[i] = new List<int>(); }
+            int programLinesInNode;
+
+            GNode actual = cfg.GNodeList.Where(p => p.programLineList.Contains(fromInt)).FirstOrDefault();
+
+            programLinesInNode = actual.programLineList.Count();
+
+            if (programLinesInNode > 1) // jesli nextS w tym samym nodzie
+            {
+                for (int i = 0; i < programLinesInNode; i++)
+                {
+                    if (actual.programLineList[i] == fromInt && (i + 1) < programLinesInNode)
+                    {
+                        for (int j = i + 1; j < programLinesInNode; j++)
+                        {
+                            if (actual.programLineList.ElementAt(j) != toInt)
+                            {
+                                actualFlow.Add(j);
+                            }
+                            else
+                            {
+                                flows.Add(actualFlow);
+                                return flows;
+                            }
+                        }
+                    }
+                }
+            }
+
+            FindAndAddAllNextSInNextNodesSpecial(actual, ref flows, actualFlow, ref visitorsTable, toInt);
+
+            return flows;
+        }
+
+        private List<TNode> DeepCopy(List<TNode> listA)
+        {
+            List<TNode> copy = new List<TNode>();
+            foreach (var assign in listA)
+            {
+                copy.Add(assign);
+            }
+
+            return copy;
+        }
+
+
+        private void FindAndAddAllNextSInNextNodesSpecial(GNode actual, ref List<List<int>> flows, List<int> actualFlow, ref List<int>[] visitedTable, int toInt)
+        {
+            TNode tmp;
+
+            foreach (var n in actual.nextGNodeList)
+            {
+                if (!visitedTable[n.index].Contains(n.index))
+                {
+                    visitedTable[n.index].Add(n.index);
+
+                    if (n.type != GNodeTypeEnum.Ghost)
+                    {
+                        List<int> newActualFlow = DeepCopy(actualFlow);
+                        foreach (var i in n.programLineList)
+                        {
+                            if(i == toInt)
+                            {
+                                flows.Add(newActualFlow);
+                                return;
+                            }
+                            tmp = AstManager.GetInstance().FindNode(i);
+                            newActualFlow.Add(i);
+                        }
+                    }
+                    if (n.nextGNodeList.Count() > 0)
+                    {
+                        FindAndAddAllNextSInNextNodesSpecial(n, ref flows, actualFlow, ref visitedTable, toInt);
+                    }
+                }
+            }
+        }
+
+        private List<int> DeepCopy(List<int> actualFlow)
+        {
+            List<int> copy = new List<int>();
+            foreach (var assign in actualFlow)
+            {
+                copy.Add(assign);
+            }
+
+            return copy;
         }
 
         public List<TNode> NextX(TNode p_from, string p_to)
